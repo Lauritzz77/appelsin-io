@@ -1,0 +1,47 @@
+---
+import Layout from '../../../layouts/Layout.astro'
+
+export const prerender = false
+
+const host = Astro.locals.host!
+---
+
+<Layout title="New event — appelsin">
+	<main class="mx-auto max-w-md px-6 py-12">
+		<a href="/app" class="mb-6 inline-block text-sm text-zinc-400 hover:text-zinc-200">← Back</a>
+		<h1 class="mb-8 text-2xl font-semibold tracking-tight">New event</h1>
+
+		<form method="post" action="/api/events/new" class="space-y-5">
+			<div>
+				<label for="name" class="mb-1 block text-sm text-zinc-300">Event name</label>
+				<input
+					id="name"
+					name="name"
+					type="text"
+					required
+					maxlength="80"
+					placeholder="Anna & Jonas wedding"
+					class="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:border-orange-500 focus:outline-none"
+				/>
+			</div>
+			<div>
+				<label for="eventDate" class="mb-1 block text-sm text-zinc-300">Event date</label>
+				<input
+					id="eventDate"
+					name="eventDate"
+					type="date"
+					required
+					class="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-zinc-100 focus:border-orange-500 focus:outline-none"
+				/>
+			</div>
+			<button
+				type="submit"
+				class="w-full rounded-md bg-orange-500 px-4 py-2 font-medium text-zinc-950 hover:bg-orange-400"
+			>
+				Create event
+			</button>
+		</form>
+
+		<p class="mt-4 text-xs text-zinc-500">Creating as {host.email}. Status starts as <code>draft</code>.</p>
+	</main>
+</Layout>

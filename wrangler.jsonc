@@ -23,7 +23,7 @@
 		{
 			"binding": "DB",
 			"database_name": "appelsin-io-db",
-			"database_id": "REPLACE_ME_AFTER_d1_create",
+			"database_id": "c1bb37d6-ee1a-4abf-86ac-e509084dd2b5",
 			"migrations_dir": "./drizzle/migrations"
 		}
 	],
@@ -31,7 +31,8 @@
 	"r2_buckets": [
 		{
 			"binding": "PHOTOS_BUCKET",
-			"bucket_name": "appelsin-io-photos"
+			"bucket_name": "appelsin-io-photos",
+			"jurisdiction": "eu"
 		}
 	],
 

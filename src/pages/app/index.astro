@@ -1,0 +1,74 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { env } from 'cloudflare:workers'
+import { drizzle } from 'drizzle-orm/d1'
+import { eq, desc } from 'drizzle-orm'
+import * as schema from '../../db/schema'
+
+export const prerender = false
+
+const host = Astro.locals.host!
+const db = drizzle(env.DB, { schema })
+const events = await db
+	.select()
+	.from(schema.events)
+	.where(eq(schema.events.hostId, host.id))
+	.orderBy(desc(schema.events.createdAt))
+---
+
+<Layout title="Dashboard — appelsin">
+	<main class="mx-auto max-w-3xl px-6 py-12">
+		<header class="mb-8 flex items-baseline justify-between">
+			<h1 class="text-3xl font-semibold tracking-tight">Events</h1>
+			<a
+				href="/app/events/new"
+				class="rounded-md bg-orange-500 px-4 py-2 font-medium text-zinc-950 hover:bg-orange-400"
+			>
+				New event
+			</a>
+		</header>
+
+		{
+			events.length === 0 ? (
+				<p class="text-zinc-400">No events yet. Create your first.</p>
+			) : (
+				<ul class="space-y-3">
+					{events.map((e) => (
+						<li class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
+							<div class="flex items-baseline justify-between">
+								<div>
+									<div class="font-medium">{e.name}</div>
+									<div class="mt-1 text-xs text-zinc-500">
+										code <span class="font-mono text-zinc-400">{e.shortCode}</span> · status {e.status}
+									</div>
+								</div>
+								<div class="text-sm text-zinc-400">
+									{new Date(e.eventDate).toLocaleDateString()}
+								</div>
+							</div>
+						</li>
+					))}
+				</ul>
+			)
+		}
+
+		<footer class="mt-16 flex items-center gap-3 text-xs text-zinc-500">
+			<span>Signed in as {host.email}</span>
+			<span aria-hidden>·</span>
+			<button id="sign-out-btn" type="button" class="underline hover:text-zinc-300">
+				Sign out
+			</button>
+		</footer>
+	</main>
+</Layout>
+
+<script>
+	document.getElementById('sign-out-btn')?.addEventListener('click', async () => {
+		await fetch('/api/auth/sign-out', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: '{}',
+		})
+		window.location.href = '/login'
+	})
+</script>

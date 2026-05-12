@@ -22,8 +22,8 @@ pnpm-debug.log*
 .wrangler/
 worker-configuration.d.ts
 
-# Drizzle
-drizzle/meta/_journal.json.bak
+# Drizzle (commit migrations/ + meta/; ignore only backup files)
+drizzle/migrations/meta/*.bak
 
 # macOS-specific files
 .DS_Store

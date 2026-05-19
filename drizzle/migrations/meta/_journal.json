@@ -8,6 +8,27 @@
       "when": 1778571310853,
       "tag": "0000_yummy_klaw",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1779080356812,
+      "tag": "0001_sparkling_turbo",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1779082147910,
+      "tag": "0002_material_vulcan",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1779179935880,
+      "tag": "0003_spicy_black_bird",
+      "breakpoints": true
     }
   ]
 }

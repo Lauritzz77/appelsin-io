@@ -17,7 +17,10 @@ const events = await db
 ---
 
 <Layout title="Dashboard — appelsin">
-	<main class="mx-auto max-w-3xl px-6 py-12">
+	<main class="mx-auto max-w-3xl px-6 py-8">
+		<a href="/" class="mb-4 inline-block">
+			<img src="/logo.svg" alt="appelsin" width="56" height="56" class="-ml-1" />
+		</a>
 		<header class="mb-8 flex items-baseline justify-between">
 			<h1 class="text-3xl font-semibold tracking-tight">Events</h1>
 			<a
@@ -34,18 +37,23 @@ const events = await db
 			) : (
 				<ul class="space-y-3">
 					{events.map((e) => (
-						<li class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
-							<div class="flex items-baseline justify-between">
-								<div>
-									<div class="font-medium">{e.name}</div>
-									<div class="mt-1 text-xs text-zinc-500">
-										code <span class="font-mono text-zinc-400">{e.shortCode}</span> · status {e.status}
+						<li>
+							<a
+								href={`/app/events/${e.id}`}
+								class="block rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 hover:border-zinc-700 hover:bg-zinc-900"
+							>
+								<div class="flex items-baseline justify-between">
+									<div>
+										<div class="font-medium">{e.name}</div>
+										<div class="mt-1 text-xs text-zinc-500">
+											code <span class="font-mono text-zinc-400">{e.shortCode}</span> · status {e.status}
+										</div>
+									</div>
+									<div class="text-sm text-zinc-400">
+										{new Date(e.eventDate).toLocaleDateString()}
 									</div>
 								</div>
-								<div class="text-sm text-zinc-400">
-									{new Date(e.eventDate).toLocaleDateString()}
-								</div>
-							</div>
+							</a>
 						</li>
 					))}
 				</ul>
@@ -54,6 +62,8 @@ const events = await db
 
 		<footer class="mt-16 flex items-center gap-3 text-xs text-zinc-500">
 			<span>Signed in as {host.email}</span>
+			<span aria-hidden>·</span>
+			<a href="/app/billing" class="underline hover:text-zinc-300">Billing</a>
 			<span aria-hidden>·</span>
 			<button id="sign-out-btn" type="button" class="underline hover:text-zinc-300">
 				Sign out

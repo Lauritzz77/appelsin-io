@@ -72,6 +72,7 @@ export const events = sqliteTable(
 		name: text('name').notNull(),
 		eventDate: integer('event_date', { mode: 'timestamp' }).notNull(),
 		shortCode: text('short_code').notNull(),
+		tier: text('tier', { enum: ['free', 'basic', 'gold'] }).notNull().default('free'),
 		retentionDays: integer('retention_days').notNull().default(7),
 		status: text('status', { enum: ['draft', 'live', 'ended'] }).notNull().default('draft'),
 		moderationMode: text('moderation_mode', { enum: ['open', 'queue'] }).notNull().default('queue'),
@@ -122,26 +123,36 @@ export const subscriptions = sqliteTable('subscriptions', {
 		.references(() => hosts.id, { onDelete: 'cascade' }),
 	stripeSubId: text('stripe_sub_id').notNull(),
 	tier: text('tier').notNull(),
+	// Mirror of Stripe's subscription.status — drives whether the host has Pro
+	// access right now and what the billing page renders.
+	status: text('status', {
+		enum: ['active', 'trialing', 'past_due', 'canceled', 'incomplete', 'incomplete_expired', 'unpaid', 'paused'],
+	})
+		.notNull()
+		.default('active'),
+	cancelAtPeriodEnd: integer('cancel_at_period_end', { mode: 'boolean' }).notNull().default(false),
 	currentPeriodEnd: integer('current_period_end', { mode: 'timestamp' }),
 })
 
+// Payment records survive event / host deletion: Danish bookkeeping law
+// requires 5-year retention (see privacy §6). FKs are `set null` so we keep
+// the stripeSessionId and tier even after the event metadata is wiped.
 export const eventPurchases = sqliteTable(
 	'event_purchases',
 	{
 		id: text('id')
 			.primaryKey()
 			.$defaultFn(() => crypto.randomUUID()),
-		hostId: text('host_id')
-			.notNull()
-			.references(() => hosts.id, { onDelete: 'cascade' }),
-		eventId: text('event_id')
-			.notNull()
-			.references(() => events.id, { onDelete: 'cascade' }),
+		hostId: text('host_id').references(() => hosts.id, { onDelete: 'set null' }),
+		eventId: text('event_id').references(() => events.id, { onDelete: 'set null' }),
 		stripeSessionId: text('stripe_session_id'),
 		tier: text('tier').notNull(),
 	},
 	(t) => [
 		index('event_purchases_host_id_idx').on(t.hostId),
 		index('event_purchases_event_id_idx').on(t.eventId),
+		// Stripe delivers webhooks at-least-once; this lets us ON CONFLICT DO
+		// NOTHING in the handler instead of double-recording a purchase.
+		uniqueIndex('event_purchases_stripe_session_idx').on(t.stripeSessionId),
 	]
 )

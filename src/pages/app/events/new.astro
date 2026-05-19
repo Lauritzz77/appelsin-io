@@ -1,17 +1,21 @@
 ---
 import Layout from '../../../layouts/Layout.astro'
+import { TIERS, TIER_IDS, isTier, formatPrice, type Tier } from '../../../lib/tiers'
 
 export const prerender = false
 
 const host = Astro.locals.host!
+
+const requested = Astro.url.searchParams.get('tier')
+const selectedTier: Tier = isTier(requested) ? requested : 'free'
 ---
 
 <Layout title="New event — appelsin">
-	<main class="mx-auto max-w-md px-6 py-12">
+	<main class="mx-auto max-w-xl px-6 py-12">
 		<a href="/app" class="mb-6 inline-block text-sm text-zinc-400 hover:text-zinc-200">← Back</a>
 		<h1 class="mb-8 text-2xl font-semibold tracking-tight">New event</h1>
 
-		<form method="post" action="/api/events/new" class="space-y-5">
+		<form method="post" action="/api/events/new" class="space-y-6">
 			<div>
 				<label for="name" class="mb-1 block text-sm text-zinc-300">Event name</label>
 				<input
@@ -34,6 +38,47 @@ const host = Astro.locals.host!
 					class="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-zinc-100 focus:border-orange-500 focus:outline-none"
 				/>
 			</div>
+
+			<fieldset>
+				<legend class="mb-2 block text-sm text-zinc-300">Plan</legend>
+				<div class="space-y-2">
+					{TIER_IDS.map((id) => {
+						const t = TIERS[id]
+						const isSelected = id === selectedTier
+						return (
+							<label
+								class:list={[
+									'flex cursor-pointer items-start gap-3 rounded-md border p-3 transition',
+									isSelected
+										? 'border-orange-500 bg-orange-500/10'
+										: 'border-zinc-800 bg-zinc-900 hover:border-zinc-700',
+								]}
+							>
+								<input
+									type="radio"
+									name="tier"
+									value={id}
+									checked={isSelected}
+									class="mt-1 accent-orange-500"
+								/>
+								<div class="flex-1">
+									<div class="flex items-baseline justify-between">
+										<span class="font-medium text-zinc-100">{t.label}</span>
+										<span class="text-sm text-zinc-300">
+											{formatPrice(id)}
+											{t.priceCents > 0 && <span class="text-zinc-500"> / event</span>}
+										</span>
+									</div>
+									<div class="mt-1 text-xs text-zinc-500">
+										Up to {t.photoCap.toLocaleString('en-IE')} photos · {t.retentionDays}-day retention{t.watermark ? ' · appelsin watermark' : ''}
+									</div>
+								</div>
+							</label>
+						)
+					})}
+				</div>
+			</fieldset>
+
 			<button
 				type="submit"
 				class="w-full rounded-md bg-orange-500 px-4 py-2 font-medium text-zinc-950 hover:bg-orange-400"
@@ -42,6 +87,8 @@ const host = Astro.locals.host!
 			</button>
 		</form>
 
-		<p class="mt-4 text-xs text-zinc-500">Creating as {host.email}. Status starts as <code>draft</code>.</p>
+		<p class="mt-4 text-xs text-zinc-500">
+			Creating as {host.email}. Status starts as <code>draft</code>; paid plans become <code>live</code> after checkout.
+		</p>
 	</main>
 </Layout>

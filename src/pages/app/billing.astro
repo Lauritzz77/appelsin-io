@@ -1,0 +1,184 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { env } from 'cloudflare:workers'
+import { drizzle } from 'drizzle-orm/d1'
+import { eq, desc } from 'drizzle-orm'
+import * as schema from '../../db/schema'
+import { SUBSCRIPTION_PLANS } from '../../lib/billing'
+
+export const prerender = false
+
+const host = Astro.locals.host!
+const db = drizzle(env.DB, { schema })
+
+const [hostRow] = await db
+	.select({ stripeCustomerId: schema.hosts.stripeCustomerId, plan: schema.hosts.plan })
+	.from(schema.hosts)
+	.where(eq(schema.hosts.id, host.id))
+	.limit(1)
+
+const [subscription] = await db
+	.select()
+	.from(schema.subscriptions)
+	.where(eq(schema.subscriptions.hostId, host.id))
+	.limit(1)
+
+const purchases = await db
+	.select({
+		id: schema.eventPurchases.id,
+		eventId: schema.eventPurchases.eventId,
+		tier: schema.eventPurchases.tier,
+		stripeSessionId: schema.eventPurchases.stripeSessionId,
+	})
+	.from(schema.eventPurchases)
+	.where(eq(schema.eventPurchases.hostId, host.id))
+	.orderBy(desc(schema.eventPurchases.id))
+	.limit(20)
+
+const justSubscribed = Astro.url.searchParams.get('subscribed') === '1'
+const noCustomer = Astro.url.searchParams.get('nocustomer') === '1'
+
+const onPro = hostRow?.plan === 'pro'
+const hasCustomer = Boolean(hostRow?.stripeCustomerId)
+const cancelsAtPeriodEnd = subscription?.cancelAtPeriodEnd && subscription.currentPeriodEnd
+// Only surface the subscription upgrade buttons when both Stripe Price IDs
+// are configured. Without them /api/billing/subscribe would 500.
+const subscriptionsEnabled =
+	Boolean(env.STRIPE_PRICE_PRO_MONTHLY) && Boolean(env.STRIPE_PRICE_PRO_YEARLY)
+
+function formatPlanPrice(priceCents: number, currency: string, interval: 'month' | 'year') {
+	const amount = priceCents / 100
+	const money = new Intl.NumberFormat('en-IE', {
+		style: 'currency',
+		currency: currency.toUpperCase(),
+		maximumFractionDigits: 0,
+	}).format(amount)
+	return `${money}/${interval === 'month' ? 'mo' : 'yr'}`
+}
+---
+
+<Layout title="Billing — appelsin">
+	<main class="mx-auto max-w-3xl px-6 py-8">
+		<a href="/app" class="mb-4 inline-block text-sm text-zinc-400 hover:text-zinc-200"
+			>← Dashboard</a
+		>
+
+		<header class="mb-8">
+			<h1 class="text-3xl font-semibold tracking-tight">Billing</h1>
+			<p class="mt-2 text-sm text-zinc-400">Manage your subscription and invoices.</p>
+		</header>
+
+		{
+			justSubscribed && (
+				<div class="mb-6 rounded-md border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300">
+					Subscription active. Welcome to Pro.
+				</div>
+			)
+		}
+		{
+			noCustomer && (
+				<div class="mb-6 rounded-md border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-sm text-orange-300">
+					You have no billing history yet — buy an event pass or start a subscription first.
+				</div>
+			)
+		}
+
+		<section class="mb-8 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
+			<div class="flex items-baseline justify-between">
+				<div>
+					<p class="text-xs uppercase tracking-wider text-zinc-500">Current plan</p>
+					<p class="mt-1 text-2xl font-semibold">{onPro ? 'Pro' : 'Free'}</p>
+					{subscription && (
+						<p class="mt-1 text-xs text-zinc-500">
+							Status: {subscription.status}
+							{cancelsAtPeriodEnd && subscription.currentPeriodEnd && (
+								<>
+									{' '}· cancels {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+								</>
+							)}
+							{!cancelsAtPeriodEnd && subscription.currentPeriodEnd && (
+								<>
+									{' '}· renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+								</>
+							)}
+						</p>
+					)}
+				</div>
+
+				{
+					hasCustomer && (
+						<form method="post" action="/api/billing/portal">
+							<button
+								type="submit"
+								class="rounded-md border border-zinc-700 px-3 py-2 text-sm hover:bg-zinc-800"
+							>
+								Manage in Stripe →
+							</button>
+						</form>
+					)
+				}
+			</div>
+		</section>
+
+		{
+			!onPro && subscriptionsEnabled && (
+				<section class="mb-8">
+					<h2 class="mb-4 text-sm font-medium text-zinc-400">Upgrade to Pro</h2>
+					<p class="mb-4 text-sm text-zinc-500">
+						Unlimited events, no per-event payment. Best for planners and venues running
+						several events a month.
+					</p>
+					<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+						{Object.entries(SUBSCRIPTION_PLANS).map(([planId, plan]) => (
+							<form method="post" action="/api/billing/subscribe">
+								<input type="hidden" name="plan" value={planId} />
+								<button
+									type="submit"
+									class="flex w-full items-baseline justify-between rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-3 text-left hover:bg-orange-500/20"
+								>
+									<span>
+										<span class="block font-medium text-orange-300">{plan.label}</span>
+										<span class="text-xs text-orange-400/70">
+											Pay {plan.interval === 'month' ? 'monthly' : 'yearly'}, cancel anytime
+										</span>
+									</span>
+									<span class="font-mono text-orange-200">
+										{formatPlanPrice(plan.priceCents, plan.currency, plan.interval)}
+									</span>
+								</button>
+							</form>
+						))}
+					</div>
+				</section>
+			)
+		}
+
+		<section>
+			<h2 class="mb-4 text-sm font-medium text-zinc-400">
+				Event passes {purchases.length === 0 ? '(none yet)' : `(${purchases.length})`}
+			</h2>
+			{
+				purchases.length > 0 && (
+					<ul class="divide-y divide-zinc-800 rounded-lg border border-zinc-800 bg-zinc-900/50">
+						{purchases.map((p) => (
+							<li class="flex items-baseline justify-between px-4 py-3 text-sm">
+								<div>
+									<div class="font-medium">{p.tier} pass</div>
+									<div class="mt-0.5 font-mono text-xs text-zinc-500">{p.stripeSessionId}</div>
+								</div>
+								{p.eventId && (
+									<a
+										href={`/app/events/${p.eventId}`}
+										class="text-xs text-zinc-400 hover:text-zinc-200"
+									>
+										View event →
+									</a>
+								)}
+							</li>
+						))}
+					</ul>
+				)
+			}
+		</section>
+	</main>
+</Layout>

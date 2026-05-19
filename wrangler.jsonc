@@ -10,7 +10,7 @@
 	"compatibility_date": "2026-05-12",
 	"compatibility_flags": ["global_fetch_strictly_public", "nodejs_compat"],
 	"name": "appelsin-io",
-	"main": "@astrojs/cloudflare/entrypoints/server",
+	"main": "./src/worker-entry.ts",
 	"assets": {
 		"directory": "./dist",
 		"binding": "ASSETS"
@@ -45,26 +45,26 @@
 	//   { "binding": "SHORT_CODE_CACHE", "id": "REPLACE_ME_AFTER_kv_namespace_create" }
 	// ],
 
-	// Durable Object for realtime photo wall — added when we build EventChannel.
-	// At that point we'll also need a custom worker entrypoint that re-exports
-	// the DO class alongside Astro's default fetch handler. Plan: see
-	// "Realtime architecture (the magic moment)" section in the plan doc.
-	//
-	// "durable_objects": {
-	//   "bindings": [
-	//     { "name": "EVENT_CHANNEL", "class_name": "EventChannel" }
-	//   ]
-	// },
-	// "migrations": [
-	//   { "tag": "v1", "new_sqlite_classes": ["EventChannel"] }
-	// ],
+	// Durable Object: one EventChannel instance per event (keyed by event_id),
+	// fans out new-photo notifications to subscribed display WebSockets.
+	// Class lives in ./src/worker-entry.ts. SQLite-backed DO (modern, cheaper).
+	"durable_objects": {
+		"bindings": [
+			{ "name": "EVENT_CHANNEL", "class_name": "EventChannel" }
+		]
+	},
+	"migrations": [
+		{ "tag": "v1", "new_sqlite_classes": ["EventChannel"] }
+	],
 
 	// Non-secret vars. Secrets (STRIPE_SECRET_KEY, CF_IMAGES_API_TOKEN,
 	// BETTER_AUTH_SECRET, etc.) go via `wrangler secret put` for prod,
 	// and `.dev.vars` for local dev (gitignored).
 	"vars": {
 		"PUBLIC_APP_NAME": "appelsin",
-		"PUBLIC_APP_URL": "http://localhost:4321"
+		"PUBLIC_APP_URL": "http://localhost:4321",
+		"CF_IMAGES_ACCOUNT_ID": "3edb7cedc3d05f40c600f00b23a86d5e",
+		"CF_IMAGES_HASH": "bObE3dinkRmP29PaTvXV8g"
 	},
 
 	"triggers": {

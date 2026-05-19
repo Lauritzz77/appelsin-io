@@ -144,6 +144,8 @@ Fallback: if a display reconnects mid-event, it first re-fetches the last N appr
 
 **Deferred to v2**: moderation queue, NSFW auto-flag, custom branding, video clips, slideshow themes, AI captions/grouping, team seats, analytics, white-label domains, multi-language.
 
+**Sponsor-watermark for B2B events (v2)** — for corporate / sponsored events (e.g. "AWS RE:Event"), the sponsor's logo is overlaid on the shareable version of each guest photo. Every share to Instagram, LinkedIn or Facebook becomes a small ad for the sponsor — strong organic-reach pitch when selling to brand marketers. Reuses the same overlay plumbing the Lite tier already needs for the appelsin-branded watermark, so both features ship together. Tech: a Cloudflare Images variant with overlay transformation, or a client-side canvas composite invoked from the Web Share API after upload. UX: "Save & share" button on `/e/[code]` post-upload that hands the watermarked variant to the native share sheet. Likely sold as a dedicated "Event sponsor" add-on on top of Subscription Pro, priced per-event or as an annual brand-activation contract.
+
 ---
 
 ## Top risks & mitigations

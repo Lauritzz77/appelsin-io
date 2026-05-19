@@ -1,15 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro'
+
+const requested = Astro.url.searchParams.get('next')
+const next = requested && requested.startsWith('/') ? requested : '/app'
 ---
 
 <Layout title="Sign in — appelsin">
 	<main class="mx-auto max-w-md px-6 py-24">
+		<a href="/" class="mb-8 inline-block">
+			<img src="/logo.svg" alt="appelsin" width="80" height="80" class="-ml-1" />
+		</a>
 		<h1 class="mb-2 text-3xl font-semibold tracking-tight">Sign in</h1>
 		<p class="mb-8 text-sm text-zinc-400">
 			Enter your email — we'll send you a sign-in link.
 		</p>
 
-		<form id="magic-link-form" class="space-y-4">
+		<form id="magic-link-form" data-next={next} class="space-y-4">
 			<input
 				type="email"
 				name="email"
@@ -38,13 +44,14 @@ import Layout from '../layouts/Layout.astro'
 	form.addEventListener('submit', async (e) => {
 		e.preventDefault()
 		const email = (form.elements.namedItem('email') as HTMLInputElement).value
+		const callbackURL = form.dataset.next || '/app'
 		button.disabled = true
 		status.textContent = 'Sending…'
 		try {
 			const res = await fetch('/api/auth/sign-in/magic-link', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ email, callbackURL: '/app' }),
+				body: JSON.stringify({ email, callbackURL }),
 			})
 			if (res.ok) {
 				status.textContent = 'Check your email (or the dev console in local dev) for the sign-in link.'

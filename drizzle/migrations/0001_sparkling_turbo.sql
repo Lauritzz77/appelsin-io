@@ -1,0 +1,1 @@
+ALTER TABLE `events` ADD `tier` text DEFAULT 'free' NOT NULL;

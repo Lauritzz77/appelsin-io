@@ -1,0 +1,159 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+	title="Terms of service — appelsin"
+	description="The terms under which you can use appelsin.io for your event."
+>
+	<div class="flex min-h-screen flex-col">
+		<header class="flex items-start justify-between px-8 pt-6 sm:px-12 sm:pt-8">
+			<a href="/" aria-label="appelsin.io home" class="block">
+				<img src="/logo.svg" alt="appelsin.io" width="110" height="110" />
+			</a>
+			<nav class="flex items-center gap-3 pt-4 text-sm sm:text-base">
+				<a href="/login" class="text-zinc-100 hover:text-orange-400">Login</a>
+				<span class="text-zinc-400">|</span>
+				<a href="/terms" class="text-orange-400">Terms</a>
+				<span class="text-zinc-400">|</span>
+				<a href="/privacy" class="text-zinc-100 hover:text-orange-400">Privacy</a>
+			</nav>
+		</header>
+
+		<main class="mx-auto w-full max-w-3xl px-6 pb-24 pt-8 sm:px-12">
+			<h1 class="text-3xl font-semibold text-white sm:text-4xl">
+				Terms of service
+			</h1>
+			<p class="mt-2 text-sm text-zinc-400">Last updated: 18 May 2026</p>
+
+			<p class="mt-6 leading-relaxed text-zinc-200">
+				These terms govern your use of <strong>appelsin.io</strong>
+				(“appelsin”, “we”). By creating an account or paying for an event,
+				you agree to them. If you don’t, please don’t use the service.
+			</p>
+
+			<h2 class="mt-10 text-xl font-semibold text-white">1. What appelsin does</h2>
+			<p class="mt-3 leading-relaxed text-zinc-200">
+				appelsin lets event hosts collect photos from their guests via a QR
+				code and display them live on a screen at the venue. After the event
+				we keep the photos for the period stated in your chosen plan, then
+				delete them.
+			</p>
+
+			<h2 class="mt-10 text-xl font-semibold text-white">2. Your account</h2>
+			<p class="mt-3 leading-relaxed text-zinc-200">
+				You must be 18 or older to create a host account. You are
+				responsible for keeping your login link confidential and for
+				everything that happens under your account.
+			</p>
+
+			<h2 class="mt-10 text-xl font-semibold text-white">
+				3. Your responsibilities as host
+			</h2>
+			<p class="mt-3 leading-relaxed text-zinc-200">
+				When you create an event you become the
+				<strong>controller</strong> of the guest photos collected through it
+				under the GDPR. That means you are responsible for:
+			</p>
+			<ul class="mt-3 list-disc space-y-2 pl-6 leading-relaxed text-zinc-200">
+				<li>
+					displaying a clear notice at the venue — typically on the printed
+					QR cards — explaining what appelsin is, that uploaded photos may
+					appear on the live display, and that you will receive them after
+					the event;
+				</li>
+				<li>handling any guest request to remove their photo;</li>
+				<li>
+					having a lawful basis to display recognisable people on the
+					screen — usually guest consent at the moment of upload.
+				</li>
+			</ul>
+			<p class="mt-3 leading-relaxed text-zinc-200">
+				appelsin acts as your <strong>processor</strong> in this
+				relationship. A Data Processing Agreement is available on request.
+			</p>
+
+			<h2 class="mt-10 text-xl font-semibold text-white">4. Acceptable use</h2>
+			<p class="mt-3 leading-relaxed text-zinc-200">
+				You and your guests will not upload:
+			</p>
+			<ul class="mt-3 list-disc space-y-2 pl-6 leading-relaxed text-zinc-200">
+				<li>
+					content that is illegal, infringes a third-party right, depicts
+					minors in private settings, or is otherwise non-consensual;
+				</li>
+				<li>malware, deceptive or abusive content;</li>
+				<li>content intended to disrupt or attack the service.</li>
+			</ul>
+			<p class="mt-3 leading-relaxed text-zinc-200">
+				We may remove content and suspend accounts for violations without
+				prior notice.
+			</p>
+
+			<h2 class="mt-10 text-xl font-semibold text-white">5. Payments</h2>
+			<p class="mt-3 leading-relaxed text-zinc-200">
+				Event passes are one-off payments processed by Stripe. Prices are
+				shown at checkout. Because an event pass unlocks a time-bound piece
+				of functionality (your event date), it is non-refundable once the
+				event status has changed to <em>live</em>. Before that, you can
+				request a refund within 14 days at
+				<a class="text-orange-400 underline hover:text-orange-300" href="mailto:hello@appelsin.io">hello@appelsin.io</a>.
+			</p>
+
+			<h2 class="mt-10 text-xl font-semibold text-white">
+				6. Photo content and licence
+			</h2>
+			<p class="mt-3 leading-relaxed text-zinc-200">
+				Your guests own the photos they upload. By using the service you and
+				your guests grant appelsin a limited, non-exclusive licence to host,
+				process, transcode and display the photos
+				<strong>solely to deliver the service to you</strong>. We do not use
+				guest photos to train models and we do not use them for marketing.
+			</p>
+
+			<h2 class="mt-10 text-xl font-semibold text-white">7. Retention</h2>
+			<p class="mt-3 leading-relaxed text-zinc-200">
+				Photos and event metadata are deleted automatically once the
+				retention period of your plan expires (7, 30 or 90 days after the
+				event end, depending on the tier). Host account data is deleted on
+				request or 12 months after your last activity.
+			</p>
+
+			<h2 class="mt-10 text-xl font-semibold text-white">8. Availability</h2>
+			<p class="mt-3 leading-relaxed text-zinc-200">
+				We aim for high availability but provide the service “as is”. We do
+				not guarantee uninterrupted service. To the maximum extent permitted
+				by law, our liability for any claim arising from your use of the
+				service is capped at the amount you paid for the affected event.
+			</p>
+
+			<h2 class="mt-10 text-xl font-semibold text-white">9. Termination</h2>
+			<p class="mt-3 leading-relaxed text-zinc-200">
+				You can stop using the service at any time. We may suspend or delete
+				an account that violates these terms. Once an event is paid for and
+				<em>live</em>, we will let it run to its scheduled end barring
+				serious abuse.
+			</p>
+
+			<h2 class="mt-10 text-xl font-semibold text-white">10. Changes</h2>
+			<p class="mt-3 leading-relaxed text-zinc-200">
+				We may update these terms. Material changes will be announced by
+				email to active hosts at least 14 days before they take effect.
+			</p>
+
+			<h2 class="mt-10 text-xl font-semibold text-white">11. Governing law</h2>
+			<p class="mt-3 leading-relaxed text-zinc-200">
+				These terms are governed by the laws of Denmark. Disputes shall be
+				brought before the competent Danish courts, without prejudice to any
+				mandatory consumer-protection rules in your country of residence.
+			</p>
+
+			<h2 class="mt-10 text-xl font-semibold text-white">12. Contact</h2>
+			<p class="mt-3 leading-relaxed text-zinc-200">
+				<a class="text-orange-400 underline hover:text-orange-300" href="mailto:hello@appelsin.io">hello@appelsin.io</a><br />
+				[Legal entity name], CVR [number]<br />
+				[Postal address], Denmark
+			</p>
+		</main>
+	</div>
+</Layout>

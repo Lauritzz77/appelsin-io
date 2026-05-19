@@ -22,10 +22,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
 	}
 
 	if (path.startsWith('/app') && !context.locals.host) {
-		return context.redirect('/login', 302)
+		const next = context.url.pathname + context.url.search
+		return context.redirect(`/login?next=${encodeURIComponent(next)}`, 302)
 	}
 	if ((path === '/login' || path === '/signup') && context.locals.host) {
-		return context.redirect('/app', 302)
+		const requested = context.url.searchParams.get('next')
+		const dest = requested && requested.startsWith('/') ? requested : '/app'
+		return context.redirect(dest, 302)
 	}
 
 	return next()

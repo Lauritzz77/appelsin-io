@@ -1,0 +1,278 @@
+---
+import { env } from 'cloudflare:workers'
+import { drizzle } from 'drizzle-orm/d1'
+import { eq, and, ne, desc, sql } from 'drizzle-orm'
+import * as schema from '../../../../db/schema'
+import Layout from '../../../../layouts/Layout.astro'
+import { TIERS, isTier, formatPrice } from '../../../../lib/tiers'
+
+export const prerender = false
+
+const host = Astro.locals.host!
+const id = Astro.params.id!
+
+const db = drizzle(env.DB, { schema })
+const [event] = await db
+	.select()
+	.from(schema.events)
+	.where(and(eq(schema.events.id, id), eq(schema.events.hostId, host.id)))
+	.limit(1)
+
+if (!event) return new Response('Event not found', { status: 404 })
+
+const recentPhotos = await db
+	.select({
+		id: schema.photos.id,
+		cfImagesId: schema.photos.cfImagesId,
+		createdAt: schema.photos.createdAt,
+	})
+	.from(schema.photos)
+	.where(eq(schema.photos.eventId, event.id))
+	.orderBy(desc(schema.photos.createdAt))
+	.limit(12)
+
+const [{ photoCount }] = await db
+	.select({ photoCount: sql<number>`count(*)` })
+	.from(schema.photos)
+	.where(and(eq(schema.photos.eventId, event.id), ne(schema.photos.status, 'rejected')))
+
+const statusColor =
+	event.status === 'live'
+		? 'bg-green-500/15 text-green-400 border-green-500/30'
+		: event.status === 'ended'
+			? 'bg-zinc-700/40 text-zinc-300 border-zinc-600/40'
+			: 'bg-orange-500/15 text-orange-400 border-orange-500/30'
+
+const guestUrl = `${env.PUBLIC_APP_URL}/e/${event.shortCode}`
+const displayUrl = `${env.PUBLIC_APP_URL}/display/${event.shortCode}`
+
+const tier = isTier(event.tier) ? event.tier : 'free'
+const tierConfig = TIERS[tier]
+const isPaidTier = tierConfig.priceCents > 0
+
+const justPaid = Astro.url.searchParams.get('paid') === '1'
+
+const capPct = Math.min(100, Math.round((photoCount / tierConfig.photoCap) * 100))
+const capWarn = photoCount >= tierConfig.photoCap
+const capNear = !capWarn && photoCount >= tierConfig.photoCap * 0.8
+---
+
+<Layout title={`${event.name} — appelsin`}>
+	<main class="mx-auto max-w-3xl px-6 py-8">
+		<a href="/app" class="mb-4 inline-block text-sm text-zinc-400 hover:text-zinc-200"
+			>← All events</a
+		>
+
+		<header class="mb-8 flex items-start justify-between gap-4">
+			<div>
+				<h1 class="text-3xl font-semibold tracking-tight">{event.name}</h1>
+				<p class="mt-2 text-sm text-zinc-400">
+					{new Date(event.eventDate).toLocaleDateString(undefined, {
+						dateStyle: 'long',
+					})}
+				</p>
+				<p class="mt-1 text-xs text-zinc-500">
+					{tierConfig.label} plan · up to {tierConfig.photoCap.toLocaleString('en-IE')} photos · {tierConfig.retentionDays}-day retention
+				</p>
+			</div>
+			<span class={`rounded-full border px-3 py-1 text-xs font-medium ${statusColor}`}>
+				{event.status}
+			</span>
+		</header>
+
+		{
+			justPaid && event.status === 'live' && (
+				<div class="mb-6 rounded-md border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300">
+					Payment confirmed. Your event is live.
+				</div>
+			)
+		}
+		{
+			justPaid && event.status === 'draft' && (
+				<div class="mb-6 rounded-md border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-sm text-orange-300">
+					Payment received — finalising. Refresh in a moment if the status doesn’t flip to <em>live</em>.
+				</div>
+			)
+		}
+
+		<section class="mb-8 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
+			<p class="text-sm text-zinc-400">Short code</p>
+			<p class="mt-1 font-mono text-4xl tracking-widest text-orange-400">{event.shortCode}</p>
+			<p class="mt-3 text-xs text-zinc-500">
+				Guest URL: <span class="font-mono">{guestUrl}</span>
+			</p>
+		</section>
+
+		<section class="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+			<a
+				href={`/app/events/${event.id}/qr.pdf`}
+				class="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 hover:bg-zinc-900"
+			>
+				<span>
+					<span class="block font-medium">Download QR pack</span>
+					<span class="text-xs text-zinc-500">A4 sign + 8 table cards (PDF)</span>
+				</span>
+				<span class="text-zinc-500">↓</span>
+			</a>
+
+			{
+				isPaidTier && (
+					<a
+						href={`/app/events/${event.id}/style`}
+						class="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 hover:bg-zinc-900"
+					>
+						<span>
+							<span class="block font-medium">Customise photo wall</span>
+							<span class="text-xs text-zinc-500">Theme, density, title overlay</span>
+						</span>
+						<span class="text-zinc-500">→</span>
+					</a>
+				)
+			}
+
+			{
+				event.status === 'live' ? (
+					<a
+						href={`/display/${event.shortCode}`}
+						target="_blank"
+						class="flex items-center justify-between rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-3 hover:bg-orange-500/20"
+					>
+						<span>
+							<span class="block font-medium text-orange-300">Open photo wall</span>
+							<span class="text-xs text-orange-400/70">Big-screen view ↗</span>
+						</span>
+					</a>
+				) : event.status === 'draft' && !isPaidTier ? (
+					<form method="post" action={`/api/events/${event.id}/activate`} class="contents">
+						<button
+							type="submit"
+							class="flex items-center justify-between rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-3 hover:bg-orange-500/20"
+						>
+							<span class="text-left">
+								<span class="block font-medium text-orange-300">Activate event</span>
+								<span class="text-xs text-orange-400/70">Free tier — flips status to live</span>
+							</span>
+						</button>
+					</form>
+				) : event.status === 'draft' && isPaidTier ? (
+					<form method="post" action={`/api/events/${event.id}/checkout`} class="contents">
+						<button
+							type="submit"
+							class="flex items-center justify-between rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-3 hover:bg-orange-500/20"
+						>
+							<span class="text-left">
+								<span class="block font-medium text-orange-300">
+									Pay {formatPrice(tier)} & activate
+								</span>
+								<span class="text-xs text-orange-400/70">{tierConfig.label} — opens Stripe checkout</span>
+							</span>
+						</button>
+					</form>
+				) : null
+			}
+		</section>
+
+		<section class="mb-8 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
+			<div class="flex items-baseline justify-between text-sm">
+				<span class="text-zinc-300">Photos</span>
+				<span
+					class:list={[
+						'tabular-nums',
+						capWarn ? 'text-red-400' : capNear ? 'text-orange-400' : 'text-zinc-100',
+					]}
+				>
+					{photoCount.toLocaleString('en-IE')} / {tierConfig.photoCap.toLocaleString('en-IE')}
+				</span>
+			</div>
+			<div class="mt-3 h-2 overflow-hidden rounded-full bg-zinc-800">
+				<div
+					class:list={[
+						'h-full rounded-full transition-all',
+						capWarn ? 'bg-red-500' : capNear ? 'bg-orange-500' : 'bg-zinc-500',
+					]}
+					style={`width: ${capPct}%`}
+				></div>
+			</div>
+			{capWarn && (
+				<p class="mt-3 text-xs text-red-400">
+					Event is at its photo limit. New uploads are blocked until you upgrade the tier or rejected photos free up slots.
+				</p>
+			)}
+			{capNear && (
+				<p class="mt-3 text-xs text-orange-400">
+					Approaching the photo limit — consider upgrading before the cap is hit.
+				</p>
+			)}
+		</section>
+
+		<section>
+			<h2 class="mb-4 text-sm font-medium text-zinc-400">
+				Recent photos {recentPhotos.length === 0 ? '(none yet)' : `(${recentPhotos.length})`}
+			</h2>
+			{
+				recentPhotos.length > 0 && (
+					<div class="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+						{recentPhotos.map((p) => (
+							<div class="photo-tile group relative aspect-square overflow-hidden rounded bg-zinc-900">
+								{p.cfImagesId ? (
+									<img
+										src={`https://imagedelivery.net/${env.CF_IMAGES_HASH}/${p.cfImagesId}/public`}
+										alt=""
+										class="h-full w-full object-cover"
+									/>
+								) : (
+									<div class="flex h-full w-full items-center justify-center text-xs text-zinc-600">
+										no image
+									</div>
+								)}
+								<button
+									type="button"
+									class="photo-delete absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950/70 text-zinc-100 opacity-0 transition group-hover:opacity-100 focus:opacity-100 hover:bg-red-600 hover:text-white"
+									data-photo-id={p.id}
+									aria-label="Delete photo"
+									title="Delete photo"
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 20 20"
+										fill="currentColor"
+										class="h-4 w-4"
+										aria-hidden="true"
+									>
+										<path
+											fill-rule="evenodd"
+											d="M8.75 1.5A1.5 1.5 0 0 0 7.25 3v.5H4.5a.75.75 0 0 0 0 1.5h.443l.737 11.05A2 2 0 0 0 7.676 18h4.648a2 2 0 0 0 1.996-1.95L15.057 5h.443a.75.75 0 0 0 0-1.5H12.75V3a1.5 1.5 0 0 0-1.5-1.5h-2.5Zm2 2.5V3h-2v1h2ZM8.5 7.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Z"
+											clip-rule="evenodd"
+										/>
+									</svg>
+								</button>
+							</div>
+						))}
+					</div>
+				)
+			}
+		</section>
+	</main>
+</Layout>
+
+<script>
+	document.querySelectorAll<HTMLButtonElement>('.photo-delete').forEach((btn) => {
+		btn.addEventListener('click', async () => {
+			const id = btn.dataset.photoId
+			if (!id) return
+			if (!confirm('Delete this photo? This cannot be undone.')) return
+
+			const tile = btn.closest<HTMLElement>('.photo-tile')
+			tile?.classList.add('opacity-50', 'pointer-events-none')
+
+			try {
+				const res = await fetch(`/api/photos/${id}`, { method: 'DELETE' })
+				if (!res.ok) throw new Error(`Delete failed (${res.status})`)
+				window.location.reload()
+			} catch (e) {
+				tile?.classList.remove('opacity-50', 'pointer-events-none')
+				alert((e as Error).message)
+			}
+		})
+	})
+</script>

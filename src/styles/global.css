@@ -435,7 +435,7 @@ body.ready .fu {
 	font-family: var(--sans);
 }
 .mkt-wrap {
-	max-width: 1180px;
+	max-width: 1440px;
 	margin: 0 auto;
 	padding: 0 calc(40px * var(--d));
 }

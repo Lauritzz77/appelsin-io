@@ -17,28 +17,25 @@ const home = locale === 'en' ? '/en' : '/'
 ---
 
 <div class="mkt screen-root">
-	<div class="mkt-wrap" style="max-width:760px;padding-top:28px;padding-bottom:80px">
-		<a
-			href={home}
-			style="display:inline-flex;align-items:center;gap:8px;color:var(--ink-2);font-size:15.5px;font-weight:600"
-		>
+	<div class="mx-auto max-w-[760px] px-10 pt-7 pb-20">
+		<a href={home} class="inline-flex items-center gap-2 text-[15.5px] font-semibold text-ink-2">
 			<Icon name="arrow-left" size={18} />{backLabel}
 		</a>
-		<div class="fu" style="margin-top:44px">
+		<div class="fu mt-11">
 			<div
-				style="display:inline-flex;align-items:center;gap:9px;padding:6px 13px;border-radius:999px;background:var(--peach);color:var(--orange-700);font-size:13.5px;font-weight:600;margin-bottom:18px"
+				class="mb-[18px] inline-flex items-center gap-[9px] rounded-full bg-peach px-[13px] py-1.5 text-[13.5px] font-semibold text-orange-deep"
 			>
 				<Icon name={kind === 'terms' ? 'file' : 'shield'} size={15} />{badge}
 			</div>
-			<h1 style="font-size:clamp(38px,5cqw,56px);font-weight:800;letter-spacing:-.02em;color:var(--ink);margin:0">
+			<h1 class="m-0 text-[clamp(38px,5cqw,56px)] font-extrabold tracking-[-0.02em] text-ink">
 				{title}
 			</h1>
-			<div style="display:flex;flex-direction:column;gap:24px;margin-top:32px">
-				{paras.map((para) => <p style="font-size:18px;line-height:1.72;color:var(--warm-body);margin:0">{para}</p>)}
-				<p style="font-size:18px;line-height:1.72;color:var(--warm-body);margin:0">
+			<div class="mt-8 flex flex-col gap-6">
+				{paras.map((para) => <p class="m-0 text-[18px] leading-[1.72] text-warm-body">{para}</p>)}
+				<p class="m-0 text-[18px] leading-[1.72] text-warm-body">
 					{contactPrefix}<a
 						href="mailto:hello@appelsin.io"
-						style="color:var(--orange-700);font-weight:600;text-decoration:underline">hello@appelsin.io</a
+						class="font-semibold text-orange-deep underline">hello@appelsin.io</a
 					>{contactSuffix}
 				</p>
 			</div>

@@ -11,75 +11,64 @@ const next = requested && requested.startsWith('/') ? requested : '/en/app/event
 ---
 
 <Layout title="Sign in — appelsin" locale="en" surface="cream">
-	<div class="mkt screen-root" style="display:flex;flex-direction:column;min-height:100vh">
-		<div class="mkt-wrap" style="padding-top:26px">
-			<a
-				href="/en"
-				style="display:inline-flex;align-items:center;gap:8px;color:var(--ink-2);font-size:15.5px;font-weight:600"
-			>
+	<div class="mkt screen-root flex flex-col">
+		<div class="mx-auto w-full max-w-[1180px] px-10 pt-[26px]">
+			<a href="/en" class="inline-flex items-center gap-2 text-[15.5px] font-semibold text-ink-2">
 				<Icon name="arrow-left" size={18} />Home
 			</a>
 		</div>
-		<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:48px 24px 100px">
-			<div style="width:100%;max-width:440px" class="fu">
-				<div style="display:flex;justify-content:center;margin-bottom:30px">
+		<div class="flex flex-1 items-center justify-center px-6 pt-12 pb-[100px]">
+			<div class="fu w-full max-w-[440px]">
+				<div class="mb-[30px] flex justify-center">
 					<Logo surface="cream" size={72} />
 				</div>
 
 				<div
 					id="login-form-card"
-					style="background:#fff;border-radius:var(--r-2xl);padding:38px 34px;border:1px solid var(--cream-line);box-shadow:var(--sh-cream-lg)"
+					class="rounded-2xl border border-cream-line bg-white p-[38px_34px] shadow-cream-lg"
 				>
-					<h1 style="font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--ink);margin:0;text-align:center">
-						Sign in
-					</h1>
-					<p style="font-size:16.5px;color:var(--warm-body);text-align:center;margin:12px 0 28px;line-height:1.55">
+					<h1 class="m-0 text-center text-[30px] font-extrabold tracking-[-0.02em] text-ink">Sign in</h1>
+					<p class="mt-3 mb-7 text-center text-[16.5px] leading-[1.55] text-warm-body">
 						Enter your email — we’ll send you a secure sign-in link.
 					</p>
 
 					<form id="magic-link-form" data-next={next}>
-						<div class="field-input field-input--big" style="display:flex;align-items:center;gap:10px">
-							<Icon name="mail" size={18} class="text-[var(--warm-muted)]" />
+						<div class="field-input field-input--big flex items-center gap-[10px]">
+							<Icon name="mail" size={18} class="text-warm-muted" />
 							<input
 								type="email"
 								name="email"
 								required
 								autocomplete="email"
 								placeholder="you@example.com"
-								style="flex:1;background:transparent;border:none;outline:none;font-size:18px;color:var(--ink)"
+								class="flex-1 border-none bg-transparent text-[18px] text-ink outline-none"
 							/>
 						</div>
-						<div style="margin-top:16px">
+						<div class="mt-4">
 							<Button type="submit" full size="lg" iconRight="arrow-right">Send sign-in link</Button>
 						</div>
 					</form>
 
-					<div
-						style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:22px;color:var(--warm-muted);font-size:14px"
-					>
+					<div class="mt-[22px] flex items-center justify-center gap-2 text-sm text-warm-muted">
 						<Icon name="lock" size={15} />No password. The link is valid for 15 minutes.
 					</div>
-					<p id="status" style="margin-top:14px;min-height:1.25rem;text-align:center;font-size:14px;color:var(--warm-body)"></p>
+					<p id="status" class="mt-[14px] min-h-[1.25rem] text-center text-sm text-warm-body"></p>
 				</div>
 
 				<div
 					id="login-success-card"
-					style="display:none;background:#fff;border-radius:var(--r-2xl);padding:44px 34px;text-align:center;border:1px solid var(--cream-line);box-shadow:var(--sh-cream-lg);animation:popIn .3s both"
+					class="hidden rounded-2xl border border-cream-line bg-white p-[44px_34px] text-center shadow-cream-lg [animation:popIn_.3s_both]"
 				>
 					<div
-						style="width:72px;height:72px;border-radius:999px;background:var(--peach);margin:0 auto 20px;display:flex;align-items:center;justify-content:center;color:var(--orange-700)"
+						class="mx-auto mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-full bg-peach text-orange-deep"
 					>
 						<Icon name="mail" size={34} stroke={1.8} />
 					</div>
-					<h1 style="font-size:27px;font-weight:800;color:var(--ink);margin:0">Check your inbox</h1>
-					<p style="font-size:16.5px;color:var(--warm-body);margin:12px 0 26px;line-height:1.6">
-						We’ve sent a sign-in link to<br /><strong id="login-email" style="color:var(--ink)">you@example.com</strong>
+					<h1 class="m-0 text-[27px] font-extrabold text-ink">Check your inbox</h1>
+					<p class="mt-3 mb-[26px] text-[16.5px] leading-[1.6] text-warm-body">
+						We’ve sent a sign-in link to<br /><strong id="login-email" class="text-ink">you@example.com</strong>
 					</p>
-					<a
-						id="login-retry"
-						href="#"
-						style="color:var(--orange-700);font-size:14.5px;font-weight:600;cursor:pointer"
-					>Use a different email</a>
+					<a id="login-retry" href="#" class="cursor-pointer text-[14.5px] font-semibold text-orange-deep">Use a different email</a>
 				</div>
 			</div>
 		</div>

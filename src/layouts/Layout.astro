@@ -1,19 +1,28 @@
 ---
 import '../styles/global.css';
+import { localeFromPath, localisePath, commonText, type Locale } from '../lib/i18n'
 
 interface Props {
 	title?: string;
 	description?: string;
+	locale?: Locale;
+	showLanguageSwitch?: boolean;
 }
 
+const path = Astro.url.pathname
 const {
 	title = 'appelsin — live event photos',
 	description = 'Guests scan a QR code, upload photos from their phone, and the photos appear live on the big screen.',
+	locale = localeFromPath(path),
+	// Hide the switcher on app dashboard and on the photo wall (display).
+	showLanguageSwitch = !path.startsWith('/app') && !path.startsWith('/en/app') && !path.startsWith('/display') && !path.startsWith('/en/display'),
 } = Astro.props;
+const otherLocale = locale === 'da' ? 'en' : 'da'
+const languageHref = localisePath(path, otherLocale)
 ---
 
 <!doctype html>
-<html lang="en" style="background-color: #071952">
+<html lang={locale} style="background-color: #071952">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -22,9 +31,139 @@ const {
 		<meta name="generator" content={Astro.generator} />
 		<meta name="description" content={description} />
 		<meta name="robots" content="noindex" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@400;600&family=Playfair+Display:wght@400;500;700&display=swap"
+			rel="stylesheet"
+		/>
 		<title>{title}</title>
 	</head>
 	<body class="min-h-screen bg-[#071952] text-zinc-100 antialiased">
 		<slot />
+		{
+			showLanguageSwitch && (
+				<a
+					href={languageHref}
+					class="fixed bottom-4 right-4 z-40 rounded-full border border-white/15 bg-zinc-950/80 px-3 py-1.5 text-xs font-medium text-zinc-200 shadow-lg backdrop-blur transition hover:bg-zinc-900 hover:text-white"
+					aria-label={`Switch language to ${commonText[otherLocale].languageName}`}
+				>
+					{commonText[locale].switchLanguage}
+				</a>
+			)
+		}
+		<script is:inline>
+			(() => {
+				if (window.AppDialog) return
+
+				const closeOnEscape = (event) => {
+					if (event.key === 'Escape') {
+						document.querySelector('[data-app-dialog-cancel]')?.click()
+					}
+				}
+
+				const show = (options) =>
+					new Promise((resolve) => {
+						const previousActive = document.activeElement
+						const overlay = document.createElement('div')
+						overlay.className = 'app-dialog-overlay'
+
+						const panel = document.createElement('section')
+						panel.className = 'app-dialog-panel'
+						panel.setAttribute('role', 'dialog')
+						panel.setAttribute('aria-modal', 'true')
+						panel.setAttribute('aria-labelledby', 'app-dialog-title')
+
+						const title = document.createElement('h2')
+						title.id = 'app-dialog-title'
+						title.className = 'app-dialog-title'
+						title.textContent = options.title
+						panel.append(title)
+
+						if (options.message) {
+							const message = document.createElement('p')
+							message.className = 'app-dialog-message'
+							message.textContent = options.message
+							panel.append(message)
+						}
+
+						let input
+						if (options.input) {
+							const label = document.createElement('label')
+							label.className = 'app-dialog-label'
+							label.textContent = options.input.label
+							input = document.createElement('input')
+							input.className = 'app-dialog-input'
+							input.type = 'text'
+							input.value = options.input.defaultValue || ''
+							if (options.input.maxLength) input.maxLength = options.input.maxLength
+							label.append(input)
+							panel.append(label)
+						}
+
+						const actions = document.createElement('div')
+						actions.className = 'app-dialog-actions'
+
+						const cancel = document.createElement('button')
+						cancel.type = 'button'
+						cancel.className = 'app-dialog-button app-dialog-button-secondary'
+						cancel.textContent = options.cancelText || 'Cancel'
+						cancel.setAttribute('data-app-dialog-cancel', '')
+
+						const confirm = document.createElement('button')
+						confirm.type = 'button'
+						confirm.className = options.danger
+							? 'app-dialog-button app-dialog-button-danger'
+							: 'app-dialog-button app-dialog-button-primary'
+						confirm.textContent = options.confirmText || 'OK'
+
+						const cleanup = (result) => {
+							document.removeEventListener('keydown', closeOnEscape)
+							overlay.remove()
+							if (previousActive && 'focus' in previousActive) previousActive.focus()
+							resolve(result)
+						}
+
+						cancel.addEventListener('click', () => cleanup({ confirmed: false }))
+						confirm.addEventListener('click', () => {
+							cleanup({ confirmed: true, value: input?.value.trim() })
+						})
+						overlay.addEventListener('click', (event) => {
+							if (event.target === overlay) cleanup({ confirmed: false })
+						})
+
+						if (!options.hideCancel) actions.append(cancel)
+						actions.append(confirm)
+						panel.append(actions)
+						overlay.append(panel)
+						document.body.append(overlay)
+						document.addEventListener('keydown', closeOnEscape)
+
+						requestAnimationFrame(() => {
+							if (input) {
+								input.focus()
+								input.select()
+							} else {
+								confirm.focus()
+							}
+						})
+					})
+
+				window.AppDialog = {
+					async confirm(options) {
+						const result = await show(options)
+						return result.confirmed
+					},
+					async prompt(options) {
+						const result = await show(options)
+						if (!result.confirmed) return null
+						return result.value || ''
+					},
+					async alert(options) {
+						await show({ ...options, hideCancel: true })
+					},
+				}
+			})()
+		</script>
 	</body>
 </html>

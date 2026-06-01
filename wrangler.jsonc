@@ -5,20 +5,31 @@
 	//   wrangler r2 bucket create appelsin-io-photos
 	//   wrangler kv namespace create SHORT_CODE_CACHE
 	// then replace the `id`/`database_id`/`bucket_name` values below.
-
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"compatibility_date": "2026-05-12",
-	"compatibility_flags": ["global_fetch_strictly_public", "nodejs_compat"],
+	"compatibility_flags": [
+		"global_fetch_strictly_public",
+		"nodejs_compat"
+	],
 	"name": "appelsin-io",
 	"main": "./src/worker-entry.ts",
 	"assets": {
 		"directory": "./dist",
 		"binding": "ASSETS"
 	},
+	"routes": [
+		{
+			"pattern": "appelsin.io",
+			"custom_domain": true
+		},
+		{
+			"pattern": "www.appelsin.io",
+			"custom_domain": true
+		}
+	],
 	"observability": {
 		"enabled": true
 	},
-
 	"d1_databases": [
 		{
 			"binding": "DB",
@@ -27,7 +38,6 @@
 			"migrations_dir": "./drizzle/migrations"
 		}
 	],
-
 	"r2_buckets": [
 		{
 			"binding": "PHOTOS_BUCKET",
@@ -35,7 +45,6 @@
 			"jurisdiction": "eu"
 		}
 	],
-
 	// KV bindings deferred to when we use them:
 	// - SHORT_CODE_CACHE: edge cache for `short_code -> event_id` lookup
 	// (Astro's Cloudflare adapter auto-injects a SESSION KV binding for the
@@ -44,29 +53,36 @@
 	// "kv_namespaces": [
 	//   { "binding": "SHORT_CODE_CACHE", "id": "REPLACE_ME_AFTER_kv_namespace_create" }
 	// ],
-
 	// Durable Object: one EventChannel instance per event (keyed by event_id),
 	// fans out new-photo notifications to subscribed display WebSockets.
 	// Class lives in ./src/worker-entry.ts. SQLite-backed DO (modern, cheaper).
 	"durable_objects": {
 		"bindings": [
-			{ "name": "EVENT_CHANNEL", "class_name": "EventChannel" }
+			{
+				"name": "EVENT_CHANNEL",
+				"class_name": "EventChannel"
+			}
 		]
 	},
 	"migrations": [
-		{ "tag": "v1", "new_sqlite_classes": ["EventChannel"] }
+		{
+			"tag": "v1",
+			"new_sqlite_classes": [
+				"EventChannel"
+			]
+		}
 	],
-
 	// Non-secret vars. Secrets (STRIPE_SECRET_KEY, CF_IMAGES_API_TOKEN,
 	// BETTER_AUTH_SECRET, etc.) go via `wrangler secret put` for prod,
 	// and `.dev.vars` for local dev (gitignored).
 	"vars": {
 		"PUBLIC_APP_NAME": "appelsin",
-		"PUBLIC_APP_URL": "http://localhost:4321",
+		"PUBLIC_APP_URL": "https://appelsin.io",
 		"CF_IMAGES_ACCOUNT_ID": "3edb7cedc3d05f40c600f00b23a86d5e",
-		"CF_IMAGES_HASH": "bObE3dinkRmP29PaTvXV8g"
+		"CF_IMAGES_HASH": "bObE3dinkRmP29PaTvXV8g",
+		"CF_STREAM_ACCOUNT_ID": "3edb7cedc3d05f40c600f00b23a86d5e",
+		"CF_STREAM_CUSTOMER_DOMAIN": "customer-d29bigoyzkz4jkw7.cloudflarestream.com"
 	},
-
 	"triggers": {
 		"crons": [
 			// Retention cleanup: every hour, expire events past expires_at

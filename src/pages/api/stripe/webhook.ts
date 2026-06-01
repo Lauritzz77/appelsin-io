@@ -1,12 +1,11 @@
 import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/d1'
-import { eq } from 'drizzle-orm'
 import type Stripe from 'stripe'
 import * as schema from '../../../db/schema'
 import { createStripe } from '../../../lib/stripe'
-import { isTier } from '../../../lib/tiers'
 import { syncSubscriptionFromStripe } from '../../../lib/billing'
+import { activateEventFromPaidCheckoutSession } from '../../../lib/event-purchases'
 
 export const prerender = false
 
@@ -50,26 +49,7 @@ export const POST: APIRoute = async ({ request }) => {
 			}
 
 			// One-off event pass (payment mode).
-			const eventId = session.metadata?.eventId
-			const hostId = session.metadata?.hostId
-			const tier = session.metadata?.tier
-			if (eventId && hostId && isTier(tier)) {
-				await db
-					.update(schema.events)
-					.set({ status: 'live' })
-					.where(eq(schema.events.id, eventId))
-				// onConflictDoNothing on the unique stripe_session_id index makes
-				// this safe under Stripe's at-least-once retries.
-				await db
-					.insert(schema.eventPurchases)
-					.values({
-						hostId,
-						eventId,
-						stripeSessionId: session.id,
-						tier,
-					})
-					.onConflictDoNothing()
-			}
+			await activateEventFromPaidCheckoutSession(db, session)
 			break
 		}
 

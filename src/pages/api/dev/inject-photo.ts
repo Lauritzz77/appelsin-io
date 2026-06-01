@@ -41,8 +41,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
 	const payload: NewPhotoMessage = {
 		type: 'new-photo',
 		photoId,
+		mediaType: 'photo',
 		cfImagesId: null,
+		cfStreamUid: null,
+		durationSeconds: null,
 		createdAt: Date.now(),
+		uploaderName: null,
+		mediaWidth: null,
+		mediaHeight: null,
 	}
 	await stub.fetch(
 		new Request('https://do.local/notify', {

@@ -17,6 +17,7 @@ pnpm-debug.log*
 .env
 .env.*
 .dev.vars
+.prod.vars.json
 
 # Cloudflare Wrangler
 .wrangler/

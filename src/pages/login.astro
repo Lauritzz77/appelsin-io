@@ -1,18 +1,20 @@
 ---
+export const prerender = false
+
 import Layout from '../layouts/Layout.astro'
 
 const requested = Astro.url.searchParams.get('next')
-const next = requested && requested.startsWith('/') ? requested : '/app'
+const next = requested && requested.startsWith('/') ? requested : '/app/events/new'
 ---
 
-<Layout title="Sign in — appelsin">
+<Layout title="Log ind — appelsin" locale="da">
 	<main class="mx-auto max-w-md px-6 py-24">
 		<a href="/" class="mb-8 inline-block">
 			<img src="/logo.svg" alt="appelsin" width="80" height="80" class="-ml-1" />
 		</a>
-		<h1 class="mb-2 text-3xl font-semibold tracking-tight">Sign in</h1>
+		<h1 class="mb-2 text-3xl font-semibold tracking-tight">Log ind</h1>
 		<p class="mb-8 text-sm text-zinc-400">
-			Enter your email — we'll send you a sign-in link.
+			Skriv din email - vi sender dig et login-link.
 		</p>
 
 		<form id="magic-link-form" data-next={next} class="space-y-4">
@@ -21,14 +23,14 @@ const next = requested && requested.startsWith('/') ? requested : '/app'
 				name="email"
 				required
 				autocomplete="email"
-				placeholder="you@example.com"
+				placeholder="dig@example.com"
 				class="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:border-orange-500 focus:outline-none"
 			/>
 			<button
 				type="submit"
 				class="w-full rounded-md bg-orange-500 px-4 py-2 font-medium text-zinc-950 hover:bg-orange-400 disabled:opacity-50"
 			>
-				Send sign-in link
+				Send login-link
 			</button>
 		</form>
 
@@ -44,24 +46,25 @@ const next = requested && requested.startsWith('/') ? requested : '/app'
 	form.addEventListener('submit', async (e) => {
 		e.preventDefault()
 		const email = (form.elements.namedItem('email') as HTMLInputElement).value
-		const callbackURL = form.dataset.next || '/app'
+		const callbackURL = form.dataset.next || '/app/events/new'
+		const locale = document.documentElement.lang === 'da' ? 'da' : 'en'
 		button.disabled = true
-		status.textContent = 'Sending…'
+		status.textContent = 'Sender...'
 		try {
 			const res = await fetch('/api/auth/sign-in/magic-link', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ email, callbackURL }),
+				body: JSON.stringify({ email, callbackURL, metadata: { locale } }),
 			})
 			if (res.ok) {
-				status.textContent = 'Check your email (or the dev console in local dev) for the sign-in link.'
+				status.textContent = 'Tjek din email for login-linket.'
 			} else {
 				const txt = await res.text()
-				status.textContent = `Failed: ${txt}`
+				status.textContent = `Fejl: ${txt}`
 				button.disabled = false
 			}
 		} catch (err) {
-			status.textContent = `Network error: ${(err as Error).message}`
+			status.textContent = `Netværksfejl: ${(err as Error).message}`
 			button.disabled = false
 		}
 	})

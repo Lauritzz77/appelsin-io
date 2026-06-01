@@ -3,12 +3,14 @@
 // is null or unparseable. Free-tier events don't read this — they render
 // through PhotoCollage with locked appelsin branding instead.
 
-export type ThemeId = 'airy' | 'folk' | 'editorial'
 export type DensityId = 'small' | 'medium' | 'large'
+export type FontId = 'serif' | 'handwriting' | 'display'
 
 export type EventBranding = {
-	theme: ThemeId
+	background: string
+	text: string
 	density: DensityId
+	font: FontId
 	titleOverlay: {
 		enabled: boolean
 		line1: string
@@ -16,68 +18,114 @@ export type EventBranding = {
 	}
 }
 
-export type ThemePreset = {
-	id: ThemeId
+// Old theme IDs that may still be in `events.branding_json` from before the
+// background/text picker landed. parseBranding maps these back to colours so
+// existing events keep the look they had.
+const LEGACY_THEME_COLORS: Record<string, { background: string; text: string }> = {
+	airy: { background: '#faf6f1', text: '#2a2a2a' },
+	folk: { background: '#ece3d4', text: '#3b2a1d' },
+	editorial: { background: '#0f0f10', text: '#f4f1eb' },
+}
+
+export type FontPreset = {
+	id: FontId
 	label: string
-	background: string
-	text: string
-	accent: string
-	headingFont: string
-	swatches: string[]
+	// CSS font-family value. First name is the Google Font we load in
+	// Layout.astro; the rest are system fallbacks while the web font is
+	// fetching (or if the user is offline).
+	family: string
+	// Per-font tweaks for the title overlay headline. Bebas Neue ships only
+	// uppercase, so we force text-transform; Caveat is informal so we keep
+	// a normal weight; Playfair Display reads best at medium weight.
+	headlineWeight: number
+	headlineTransform: 'none' | 'uppercase'
+	headlineTracking: string
 }
 
-export const THEMES: Record<ThemeId, ThemePreset> = {
-	airy: {
-		id: 'airy',
-		label: 'Airy',
-		background: '#faf6f1',
-		text: '#2a2a2a',
-		accent: '#c8a96a',
-		headingFont: '"Cormorant Garamond", "Hoefler Text", Cambria, Georgia, serif',
-		swatches: ['#faf6f1', '#e9e2d6', '#c8a96a', '#7b6a4a', '#2a2a2a'],
+export const FONTS: Record<FontId, FontPreset> = {
+	serif: {
+		id: 'serif',
+		label: 'Serif',
+		family: '"Playfair Display", "Hoefler Text", Cambria, Georgia, serif',
+		headlineWeight: 500,
+		headlineTransform: 'none',
+		headlineTracking: 'normal',
 	},
-	folk: {
-		id: 'folk',
-		label: 'Folk',
-		background: '#ece3d4',
-		text: '#3b2a1d',
-		accent: '#8a5a3b',
-		headingFont: '"Caveat", "Brush Script MT", "Comic Sans MS", cursive',
-		swatches: ['#ece3d4', '#cdb89a', '#8a5a3b', '#5a3a26', '#3b2a1d'],
+	handwriting: {
+		id: 'handwriting',
+		label: 'Handwriting',
+		family: '"Caveat", "Brush Script MT", "Comic Sans MS", cursive',
+		headlineWeight: 600,
+		headlineTransform: 'none',
+		headlineTracking: 'normal',
 	},
-	editorial: {
-		id: 'editorial',
-		label: 'Editorial',
-		background: '#0f0f10',
-		text: '#f4f1eb',
-		accent: '#d4af37',
-		headingFont: '"Inter", system-ui, -apple-system, "Helvetica Neue", sans-serif',
-		swatches: ['#0f0f10', '#26252a', '#5b554b', '#d4af37', '#f4f1eb'],
+	display: {
+		id: 'display',
+		label: 'Display',
+		family: '"Bebas Neue", Impact, "Arial Narrow", sans-serif',
+		headlineWeight: 400,
+		headlineTransform: 'uppercase',
+		headlineTracking: '0.04em',
 	},
 }
 
-export const THEME_IDS = Object.keys(THEMES) as ThemeId[]
+export const FONT_IDS = Object.keys(FONTS) as FontId[]
+
+export type Lane = { leftVw: number; widthVw: number }
 
 export type DensityPreset = {
 	id: DensityId
 	label: string
-	cols: number
-	gap: string
+	lanes: readonly Lane[]
+	// Editor preview only — Tailwind grid classes for the static themed
+	// preview tile. Spelled out so Tailwind v4's scanner includes them.
+	previewGridClass: string
 }
 
-// Column counts target a 16:9 display at 1080p/4K — small fits ~60 tiles
-// without scrolling, large fits ~12 hero shots.
 export const DENSITIES: Record<DensityId, DensityPreset> = {
-	small: { id: 'small', label: 'Small', cols: 8, gap: '0.25rem' },
-	medium: { id: 'medium', label: 'Medium', cols: 5, gap: '0.75rem' },
-	large: { id: 'large', label: 'Large', cols: 3, gap: '1.5rem' },
+	small: {
+		id: 'small',
+		label: 'Small',
+		lanes: [
+			{ leftVw: 1,  widthVw: 14 },
+			{ leftVw: 16, widthVw: 16 },
+			{ leftVw: 33, widthVw: 14 },
+			{ leftVw: 48, widthVw: 17 },
+			{ leftVw: 66, widthVw: 14 },
+			{ leftVw: 81, widthVw: 18 },
+		],
+		previewGridClass: 'grid-cols-4 gap-1 md:grid-cols-6 lg:grid-cols-8',
+	},
+	medium: {
+		id: 'medium',
+		label: 'Medium',
+		lanes: [
+			{ leftVw: 1,  widthVw: 18 },
+			{ leftVw: 20, widthVw: 28 },
+			{ leftVw: 49, widthVw: 22 },
+			{ leftVw: 72, widthVw: 27 },
+		],
+		previewGridClass: 'grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5',
+	},
+	large: {
+		id: 'large',
+		label: 'Large',
+		lanes: [
+			{ leftVw: 1,  widthVw: 30 },
+			{ leftVw: 32, widthVw: 34 },
+			{ leftVw: 67, widthVw: 32 },
+		],
+		previewGridClass: 'grid-cols-2 gap-5 md:grid-cols-3',
+	},
 }
 
 export const DENSITY_IDS = Object.keys(DENSITIES) as DensityId[]
 
 export const DEFAULT_BRANDING: EventBranding = {
-	theme: 'editorial',
+	background: '#0f0f10',
+	text: '#f4f1eb',
 	density: 'medium',
+	font: 'serif',
 	titleOverlay: { enabled: false, line1: '', line2: '' },
 }
 
@@ -87,11 +135,20 @@ export function parseBranding(raw: string | null | undefined): EventBranding {
 	if (!raw) return DEFAULT_BRANDING
 	try {
 		const parsed = JSON.parse(raw) as Partial<EventBranding> & {
+			theme?: unknown
 			titleOverlay?: Partial<EventBranding['titleOverlay']>
 		}
+		const legacy =
+			typeof parsed.theme === 'string' ? LEGACY_THEME_COLORS[parsed.theme] : undefined
 		return {
-			theme: isThemeId(parsed.theme) ? parsed.theme : DEFAULT_BRANDING.theme,
+			background: isHexColor(parsed.background)
+				? parsed.background
+				: legacy?.background ?? DEFAULT_BRANDING.background,
+			text: isHexColor(parsed.text)
+				? parsed.text
+				: legacy?.text ?? DEFAULT_BRANDING.text,
 			density: isDensityId(parsed.density) ? parsed.density : DEFAULT_BRANDING.density,
+			font: isFontId(parsed.font) ? parsed.font : DEFAULT_BRANDING.font,
 			titleOverlay: {
 				enabled: Boolean(parsed.titleOverlay?.enabled),
 				line1: String(parsed.titleOverlay?.line1 ?? '').slice(0, 80),
@@ -103,25 +160,14 @@ export function parseBranding(raw: string | null | undefined): EventBranding {
 	}
 }
 
-export function isThemeId(value: unknown): value is ThemeId {
-	return typeof value === 'string' && value in THEMES
+export function isHexColor(value: unknown): value is string {
+	return typeof value === 'string' && /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)
 }
 
 export function isDensityId(value: unknown): value is DensityId {
 	return typeof value === 'string' && value in DENSITIES
 }
 
-// Build the CSS variable bag that PhotoWall reads. Kept here so the editor
-// and the live wall apply identical styles from identical inputs.
-export function brandingToCssVars(branding: EventBranding): Record<string, string> {
-	const theme = THEMES[branding.theme]
-	const density = DENSITIES[branding.density]
-	return {
-		'--wall-bg': theme.background,
-		'--wall-text': theme.text,
-		'--wall-accent': theme.accent,
-		'--wall-heading-font': theme.headingFont,
-		'--wall-cols': String(density.cols),
-		'--wall-gap': density.gap,
-	}
+export function isFontId(value: unknown): value is FontId {
+	return typeof value === 'string' && value in FONTS
 }

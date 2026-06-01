@@ -4,12 +4,27 @@ import { drizzle } from 'drizzle-orm/d1'
 import { eq, and } from 'drizzle-orm'
 import * as schema from '../../../../db/schema'
 import { createStripe } from '../../../../lib/stripe'
-import { TIERS, isTier } from '../../../../lib/tiers'
+import { TIERS, getTierPrice, isTier, type TierPriceLocale } from '../../../../lib/tiers'
 import { getOrCreateStripeCustomer } from '../../../../lib/billing'
 
 export const prerender = false
 
-export const POST: APIRoute = async ({ params, locals, redirect }) => {
+function checkoutLocale(request: Request): TierPriceLocale {
+	const referer = request.headers.get('referer')
+	if (!referer) return 'da'
+
+	try {
+		return new URL(referer).pathname.startsWith('/en/') ? 'en' : 'da'
+	} catch {
+		return 'da'
+	}
+}
+
+function returnPathPrefix(locale: TierPriceLocale): string {
+	return locale === 'en' ? '/en/app/events' : '/app/events'
+}
+
+export const POST: APIRoute = async ({ params, locals, redirect, request }) => {
 	const host = locals.host
 	if (!host) return new Response('Unauthorized', { status: 401 })
 
@@ -32,9 +47,12 @@ export const POST: APIRoute = async ({ params, locals, redirect }) => {
 	}
 
 	const tierConfig = TIERS[event.tier]
-	if (tierConfig.priceCents <= 0) {
+	const locale = checkoutLocale(request)
+	const tierPrice = getTierPrice(event.tier, locale)
+	if (tierPrice.priceCents <= 0) {
 		return new Response('Free tier does not require checkout', { status: 400 })
 	}
+	const pathPrefix = returnPathPrefix(locale)
 
 	const stripe = createStripe(env)
 	const customerId = await getOrCreateStripeCustomer(stripe, db, host)
@@ -44,12 +62,12 @@ export const POST: APIRoute = async ({ params, locals, redirect }) => {
 		line_items: [
 			{
 				price_data: {
-					currency: tierConfig.currency,
+					currency: tierPrice.currency,
 					product_data: {
 						name: `${tierConfig.label} event — ${event.name}`,
 						description: `Up to ${tierConfig.photoCap.toLocaleString('en-IE')} photos, ${tierConfig.retentionDays}-day retention.`,
 					},
-					unit_amount: tierConfig.priceCents,
+					unit_amount: tierPrice.priceCents,
 				},
 				quantity: 1,
 			},
@@ -59,8 +77,8 @@ export const POST: APIRoute = async ({ params, locals, redirect }) => {
 			hostId: host.id,
 			tier: event.tier,
 		},
-		success_url: `${env.PUBLIC_APP_URL}/app/events/${event.id}?paid=1`,
-		cancel_url: `${env.PUBLIC_APP_URL}/app/events/${event.id}`,
+		success_url: `${env.PUBLIC_APP_URL}${pathPrefix}/${event.id}?paid=1&session_id={CHECKOUT_SESSION_ID}`,
+		cancel_url: `${env.PUBLIC_APP_URL}${pathPrefix}/${event.id}`,
 	})
 
 	if (!session.url) {

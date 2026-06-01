@@ -1,0 +1,282 @@
+---
+export const prerender = false
+
+import Layout from '../../layouts/Layout.astro'
+import type { Tier as TierId } from '../../lib/tiers'
+
+const isSignedIn = !!Astro.locals.host
+
+type Card = {
+	id: TierId
+	name: string
+	price: string
+	priceNote: string
+	tagline: string
+	features: string[]
+	cta: string
+	featured?: boolean
+}
+
+const tiers: Card[] = [
+	{
+		id: 'free',
+		name: 'Free',
+		price: '€0',
+		priceNote: 'Only 1 active event',
+		tagline: 'Try it at a real event — no card required.',
+		features: [
+			'20 photos per event',
+			'7-day retention',
+			'Download photos after the event',
+		],
+		cta: 'Start free',
+	},
+	{
+		id: 'basic',
+		name: 'Basic',
+		price: '€33',
+		priceNote: 'per event',
+		tagline: 'Clean, branded, ready for a wedding.',
+		features: [
+			'500 photos per event',
+			'15-day retention',
+			'Custom event title and accent colour',
+			'Download photos after the event',
+		],
+		cta: 'Choose Basic',
+		featured: true,
+	},
+	{
+		id: 'gold',
+		name: 'Gold',
+		price: '€67',
+		priceNote: 'per event',
+		tagline: 'For big nights and long parties.',
+		features: [
+			'2,000 photos per event',
+			'1-month retention',
+			'Custom event title and accent colour',
+			'15-second video clips',
+			'Download photos after the event',
+		],
+		cta: 'Choose Gold',
+	},
+]
+
+function ctaHref(tier: TierId): string {
+	const dest = `/en/app/events/new?tier=${tier}`
+	if (isSignedIn) return dest
+	return `/en/login?next=${encodeURIComponent(dest)}`
+}
+---
+
+<Layout
+	title="appelsin — live event photos"
+	description="Guests scan a QR code, upload photos from their phone, and the photos appear live on the big screen."
+	locale="en"
+>
+	<div class="splash" aria-hidden="true">
+		<img src="/logo.svg" alt="" width="320" height="320" />
+	</div>
+
+	<div class="page flex min-h-screen flex-col">
+		<header class="flex items-start justify-between px-8 pt-6 sm:px-12 sm:pt-8">
+			<a href="/en" aria-label="appelsin.io home" class="block">
+				<img src="/logo.svg" alt="appelsin.io" width="110" height="110" />
+			</a>
+			<nav class="flex items-center gap-3 pt-4 text-sm sm:text-base">
+				<a href={isSignedIn ? '/en/app' : '/en/login'} class="text-zinc-100 hover:text-orange-400">
+					{isSignedIn ? 'Your events' : 'Sign in'}
+				</a>
+				<span class="text-zinc-400">|</span>
+				<a href="/en/terms" class="text-zinc-100 hover:text-orange-400">Terms</a>
+				<span class="text-zinc-400">|</span>
+				<a href="/en/privacy" class="text-zinc-100 hover:text-orange-400">Privacy</a>
+			</nav>
+		</header>
+
+		<main class="flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-12 sm:px-12">
+			<div class="mb-12 max-w-2xl text-center">
+				<h1 class="text-3xl font-semibold text-white sm:text-4xl">
+					Live event photos on the big screen.
+				</h1>
+				<p class="mt-4 text-base text-zinc-300 sm:text-lg">
+					Guests scan a QR code, upload from their phone, and photos appear live on the screen. Pick a plan per event — no subscriptions.
+				</p>
+			</div>
+
+			<div class="grid w-full max-w-5xl grid-cols-1 gap-6 sm:grid-cols-3">
+				{tiers.map((tier) => (
+					<div
+						class:list={[
+							'flex flex-col rounded-md p-6 transition',
+							tier.featured
+								? 'bg-orange-500/20 ring-1 ring-orange-400/60'
+								: 'bg-white/10 hover:bg-white/15',
+						]}
+					>
+						<div class="flex items-baseline justify-between">
+							<h2 class="text-xl font-semibold text-white">{tier.name}</h2>
+							{tier.featured && (
+								<span class="rounded-full bg-orange-400/90 px-2 py-0.5 text-xs font-medium text-zinc-900">
+									Most popular
+								</span>
+							)}
+						</div>
+
+						<div class="mt-4 flex items-baseline gap-2">
+							<span class="text-4xl font-semibold text-white">{tier.price}</span>
+							<span class="text-sm text-zinc-300">{tier.priceNote}</span>
+						</div>
+
+						<p class="mt-2 text-sm text-zinc-300">{tier.tagline}</p>
+
+						<ul class="mt-6 space-y-2 text-sm text-zinc-100">
+							{tier.features.map((feature) => (
+								<li class="flex gap-2">
+									<span class="text-orange-400" aria-hidden="true">✓</span>
+									<span>{feature}</span>
+								</li>
+							))}
+						</ul>
+
+						<a
+							href={ctaHref(tier.id)}
+							class:list={[
+								'mt-8 inline-flex justify-center rounded-md px-4 py-2 text-sm font-medium transition',
+								tier.featured
+									? 'bg-orange-400 text-zinc-900 hover:bg-orange-300'
+									: 'bg-white/10 text-white hover:bg-white/20',
+							]}
+						>
+							{tier.cta} →
+						</a>
+					</div>
+				))}
+			</div>
+
+			<p class="mt-10 text-sm text-zinc-400">
+				All plans include the QR pack, live photo wall, moderation queue and EU hosting.
+			</p>
+
+			<section class="mt-24 w-full max-w-3xl">
+				<h2 class="mb-8 text-center text-2xl font-semibold text-white">Frequently asked questions</h2>
+				<div class="space-y-2">
+					<details class="group rounded-md bg-white/5 transition open:bg-white/10">
+						<summary class="cursor-pointer list-none px-5 py-4 text-base font-medium text-white">
+							<span class="mr-2 inline-block text-orange-400 group-open:rotate-45 transition">+</span>
+							Do my guests need to download an app?
+						</summary>
+						<p class="px-5 pb-4 text-sm leading-6 text-zinc-300">
+							No. Guests scan the QR code with their phone's camera and upload directly in the browser. No app, no account.
+						</p>
+					</details>
+
+					<details class="group rounded-md bg-white/5 transition open:bg-white/10">
+						<summary class="cursor-pointer list-none px-5 py-4 text-base font-medium text-white">
+							<span class="mr-2 inline-block text-orange-400 group-open:rotate-45 transition">+</span>
+							What happens if we hit the photo limit?
+						</summary>
+						<p class="px-5 pb-4 text-sm leading-6 text-zinc-300">
+							New uploads are blocked once the cap is reached. You can delete rejected photos to free up slots, or upgrade the event to a bigger plan. Free is meant for testing — pick Basic or Gold for the real party.
+						</p>
+					</details>
+
+					<details class="group rounded-md bg-white/5 transition open:bg-white/10">
+						<summary class="cursor-pointer list-none px-5 py-4 text-base font-medium text-white">
+							<span class="mr-2 inline-block text-orange-400 group-open:rotate-45 transition">+</span>
+							What happens to the photos after the event?
+						</summary>
+						<p class="px-5 pb-4 text-sm leading-6 text-zinc-300">
+							The event automatically marks as ended 2 days after the event date. You and your guests (with email) get a download link by email. Photos are then kept for 7-30 days depending on plan, after which everything is deleted automatically.
+						</p>
+					</details>
+
+					<details class="group rounded-md bg-white/5 transition open:bg-white/10">
+						<summary class="cursor-pointer list-none px-5 py-4 text-base font-medium text-white">
+							<span class="mr-2 inline-block text-orange-400 group-open:rotate-45 transition">+</span>
+							Can I show the photo wall on an iPad or laptop?
+						</summary>
+						<p class="px-5 pb-4 text-sm leading-6 text-zinc-300">
+							Yes. The photo wall is just a URL — open it in any browser on a big screen, iPad, laptop, or projector. Photos update live as guests upload.
+						</p>
+					</details>
+
+					<details class="group rounded-md bg-white/5 transition open:bg-white/10">
+						<summary class="cursor-pointer list-none px-5 py-4 text-base font-medium text-white">
+							<span class="mr-2 inline-block text-orange-400 group-open:rotate-45 transition">+</span>
+							Can I delete a photo that shouldn't be shown?
+						</summary>
+						<p class="px-5 pb-4 text-sm leading-6 text-zinc-300">
+							Yes. You can delete individual photos from the event dashboard — they disappear from the photo wall instantly and aren't included in the final download.
+						</p>
+					</details>
+
+					<details class="group rounded-md bg-white/5 transition open:bg-white/10">
+						<summary class="cursor-pointer list-none px-5 py-4 text-base font-medium text-white">
+							<span class="mr-2 inline-block text-orange-400 group-open:rotate-45 transition">+</span>
+							When can guests start uploading?
+						</summary>
+						<p class="px-5 pb-4 text-sm leading-6 text-zinc-300">
+							The upload window opens 24 hours before the event date, so anyone scanning the QR the night before can get going. The event stays live until 2 days after the event date to catch late-night and morning-after photos.
+						</p>
+					</details>
+
+					<details class="group rounded-md bg-white/5 transition open:bg-white/10">
+						<summary class="cursor-pointer list-none px-5 py-4 text-base font-medium text-white">
+							<span class="mr-2 inline-block text-orange-400 group-open:rotate-45 transition">+</span>
+							Where are the photos stored?
+						</summary>
+						<p class="px-5 pb-4 text-sm leading-6 text-zinc-300">
+							All photos are hosted on Cloudflare's EU infrastructure. We don't sell your data and won't use it for anything other than serving and delivering the photos during the agreed retention period.
+						</p>
+					</details>
+				</div>
+			</section>
+		</main>
+	</div>
+</Layout>
+
+<style>
+	.splash {
+		position: fixed;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		background: #071952;
+		z-index: 50;
+		animation: splash-out 0.5s ease-in 0.8s forwards;
+	}
+
+	.page {
+		opacity: 0;
+		animation: page-in 0.5s ease-out 1s forwards;
+	}
+
+	@keyframes splash-out {
+		to {
+			opacity: 0;
+			visibility: hidden;
+			pointer-events: none;
+		}
+	}
+
+	@keyframes page-in {
+		to {
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.splash {
+			animation: none;
+			opacity: 0;
+			visibility: hidden;
+			pointer-events: none;
+		}
+		.page {
+			opacity: 1;
+			animation: none;
+		}
+	}
+</style>

@@ -1,0 +1,71 @@
+---
+export const prerender = false
+
+import Layout from '../../layouts/Layout.astro'
+
+const requested = Astro.url.searchParams.get('next')
+const next = requested && requested.startsWith('/') ? requested : '/en/app/events/new'
+---
+
+<Layout title="Sign in — appelsin" locale="en">
+	<main class="mx-auto max-w-md px-6 py-24">
+		<a href="/en" class="mb-8 inline-block">
+			<img src="/logo.svg" alt="appelsin" width="80" height="80" class="-ml-1" />
+		</a>
+		<h1 class="mb-2 text-3xl font-semibold tracking-tight">Sign in</h1>
+		<p class="mb-8 text-sm text-zinc-400">
+			Enter your email — we’ll send you a sign-in link.
+		</p>
+
+		<form id="magic-link-form" data-next={next} class="space-y-4">
+			<input
+				type="email"
+				name="email"
+				required
+				autocomplete="email"
+				placeholder="you@example.com"
+				class="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:border-orange-500 focus:outline-none"
+			/>
+			<button
+				type="submit"
+				class="w-full rounded-md bg-orange-500 px-4 py-2 font-medium text-zinc-950 hover:bg-orange-400 disabled:opacity-50"
+			>
+				Send sign-in link
+			</button>
+		</form>
+
+		<p id="status" class="mt-4 min-h-[1.25rem] text-sm text-zinc-400"></p>
+	</main>
+</Layout>
+
+<script>
+	const form = document.getElementById('magic-link-form') as HTMLFormElement
+	const status = document.getElementById('status') as HTMLParagraphElement
+	const button = form.querySelector('button') as HTMLButtonElement
+
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault()
+		const email = (form.elements.namedItem('email') as HTMLInputElement).value
+		const callbackURL = form.dataset.next || '/en/app/events/new'
+		const locale = document.documentElement.lang === 'da' ? 'da' : 'en'
+		button.disabled = true
+		status.textContent = 'Sending...'
+		try {
+			const res = await fetch('/api/auth/sign-in/magic-link', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email, callbackURL, metadata: { locale } }),
+			})
+			if (res.ok) {
+				status.textContent = 'Check your email for the sign-in link.'
+			} else {
+				const txt = await res.text()
+				status.textContent = `Error: ${txt}`
+				button.disabled = false
+			}
+		} catch (err) {
+			status.textContent = `Network error: ${(err as Error).message}`
+			button.disabled = false
+		}
+	})
+</script>

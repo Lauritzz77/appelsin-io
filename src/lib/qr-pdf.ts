@@ -1,16 +1,42 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 import QRCode from 'qrcode'
+import type { Locale } from './i18n'
 
 type EventForPdf = {
 	name: string
 	shortCode: string
 	eventDate: Date | null
+	hasBigScreen: boolean
 }
 
-// A4 in PDF points.
 const A4_W = 595.276
 const A4_H = 841.89
 const ORANGE = rgb(1, 0.635, 0.16) // #FFA229 — appelsin brand orange
+
+const copy = {
+	en: {
+		titleSuffix: 'QR pack',
+		signHeader: 'SHARE YOUR PHOTOS',
+		step1: '1.  Open your camera and scan this code',
+		step2WithScreen: '2.  Take photos — they appear on the big screen',
+		step2NoScreen: '2.  Take photos — they’re shared with everyone at the event',
+		step3: '3.  Or type this short code into appelsin.io/e',
+		cardSmallTop: 'Share your',
+		cardLargeMid: 'photos',
+		cardScanLine: 'Scan, or visit:',
+	},
+	da: {
+		titleSuffix: 'QR-pakke',
+		signHeader: 'DEL JERES BILLEDER',
+		step1: '1.  Åbn kameraet og scan koden',
+		step2WithScreen: '2.  Tag billeder — de vises på storskærmen',
+		step2NoScreen: '2.  Tag billeder — de deles med alle til eventet',
+		step3: '3.  Eller indtast koden på appelsin.io/e',
+		cardSmallTop: 'Del jeres',
+		cardLargeMid: 'billeder',
+		cardScanLine: 'Scan, eller besøg:',
+	},
+} satisfies Record<Locale, Record<string, string>>
 
 function drawQR(
 	page: ReturnType<PDFDocument['addPage']>,
@@ -38,21 +64,25 @@ function drawQR(
 	}
 }
 
-export async function generateQRPdf(event: EventForPdf, baseUrl: string): Promise<Uint8Array> {
+export async function generateQRPdf(
+	event: EventForPdf,
+	baseUrl: string,
+	locale: Locale = 'da'
+): Promise<Uint8Array> {
+	const t = copy[locale]
 	const guestUrl = `${baseUrl}/e/${event.shortCode}`
 
 	const pdf = await PDFDocument.create()
-	pdf.setTitle(`${event.name} — QR pack`)
+	pdf.setTitle(`${event.name} — ${t.titleSuffix}`)
 	pdf.setCreator('appelsin.io')
 
 	const bold = await pdf.embedFont(StandardFonts.HelveticaBold)
 	const regular = await pdf.embedFont(StandardFonts.Helvetica)
 	const mono = await pdf.embedFont(StandardFonts.Courier)
 
-	// ─── Page 1: big sign for the venue entrance / DJ booth ──────────────────
 	const sign = pdf.addPage([A4_W, A4_H])
 
-	sign.drawText('SHARE YOUR PHOTOS', {
+	sign.drawText(t.signHeader, {
 		x: 50,
 		y: A4_H - 90,
 		font: bold,
@@ -72,24 +102,14 @@ export async function generateQRPdf(event: EventForPdf, baseUrl: string): Promis
 	const qrSize = 360
 	drawQR(sign, guestUrl, (A4_W - qrSize) / 2, A4_H - 200 - qrSize, qrSize)
 
-	sign.drawText('1.  Open your camera and scan this code', {
-		x: 60,
-		y: 230,
-		font: regular,
-		size: 14,
-	})
-	sign.drawText('2.  Take photos — they appear on the big screen', {
+	sign.drawText(t.step1, { x: 60, y: 230, font: regular, size: 14 })
+	sign.drawText(event.hasBigScreen ? t.step2WithScreen : t.step2NoScreen, {
 		x: 60,
 		y: 205,
 		font: regular,
 		size: 14,
 	})
-	sign.drawText('3.  Or type this short code into appelsin.io/e', {
-		x: 60,
-		y: 180,
-		font: regular,
-		size: 14,
-	})
+	sign.drawText(t.step3, { x: 60, y: 180, font: regular, size: 14 })
 
 	sign.drawText(event.shortCode, {
 		x: (A4_W - mono.widthOfTextAtSize(event.shortCode, 56)) / 2,
@@ -107,7 +127,6 @@ export async function generateQRPdf(event: EventForPdf, baseUrl: string): Promis
 		color: rgb(0.5, 0.5, 0.5),
 	})
 
-	// ─── Page 2: 8 table cards (2 cols × 4 rows) to cut apart ────────────────
 	const cards = pdf.addPage([A4_W, A4_H])
 
 	const margin = 30
@@ -136,20 +155,20 @@ export async function generateQRPdf(event: EventForPdf, baseUrl: string): Promis
 			drawQR(cards, guestUrl, cx + 18, cy + (cardH - cardQrSize) / 2, cardQrSize)
 
 			const textX = cx + 18 + cardQrSize + 14
-			cards.drawText('Share your', {
+			cards.drawText(t.cardSmallTop, {
 				x: textX,
 				y: cy + cardH - 38,
 				font: regular,
 				size: 9,
 				color: rgb(0.4, 0.4, 0.4),
 			})
-			cards.drawText('photos', {
+			cards.drawText(t.cardLargeMid, {
 				x: textX,
 				y: cy + cardH - 60,
 				font: bold,
 				size: 18,
 			})
-			cards.drawText('Scan, or visit:', {
+			cards.drawText(t.cardScanLine, {
 				x: textX,
 				y: cy + cardH - 90,
 				font: regular,

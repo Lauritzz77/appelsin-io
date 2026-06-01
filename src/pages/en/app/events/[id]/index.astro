@@ -1,0 +1,654 @@
+---
+import { env } from 'cloudflare:workers'
+import { drizzle } from 'drizzle-orm/d1'
+import { eq, and, ne, desc, sql } from 'drizzle-orm'
+import * as schema from '../../../../../db/schema'
+import Layout from '../../../../../layouts/Layout.astro'
+import { TIERS, isTier, formatPrice } from '../../../../../lib/tiers'
+import { streamThumbnailUrl } from '../../../../../lib/media'
+import { createStripe } from '../../../../../lib/stripe'
+import { activateEventFromPaidCheckoutSession } from '../../../../../lib/event-purchases'
+
+export const prerender = false
+
+const host = Astro.locals.host!
+const id = Astro.params.id!
+
+const db = drizzle(env.DB, { schema })
+let [event] = await db
+	.select()
+	.from(schema.events)
+	.where(and(eq(schema.events.id, id), eq(schema.events.hostId, host.id)))
+	.limit(1)
+
+if (!event) return new Response('Event not found', { status: 404 })
+
+const justPaid = Astro.url.searchParams.get('paid') === '1'
+const activateError = Astro.url.searchParams.get('activate_error')
+const checkoutSessionId = Astro.url.searchParams.get('session_id')
+if (event.status === 'draft' && justPaid && checkoutSessionId?.startsWith('cs_')) {
+	const stripe = createStripe(env)
+	const session = await stripe.checkout.sessions.retrieve(checkoutSessionId)
+	await activateEventFromPaidCheckoutSession(db, session, { eventId: event.id, hostId: host.id })
+	;[event] = await db
+		.select()
+		.from(schema.events)
+		.where(and(eq(schema.events.id, id), eq(schema.events.hostId, host.id)))
+		.limit(1)
+	if (!event) return new Response('Event not found', { status: 404 })
+}
+
+const recentPhotos = await db
+	.select({
+		id: schema.photos.id,
+		cfImagesId: schema.photos.cfImagesId,
+		cfStreamUid: schema.photos.cfStreamUid,
+		mediaType: schema.photos.mediaType,
+		durationSeconds: schema.photos.durationSeconds,
+		createdAt: schema.photos.createdAt,
+	})
+	.from(schema.photos)
+	.where(eq(schema.photos.eventId, event.id))
+	.orderBy(desc(schema.photos.createdAt))
+	.limit(12)
+
+const [{ photoCount }] = await db
+	.select({ photoCount: sql<number>`count(*)` })
+	.from(schema.photos)
+	.where(and(eq(schema.photos.eventId, event.id), ne(schema.photos.status, 'rejected')))
+
+const statusColor =
+	event.status === 'live'
+		? 'bg-green-500/15 text-green-400 border-green-500/30'
+		: event.status === 'ended'
+			? 'bg-zinc-700/40 text-zinc-300 border-zinc-600/40'
+			: 'bg-orange-500/15 text-orange-400 border-orange-500/30'
+
+const statusLabel = event.status
+
+const guestUrl = `${env.PUBLIC_APP_URL}/e/${event.shortCode}`
+
+const tier = isTier(event.tier) ? event.tier : 'free'
+const tierConfig = TIERS[tier]
+const isPaidTier = tierConfig.priceCents > 0
+
+const capPct = Math.min(100, Math.round((photoCount / tierConfig.photoCap) * 100))
+const capWarn = photoCount >= tierConfig.photoCap
+const capNear = !capWarn && photoCount >= tierConfig.photoCap * 0.8
+
+const uploadOpensAt = new Date(event.eventDate.getTime() - 24 * 60 * 60 * 1000)
+const uploadClosesAt = new Date(event.eventDate.getTime() + 2 * 24 * 60 * 60 * 1000)
+const fmtDateTime = (d: Date) =>
+	d.toLocaleString('en-IE', { dateStyle: 'long', timeStyle: 'short' })
+---
+
+<Layout title={`${event.name} — appelsin`} locale="en">
+	<main class="mx-auto max-w-3xl px-6 py-8">
+		<a href="/en/app" class="mb-4 inline-block text-sm text-zinc-400 hover:text-zinc-200"
+			>← All events</a
+		>
+
+		<header class="mb-8 flex items-start justify-between gap-4">
+			<div>
+				<h1 class="text-3xl font-semibold tracking-tight">{event.name}</h1>
+				<p class="mt-2 text-sm text-zinc-400">
+					{new Date(event.eventDate).toLocaleDateString('en-IE', { dateStyle: 'long' })}
+				</p>
+				<p class="mt-1 text-xs text-zinc-500">
+					{tierConfig.label} plan · up to {tierConfig.photoCap.toLocaleString('en-IE')} uploads · {tierConfig.retentionDays}-day retention
+				</p>
+			</div>
+			<span class={`rounded-full border px-3 py-1 text-xs font-medium ${statusColor}`}>
+				{statusLabel}
+			</span>
+		</header>
+
+		{
+			justPaid && event.status === 'live' && (
+				<div class="mb-6 rounded-md border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300">
+					Payment confirmed. Your event is live.
+				</div>
+			)
+		}
+		{
+			justPaid && event.status === 'draft' && (
+				<div class="mb-6 rounded-md border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-sm text-orange-300">
+					Payment received — finalising. Refresh in a moment if the status doesn’t flip to <em>live</em>.
+				</div>
+			)
+		}
+		{
+			activateError === 'free_limit' && (
+				<div class="mb-6 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+					You already have an active free event. End it first, or upgrade this one to Basic or Gold.
+				</div>
+			)
+		}
+
+		{
+			(event.status === 'draft' || event.status === 'live') && (
+				<section class="mb-8 rounded-2xl border border-orange-500/30 bg-orange-500/5 p-6">
+					<h2 class="mb-3 text-sm font-medium text-orange-300">How to run your event</h2>
+					<ol class="space-y-2.5 text-sm text-zinc-300">
+						{event.status === 'draft' && isPaidTier && (
+							<li class="flex gap-3">
+								<span class="font-mono text-xs text-orange-400 mt-0.5">1.</span>
+								<span><strong class="text-zinc-100">Pay for the event</strong> below — Stripe payment activates the event and opens uploads.</span>
+							</li>
+						)}
+						<li class="flex gap-3">
+							<span class="font-mono text-xs text-orange-400 mt-0.5">{event.status === 'draft' && isPaidTier ? '2.' : '1.'}</span>
+							<span><strong class="text-zinc-100">Download the QR pack</strong> as a PDF and print it. One A4 sign + 8 table cards with code <code class="font-mono text-orange-400">{event.shortCode}</code>.</span>
+						</li>
+						{event.hasBigScreen && (
+							<li class="flex gap-3">
+								<span class="font-mono text-xs text-orange-400 mt-0.5">{event.status === 'draft' && isPaidTier ? '3.' : '2.'}</span>
+								<span><strong class="text-zinc-100">Open the photo wall</strong> on the big screen at the venue — visit <span class="font-mono text-xs text-orange-300">{env.PUBLIC_APP_URL}/display/{event.shortCode}</span> in a browser.</span>
+							</li>
+						)}
+						<li class="flex gap-3">
+							<span class="font-mono text-xs text-orange-400 mt-0.5">{(event.status === 'draft' && isPaidTier ? 1 : 0) + (event.hasBigScreen ? 3 : 2)}.</span>
+							<span><strong class="text-zinc-100">Guests scan the QR</strong> and upload from their phone. Photos appear instantly{event.hasBigScreen ? ' on the screen' : ' in the collection'}.</span>
+						</li>
+						<li class="flex gap-3">
+							<span class="font-mono text-xs text-orange-400 mt-0.5">{(event.status === 'draft' && isPaidTier ? 1 : 0) + (event.hasBigScreen ? 4 : 3)}.</span>
+							<span><strong class="text-zinc-100">After the event</strong> download everything as a zip — you and guests with email get a download link.</span>
+						</li>
+					</ol>
+				</section>
+			)
+		}
+
+		<section class="mb-8 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
+			<form id="rename-event-form" class="space-y-3" data-event-id={event.id}>
+				<label class="block">
+					<span class="mb-2 block text-sm font-medium text-zinc-300">Event name</span>
+					<input
+						id="event-name-input"
+						name="name"
+						type="text"
+						value={event.name}
+						maxlength="80"
+						class="w-full rounded-md border border-zinc-700 bg-zinc-950 px-4 py-3 text-base focus:border-orange-500 focus:outline-none"
+						required
+					/>
+				</label>
+				<div class="flex items-center gap-3">
+					<button
+						id="rename-event-btn"
+						type="submit"
+						class="rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-500"
+					>
+						Save name
+					</button>
+					<p id="rename-event-status" class="text-sm text-zinc-500" aria-live="polite"></p>
+				</div>
+			</form>
+		</section>
+
+		<section class="mb-8 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
+			<p class="text-sm text-zinc-400">Short code</p>
+			<p class="mt-1 font-mono text-4xl tracking-widest text-orange-400">{event.shortCode}</p>
+			<p class="mt-3 text-xs text-zinc-500">
+				Guest URL: <span class="font-mono">{guestUrl}</span>
+			</p>
+		</section>
+
+		<section class="mb-8 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
+			<label class="flex items-start justify-between gap-4">
+				<span class="flex-1">
+					<span class="block text-sm font-medium text-zinc-200">Big screen at the event</span>
+					<span class="mt-1 block text-xs text-zinc-500">
+						Turn off if photos won’t be shown on a screen at the venue. Changes the QR pack copy.
+					</span>
+				</span>
+				<input
+					id="has-big-screen-toggle"
+					type="checkbox"
+					checked={event.hasBigScreen}
+					data-event-id={event.id}
+					class="mt-1 h-5 w-5 accent-orange-500"
+				/>
+			</label>
+			<p id="has-big-screen-status" class="mt-2 text-xs text-zinc-500" aria-live="polite"></p>
+		</section>
+
+		<section class="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+			<a
+				href={`/en/app/events/${event.id}/qr.pdf`}
+				class="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 hover:bg-zinc-900"
+			>
+				<span>
+					<span class="block font-medium">Download QR pack</span>
+					<span class="text-xs text-zinc-500">A4 sign + 8 table cards (PDF)</span>
+				</span>
+				<span class="text-zinc-500">↓</span>
+			</a>
+
+			{
+				photoCount > 0 && (
+					<a
+						href={`/api/events/${event.id}/download`}
+						class="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 hover:bg-zinc-900"
+					>
+						<span>
+							<span class="block font-medium">Download all photos</span>
+							<span class="text-xs text-zinc-500">
+								ZIP with {photoCount.toLocaleString('en-IE')} originals
+							</span>
+						</span>
+						<span class="text-zinc-500">↓</span>
+					</a>
+				)
+			}
+
+			{
+				isPaidTier && (
+					<a
+						href={`/en/app/events/${event.id}/style`}
+						class="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 hover:bg-zinc-900"
+					>
+						<span>
+							<span class="block font-medium">Customise photo wall</span>
+							<span class="text-xs text-zinc-500">Theme, density, title overlay</span>
+						</span>
+						<span class="text-zinc-500">→</span>
+					</a>
+				)
+			}
+
+			{
+				event.status === 'live' ? (
+					<a
+						href={`/display/${event.shortCode}`}
+						target="_blank"
+						class="flex items-center justify-between rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-3 hover:bg-orange-500/20"
+					>
+						<span>
+							<span class="block font-medium text-orange-300">Open photo wall</span>
+							<span class="text-xs text-orange-400/70">Big-screen view ↗</span>
+						</span>
+					</a>
+				) : event.status === 'draft' && isPaidTier ? (
+					<form method="post" action={`/api/events/${event.id}/checkout`} class="contents">
+						<button
+							type="submit"
+							class="flex items-center justify-between rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-3 hover:bg-orange-500/20"
+						>
+							<span class="text-left">
+								<span class="block font-medium text-orange-300">
+									Pay {formatPrice(tier, 'en')} & activate
+								</span>
+								<span class="text-xs text-orange-400/70">{tierConfig.label} — opens Stripe checkout</span>
+							</span>
+						</button>
+					</form>
+				) : null
+			}
+		</section>
+
+		<section class="mb-8 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
+			<h2 class="mb-3 text-sm font-medium text-zinc-300">Timeline</h2>
+			<ul class="mb-5 space-y-1.5 text-xs leading-5 text-zinc-500">
+				<li>• Uploads <strong class="text-zinc-300">open {fmtDateTime(uploadOpensAt)}</strong> — 24 hours before the event date, so anyone who scans the QR the night before can get started.</li>
+				<li>• The event <strong class="text-zinc-300">closes {fmtDateTime(uploadClosesAt)}</strong> — 2 days after the event date, catching late-night and morning-after photos.</li>
+				<li>• Then it's marked <em>ended</em>. Photos are retained for {tierConfig.retentionDays} days, after which everything is deleted automatically.</li>
+			</ul>
+			<div class="flex items-baseline justify-between text-sm">
+				<span class="text-zinc-300">Uploads</span>
+				<span
+					class:list={[
+						'tabular-nums',
+						capWarn ? 'text-red-400' : capNear ? 'text-orange-400' : 'text-zinc-100',
+					]}
+				>
+					{photoCount.toLocaleString('en-IE')} / {tierConfig.photoCap.toLocaleString('en-IE')}
+				</span>
+			</div>
+			<div class="mt-3 h-2 overflow-hidden rounded-full bg-zinc-800">
+				<div
+					class:list={[
+						'h-full rounded-full transition-all',
+						capWarn ? 'bg-red-500' : capNear ? 'bg-orange-500' : 'bg-zinc-500',
+					]}
+					style={`width: ${capPct}%`}
+				></div>
+			</div>
+			{capWarn && (
+				<p class="mt-3 text-xs text-red-400">
+					This event has reached its upload limit. New uploads are blocked until you upgrade the tier or rejected photos free up slots.
+				</p>
+			)}
+			{capNear && (
+				<p class="mt-3 text-xs text-orange-400">
+					Approaching the upload limit — consider upgrading before the cap is hit.
+				</p>
+			)}
+		</section>
+
+		<section
+			id="recent-uploads"
+			data-event-code={event.shortCode}
+			data-event-status={event.status}
+			data-cf-images-hash={env.CF_IMAGES_HASH}
+			data-cf-stream-domain={env.CF_STREAM_CUSTOMER_DOMAIN}
+		>
+			<h2 class="mb-4 text-sm font-medium text-zinc-400">
+				Recent uploads <span id="recent-uploads-count">{recentPhotos.length === 0 ? '(none yet)' : `(${recentPhotos.length})`}</span>
+			</h2>
+			<div id="photo-grid" class="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+				{recentPhotos.map((p) => (
+					<div class="photo-tile group relative aspect-square overflow-hidden rounded bg-zinc-900" data-photo-id={p.id}>
+						{p.mediaType === 'video' && p.cfStreamUid ? (
+							<>
+								<img
+									src={streamThumbnailUrl(p.cfStreamUid, env.CF_STREAM_CUSTOMER_DOMAIN)}
+									alt=""
+									class="h-full w-full object-cover"
+								/>
+								<span class="absolute bottom-1 left-1 rounded bg-zinc-950/80 px-1.5 py-0.5 text-[10px] font-medium text-white">
+									{p.durationSeconds ? `${p.durationSeconds}s` : 'Video'}
+								</span>
+							</>
+						) : p.cfImagesId ? (
+							<img
+								src={`https://imagedelivery.net/${env.CF_IMAGES_HASH}/${p.cfImagesId}/public`}
+								alt=""
+								class="h-full w-full object-cover"
+							/>
+						) : (
+							<div class="flex h-full w-full items-center justify-center text-xs text-zinc-600">
+								no image
+							</div>
+						)}
+						<button
+							type="button"
+							class="photo-delete absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950/70 text-zinc-100 opacity-0 transition group-hover:opacity-100 focus:opacity-100 hover:bg-red-600 hover:text-white"
+							data-photo-id={p.id}
+							aria-label="Delete photo"
+							title="Delete photo"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+								class="h-4 w-4"
+								aria-hidden="true"
+							>
+								<path
+									fill-rule="evenodd"
+									d="M8.75 1.5A1.5 1.5 0 0 0 7.25 3v.5H4.5a.75.75 0 0 0 0 1.5h.443l.737 11.05A2 2 0 0 0 7.676 18h4.648a2 2 0 0 0 1.996-1.95L15.057 5h.443a.75.75 0 0 0 0-1.5H12.75V3a1.5 1.5 0 0 0-1.5-1.5h-2.5Zm2 2.5V3h-2v1h2ZM8.5 7.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Z"
+									clip-rule="evenodd"
+								/>
+							</svg>
+						</button>
+					</div>
+				))}
+			</div>
+		</section>
+
+		<section class="mt-10 rounded-2xl border border-red-500/20 bg-red-500/5 p-6">
+			<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<div>
+					<h2 class="text-sm font-medium text-red-200">Delete event</h2>
+					<p class="mt-1 text-sm text-zinc-400">
+						Deletes this event and all uploaded photos. This cannot be undone.
+					</p>
+				</div>
+				<button
+					id="delete-event-btn"
+					type="button"
+					class="rounded-md border border-red-500/40 px-4 py-2 text-sm font-medium text-red-200 transition hover:bg-red-500/15 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:cursor-wait disabled:opacity-50"
+					data-event-id={event.id}
+					data-event-name={event.name}
+				>
+					Delete event
+				</button>
+			</div>
+		</section>
+	</main>
+</Layout>
+
+<script>
+	document.getElementById('has-big-screen-toggle')?.addEventListener('change', async (event) => {
+		const input = event.currentTarget as HTMLInputElement
+		const status = document.getElementById('has-big-screen-status')
+		const id = input.dataset.eventId
+		if (!id) return
+
+		const desired = input.checked
+		input.disabled = true
+		if (status) {
+			status.textContent = 'Saving...'
+			status.className = 'mt-2 text-xs text-zinc-500'
+		}
+
+		try {
+			const res = await fetch(`/api/events/${id}`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ hasBigScreen: desired }),
+			})
+			if (!res.ok) throw new Error(`Could not save (${res.status})`)
+			if (status) {
+				status.textContent = 'Saved'
+				status.className = 'mt-2 text-xs text-green-400'
+			}
+		} catch (e) {
+			input.checked = !desired
+			if (status) {
+				status.textContent = (e as Error).message
+				status.className = 'mt-2 text-xs text-red-400'
+			}
+		} finally {
+			input.disabled = false
+		}
+	})
+
+	document.getElementById('rename-event-form')?.addEventListener('submit', async (event) => {
+		event.preventDefault()
+		const form = event.currentTarget as HTMLFormElement
+		const input = document.getElementById('event-name-input') as HTMLInputElement | null
+		const button = document.getElementById('rename-event-btn') as HTMLButtonElement | null
+		const status = document.getElementById('rename-event-status')
+		const name = input?.value.trim()
+		if (!name || !button) return
+
+		button.disabled = true
+		if (status) {
+			status.textContent = 'Saving...'
+			status.className = 'text-sm text-zinc-500'
+		}
+
+		try {
+			const id = form.dataset.eventId
+			if (!id) throw new Error('Missing event id')
+			const res = await fetch(`/api/events/${id}`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ name }),
+			})
+			const payload = (await res.json().catch(() => null)) as { name?: string } | null
+			if (!res.ok) throw new Error(`Rename failed (${res.status})`)
+			document.title = `${payload?.name || name} — appelsin`
+			const heading = document.querySelector('h1')
+			if (heading) heading.textContent = payload?.name || name
+			if (status) {
+				status.textContent = 'Saved'
+				status.className = 'text-sm text-green-400'
+			}
+		} catch (e) {
+			if (status) {
+				status.textContent = (e as Error).message
+				status.className = 'text-sm text-red-400'
+			}
+		} finally {
+			button.disabled = false
+		}
+	})
+
+	document.getElementById('delete-event-btn')?.addEventListener('click', async (event) => {
+		const btn = event.currentTarget as HTMLButtonElement
+		const id = btn.dataset.eventId
+		const name = btn.dataset.eventName || 'this event'
+		if (!id) return
+		const confirmed = await window.AppDialog.confirm({
+			title: `Delete "${name}"?`,
+			message: 'This deletes the event and all uploaded photos. This cannot be undone.',
+			confirmText: 'Delete event',
+			danger: true,
+		})
+		if (!confirmed) return
+
+		btn.disabled = true
+		try {
+			const res = await fetch(`/api/events/${id}`, { method: 'DELETE' })
+			if (!res.ok) throw new Error(`Delete failed (${res.status})`)
+			window.location.href = '/en/app'
+		} catch (e) {
+			btn.disabled = false
+			await window.AppDialog.alert({
+				title: 'Could not delete event',
+				message: (e as Error).message,
+			})
+		}
+	})
+
+	const recentUploads = document.getElementById('recent-uploads')
+	const photoGrid = document.getElementById('photo-grid')
+	const recentCount = document.getElementById('recent-uploads-count')
+	const eventCode = recentUploads?.dataset.eventCode
+	const eventStatus = recentUploads?.dataset.eventStatus
+	const cfImagesHash = recentUploads?.dataset.cfImagesHash ?? ''
+	const cfStreamDomain = recentUploads?.dataset.cfStreamDomain ?? ''
+
+	function updateRecentCount() {
+		if (!recentCount || !photoGrid) return
+		const n = photoGrid.children.length
+		recentCount.textContent = n === 0 ? '(none yet)' : `(${n})`
+	}
+
+	function streamThumbUrl(uid: string): string {
+		return `https://${cfStreamDomain}/${uid}/thumbnails/thumbnail.jpg?time=1s&height=600`
+	}
+
+	type IncomingPhoto = {
+		photoId: string
+		mediaType: 'photo' | 'video'
+		cfImagesId: string | null
+		cfStreamUid: string | null
+		durationSeconds: number | null
+	}
+
+	function buildTile(p: IncomingPhoto): HTMLDivElement {
+		const tile = document.createElement('div')
+		tile.className =
+			'photo-tile group relative aspect-square overflow-hidden rounded bg-zinc-900'
+		tile.dataset.photoId = p.photoId
+
+		let inner = ''
+		if (p.mediaType === 'video' && p.cfStreamUid) {
+			inner += `<img src="${streamThumbUrl(p.cfStreamUid)}" alt="" class="h-full w-full object-cover" />`
+			inner += `<span class="absolute bottom-1 left-1 rounded bg-zinc-950/80 px-1.5 py-0.5 text-[10px] font-medium text-white">${
+				p.durationSeconds ? `${p.durationSeconds}s` : 'Video'
+			}</span>`
+		} else if (p.cfImagesId) {
+			inner += `<img src="https://imagedelivery.net/${cfImagesHash}/${p.cfImagesId}/public" alt="" class="h-full w-full object-cover" />`
+		} else {
+			inner += `<div class="flex h-full w-full items-center justify-center text-xs text-zinc-600">no image</div>`
+		}
+		inner += `<button
+			type="button"
+			class="photo-delete absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950/70 text-zinc-100 opacity-0 transition group-hover:opacity-100 focus:opacity-100 hover:bg-red-600 hover:text-white"
+			data-photo-id="${p.photoId}"
+			aria-label="Delete photo"
+			title="Delete photo"
+		><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4" aria-hidden="true"><path fill-rule="evenodd" d="M8.75 1.5A1.5 1.5 0 0 0 7.25 3v.5H4.5a.75.75 0 0 0 0 1.5h.443l.737 11.05A2 2 0 0 0 7.676 18h4.648a2 2 0 0 0 1.996-1.95L15.057 5h.443a.75.75 0 0 0 0-1.5H12.75V3a1.5 1.5 0 0 0-1.5-1.5h-2.5Zm2 2.5V3h-2v1h2ZM8.5 7.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" /></svg></button>`
+		tile.innerHTML = inner
+		return tile
+	}
+
+	function addPhoto(p: IncomingPhoto) {
+		if (!photoGrid) return
+		if (photoGrid.querySelector(`[data-photo-id="${p.photoId}"]`)) return
+		photoGrid.prepend(buildTile(p))
+		updateRecentCount()
+	}
+
+	function removePhotoTile(photoId: string) {
+		if (!photoGrid) return
+		const tile = photoGrid.querySelector(`[data-photo-id="${photoId}"]`)
+		tile?.remove()
+		updateRecentCount()
+	}
+
+	photoGrid?.addEventListener('click', async (e) => {
+		const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.photo-delete')
+		if (!btn) return
+		const id = btn.dataset.photoId
+		if (!id) return
+		const confirmed = await window.AppDialog.confirm({
+			title: 'Delete photo?',
+			message: 'This removes the photo from the event. This cannot be undone.',
+			confirmText: 'Delete photo',
+			danger: true,
+		})
+		if (!confirmed) return
+
+		const tile = btn.closest<HTMLElement>('.photo-tile')
+		tile?.classList.add('opacity-50', 'pointer-events-none')
+
+		try {
+			const res = await fetch(`/api/photos/${id}`, { method: 'DELETE' })
+			if (!res.ok) throw new Error(`Delete failed (${res.status})`)
+			removePhotoTile(id)
+		} catch (err) {
+			tile?.classList.remove('opacity-50', 'pointer-events-none')
+			await window.AppDialog.alert({
+				title: 'Could not delete photo',
+				message: (err as Error).message,
+			})
+		}
+	})
+
+	if (eventStatus === 'live' && eventCode) {
+		let socket: WebSocket | null = null
+		let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+
+		function connect() {
+			const proto = location.protocol === 'https:' ? 'wss' : 'ws'
+			socket = new WebSocket(`${proto}://${location.host}/api/display-socket?code=${eventCode}`)
+			socket.onopen = () => socket?.send(JSON.stringify({ type: 'hello' }))
+			socket.onmessage = (e) => {
+				try {
+					const msg = JSON.parse(e.data) as
+						| { type: 'new-photo' } & IncomingPhoto
+						| { type: 'delete-photo'; photoId: string }
+						| { type: 'ack' }
+					if (msg.type === 'new-photo') {
+						addPhoto({
+							photoId: msg.photoId,
+							mediaType: msg.mediaType,
+							cfImagesId: msg.cfImagesId,
+							cfStreamUid: msg.cfStreamUid,
+							durationSeconds: msg.durationSeconds,
+						})
+					} else if (msg.type === 'delete-photo') {
+						removePhotoTile(msg.photoId)
+					}
+				} catch {
+					/* ignore malformed */
+				}
+			}
+			socket.onclose = () => {
+				reconnectTimer = setTimeout(connect, 2000)
+			}
+			socket.onerror = () => socket?.close()
+		}
+		connect()
+		window.addEventListener('beforeunload', () => {
+			if (reconnectTimer) clearTimeout(reconnectTimer)
+			socket?.close()
+		})
+	}
+</script>

@@ -3,6 +3,7 @@ import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/d1'
 import { eq } from 'drizzle-orm'
 import * as schema from '../../db/schema'
+import { verifyGuest } from '../../lib/guest-auth'
 import type { NewPhotoMessage } from '../../worker-entry'
 
 export const prerender = false
@@ -12,7 +13,7 @@ export const prerender = false
 // display clients receive the new photo over WebSocket.
 export const POST: APIRoute = async ({ request }) => {
 	const body = (await request.json().catch(() => null)) as
-		| { code?: string; cfImagesId?: string }
+		| { code?: string; cfImagesId?: string; userId?: string; token?: string }
 		| null
 	const code = body?.code?.toUpperCase()
 	const cfImagesId = body?.cfImagesId
@@ -29,10 +30,14 @@ export const POST: APIRoute = async ({ request }) => {
 	if (!event) return new Response('Event not found', { status: 404 })
 	if (event.status !== 'live') return new Response('Event not live', { status: 403 })
 
+	const user = await verifyGuest(db, event.id, body?.userId, body?.token)
+	if (!user) return new Response('Unauthorized', { status: 401 })
+
 	const photoId = crypto.randomUUID()
 	await db.insert(schema.photos).values({
 		id: photoId,
 		eventId: event.id,
+		eventUserId: user.id,
 		cfImagesId,
 		status: 'approved',
 	})
@@ -42,8 +47,14 @@ export const POST: APIRoute = async ({ request }) => {
 	const payload: NewPhotoMessage = {
 		type: 'new-photo',
 		photoId,
+		mediaType: 'photo',
 		cfImagesId,
+		cfStreamUid: null,
+		durationSeconds: null,
 		createdAt: Date.now(),
+		uploaderName: user.name ?? null,
+		mediaWidth: null,
+		mediaHeight: null,
 	}
 	await stub.fetch(
 		new Request('https://do.local/notify', {

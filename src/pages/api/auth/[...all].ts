@@ -5,7 +5,7 @@ import { createAuth } from '../../../lib/auth'
 export const prerender = false
 
 const handler: APIRoute = ({ request }) => {
-	const auth = createAuth(env)
+	const auth = createAuth(env, request.url)
 	return auth.handler(request)
 }
 

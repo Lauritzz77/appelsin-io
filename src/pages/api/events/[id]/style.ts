@@ -6,8 +6,9 @@ import * as schema from '../../../../db/schema'
 import { TIERS, isTier } from '../../../../lib/tiers'
 import {
 	parseBranding,
-	isThemeId,
+	isHexColor,
 	isDensityId,
+	isFontId,
 	type EventBranding,
 } from '../../../../lib/branding'
 
@@ -45,12 +46,16 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
 	} | null
 	if (!body) return new Response('Invalid JSON', { status: 400 })
 
-	if (!isThemeId(body.theme)) return new Response('Invalid theme', { status: 400 })
+	if (!isHexColor(body.background)) return new Response('Invalid background color', { status: 400 })
+	if (!isHexColor(body.text)) return new Response('Invalid text color', { status: 400 })
 	if (!isDensityId(body.density)) return new Response('Invalid density', { status: 400 })
+	if (!isFontId(body.font)) return new Response('Invalid font', { status: 400 })
 
 	const normalised: EventBranding = {
-		theme: body.theme,
+		background: body.background,
+		text: body.text,
 		density: body.density,
+		font: body.font,
 		titleOverlay: {
 			enabled: Boolean(body.titleOverlay?.enabled),
 			line1: String(body.titleOverlay?.line1 ?? '').slice(0, 80),

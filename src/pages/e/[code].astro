@@ -18,19 +18,19 @@ const [event] = await db
 	.where(eq(schema.events.shortCode, code))
 	.limit(1)
 
-if (!event) return new Response('Event not found', { status: 404 })
+if (!event) return new Response('Event ikke fundet', { status: 404 })
 if (event.status !== 'live') {
-	return new Response('Event not live yet', { status: 403 })
+	return new Response('Eventet er ikke live endnu', { status: 403 })
 }
 ---
 
-<Layout title={`Share photos — ${event.name}`}>
+<Layout title={`Del billeder — ${event.name}`} locale="da">
 	<main class="mx-auto max-w-md px-6 py-12">
 		<img src="/logo.svg" alt="appelsin" width="64" height="64" class="mb-6 -ml-1" />
 		<h1 class="mb-2 text-2xl font-semibold tracking-tight">{event.name}</h1>
 		<p class="mb-8 text-sm text-zinc-400">
-			Snap a photo. It'll appear on the big screen at the event.
+			Tag et billede{event.tier === 'gold' ? ' eller et kort videoklip' : ''}. Det vises på storskærmen til eventet.
 		</p>
-		<GuestUpload client:only="vue" code={code} />
+		<GuestUpload client:only="vue" code={code} cfImagesHash={env.CF_IMAGES_HASH} streamDomain={env.CF_STREAM_CUSTOMER_DOMAIN} locale="da" allowVideo={event.tier === 'gold'} />
 	</main>
 </Layout>

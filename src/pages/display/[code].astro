@@ -1,7 +1,7 @@
 ---
 import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/d1'
-import { eq, and, desc } from 'drizzle-orm'
+import { eq, and, desc, notInArray, sql } from 'drizzle-orm'
 import QRCode from 'qrcode'
 import * as schema from '../../db/schema'
 import Layout from '../../layouts/Layout.astro'
@@ -24,46 +24,91 @@ const [event] = await db
 
 if (!event) return Astro.redirect('/')
 
-const initialPhotosRaw = await db
+// 10 newest + 10 random from the rest, so the wall always shows a mix of
+// fresh uploads and older highlights instead of just looping the last few.
+// Left-join eventUsers so each tile can show the uploader's name overlay.
+const newestRaw = await db
 	.select({
 		id: schema.photos.id,
 		cfImagesId: schema.photos.cfImagesId,
+		cfStreamUid: schema.photos.cfStreamUid,
+		mediaType: schema.photos.mediaType,
+		durationSeconds: schema.photos.durationSeconds,
 		createdAt: schema.photos.createdAt,
+		uploaderName: schema.eventUsers.name,
+		mediaWidth: schema.photos.mediaWidth,
+		mediaHeight: schema.photos.mediaHeight,
 	})
 	.from(schema.photos)
+	.leftJoin(schema.eventUsers, eq(schema.photos.eventUserId, schema.eventUsers.id))
 	.where(and(eq(schema.photos.eventId, event.id), eq(schema.photos.status, 'approved')))
 	.orderBy(desc(schema.photos.createdAt))
-	.limit(50)
+	.limit(10)
 
-const initialPhotos = initialPhotosRaw.map((p) => ({
+const newestIds = newestRaw.map((p) => p.id)
+const randomRaw =
+	newestIds.length > 0
+		? await db
+				.select({
+					id: schema.photos.id,
+					cfImagesId: schema.photos.cfImagesId,
+					cfStreamUid: schema.photos.cfStreamUid,
+					mediaType: schema.photos.mediaType,
+					durationSeconds: schema.photos.durationSeconds,
+					createdAt: schema.photos.createdAt,
+					uploaderName: schema.eventUsers.name,
+					mediaWidth: schema.photos.mediaWidth,
+					mediaHeight: schema.photos.mediaHeight,
+				})
+				.from(schema.photos)
+				.leftJoin(schema.eventUsers, eq(schema.photos.eventUserId, schema.eventUsers.id))
+				.where(
+					and(
+						eq(schema.photos.eventId, event.id),
+						eq(schema.photos.status, 'approved'),
+						notInArray(schema.photos.id, newestIds)
+					)
+				)
+				.orderBy(sql`random()`)
+				.limit(10)
+		: []
+
+const mapPhoto = (p: typeof newestRaw[number]) => ({
 	id: p.id,
 	cfImagesId: p.cfImagesId,
+	cfStreamUid: p.cfStreamUid,
+	mediaType: p.mediaType,
+	durationSeconds: p.durationSeconds,
 	createdAt: p.createdAt?.getTime() ?? 0,
-}))
+	uploaderName: p.uploaderName ?? null,
+	mediaWidth: p.mediaWidth ?? null,
+	mediaHeight: p.mediaHeight ?? null,
+})
+
+const newestMedia = newestRaw.map(mapPhoto)
+const randomMedia = randomRaw.map(mapPhoto)
+const initialPhotos = [
+	...newestMedia.filter((p) => p.mediaType === 'video'),
+	...newestMedia.filter((p) => p.mediaType !== 'video'),
+	...randomMedia,
+]
 
 const tier = isTier(event.tier) ? event.tier : 'free'
 const isFreeTier = tier === 'free'
+const isLive = event.status === 'live'
 const branding = parseBranding(event.brandingJson)
 
-// Free tier carries appelsin branding on the wall: logo top-left + a corner
-// QR that doubles as the guest upload link. High error-correction so the
-// centre can host a small logo overlay without breaking scannability.
-// SVG output (rather than toDataURL → PNG) — canvas/pngjs aren't available
-// in the Workers runtime, so the PNG path fails silently.
-let qrDataUrl = ''
-if (isFreeTier) {
-	const guestUrl = `${env.PUBLIC_APP_URL}/e/${event.shortCode}`
-	const qrSvg = await QRCode.toString(guestUrl, {
-		type: 'svg',
-		errorCorrectionLevel: 'H',
-		margin: 0,
-		color: { dark: '#071952', light: '#ffffff' },
-	})
-	qrDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(qrSvg)}`
-}
+const guestUrl = `${env.PUBLIC_APP_URL}/e/${event.shortCode}`
+const qrSvg = await QRCode.toString(guestUrl, {
+	type: 'svg',
+	errorCorrectionLevel: 'H',
+	margin: 0,
+	color: { dark: '#ffffff', light: '#07195200' },
+})
+const qrDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(qrSvg)}`
 ---
 
-<Layout title={`${event.name} — live`}>
+<Layout title={`${event.name} — live`} locale="da">
 	<main class="min-h-screen bg-[#071952]">
 		{
 			isFreeTier ? (
@@ -71,18 +116,31 @@ if (isFreeTier) {
 					client:only="vue"
 					code={code}
 					initialPhotos={initialPhotos}
-					cfImagesHash={env.CF_IMAGES_HASH}
+					cfImagesHash={env.CF_IMAGES_HASH} streamDomain={env.CF_STREAM_CUSTOMER_DOMAIN}
 					qrDataUrl={qrDataUrl}
+					isLive={isLive}
 				/>
 			) : (
-				<PhotoWall
-					client:only="vue"
-					code={code}
-					initialPhotos={initialPhotos}
-					cfImagesHash={env.CF_IMAGES_HASH}
-					branding={branding}
-				/>
+				<div class="wall-viewport">
+					<PhotoWall
+						client:only="vue"
+						code={code}
+						initialPhotos={initialPhotos}
+						cfImagesHash={env.CF_IMAGES_HASH} streamDomain={env.CF_STREAM_CUSTOMER_DOMAIN}
+						branding={branding}
+						qrDataUrl={qrDataUrl}
+						isLive={isLive}
+					/>
+				</div>
 			)
 		}
 	</main>
 </Layout>
+
+<style>
+	.wall-viewport {
+		width: 100vw;
+		height: 100vh;
+		container-type: size;
+	}
+</style>

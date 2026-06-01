@@ -76,17 +76,50 @@ export const events = sqliteTable(
 		retentionDays: integer('retention_days').notNull().default(7),
 		status: text('status', { enum: ['draft', 'live', 'ended'] }).notNull().default('draft'),
 		moderationMode: text('moderation_mode', { enum: ['open', 'queue'] }).notNull().default('queue'),
+		hasBigScreen: integer('has_big_screen', { mode: 'boolean' }).notNull().default(true),
 		brandingJson: text('branding_json'),
 		createdAt: integer('created_at', { mode: 'timestamp' })
 			.notNull()
 			.$defaultFn(() => new Date()),
 		expiresAt: integer('expires_at', { mode: 'timestamp' }),
+		endNotifiedAt: integer('end_notified_at', { mode: 'timestamp' }),
 	},
 	(t) => [
 		uniqueIndex('events_short_code_idx').on(t.shortCode),
 		index('events_host_id_idx').on(t.hostId),
 		index('events_status_idx').on(t.status),
 		index('events_expires_at_idx').on(t.expiresAt),
+	]
+)
+
+// One row per guest who has claimed a display name on an event. Name uniqueness
+// is per-event and case-insensitive: `name` keeps the original casing for
+// display, `nameLower` powers the unique index. `token` is the opaque secret
+// the guest's browser holds in localStorage; every authenticated guest call
+// must present it.
+export const eventUsers = sqliteTable(
+	'event_users',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		eventId: text('event_id')
+			.notNull()
+			.references(() => events.id, { onDelete: 'cascade' }),
+		name: text('name').notNull(),
+		nameLower: text('name_lower').notNull(),
+		// Lower-cased + trimmed. Used to email the guest a download link when
+		// the event ends. Nullable at the DB level so we can backfill old
+		// rows; the join endpoint requires it for new guests.
+		email: text('email'),
+		token: text('token').notNull(),
+		createdAt: integer('created_at', { mode: 'timestamp' })
+			.notNull()
+			.$defaultFn(() => new Date()),
+	},
+	(t) => [
+		index('event_users_event_id_idx').on(t.eventId),
+		uniqueIndex('event_users_event_name_idx').on(t.eventId, t.nameLower),
 	]
 )
 
@@ -99,7 +132,15 @@ export const photos = sqliteTable(
 		eventId: text('event_id')
 			.notNull()
 			.references(() => events.id, { onDelete: 'cascade' }),
+		eventUserId: text('event_user_id').references(() => eventUsers.id, {
+			onDelete: 'set null',
+		}),
 		cfImagesId: text('cf_images_id'),
+		cfStreamUid: text('cf_stream_uid'),
+		mediaType: text('media_type', { enum: ['photo', 'video'] }).notNull().default('photo'),
+		durationSeconds: integer('duration_seconds'),
+		mediaWidth: integer('media_width'),
+		mediaHeight: integer('media_height'),
 		r2OriginalKey: text('r2_original_key'),
 		uploaderFingerprint: text('uploader_fingerprint'),
 		caption: text('caption'),
@@ -114,6 +155,7 @@ export const photos = sqliteTable(
 	(t) => [
 		index('photos_event_id_idx').on(t.eventId),
 		index('photos_status_idx').on(t.status),
+		index('photos_event_user_id_idx').on(t.eventUserId),
 	]
 )
 

@@ -1,0 +1,36 @@
+---
+import { env } from 'cloudflare:workers'
+import { drizzle } from 'drizzle-orm/d1'
+import { eq } from 'drizzle-orm'
+import * as schema from '../../../db/schema'
+import Layout from '../../../layouts/Layout.astro'
+import GuestUpload from '../../../components/GuestUpload.vue'
+
+export const prerender = false
+
+const code = Astro.params.code?.toUpperCase()
+if (!code) return Astro.redirect('/en')
+
+const db = drizzle(env.DB, { schema })
+const [event] = await db
+	.select()
+	.from(schema.events)
+	.where(eq(schema.events.shortCode, code))
+	.limit(1)
+
+if (!event) return new Response('Event not found', { status: 404 })
+if (event.status !== 'live') {
+	return new Response('Event is not live yet', { status: 403 })
+}
+---
+
+<Layout title={`Share photos — ${event.name}`} locale="en">
+	<main class="mx-auto max-w-md px-6 py-12">
+		<img src="/logo.svg" alt="appelsin" width="64" height="64" class="mb-6 -ml-1" />
+		<h1 class="mb-2 text-2xl font-semibold tracking-tight">{event.name}</h1>
+		<p class="mb-8 text-sm text-zinc-400">
+			Take a photo{event.tier === 'gold' ? ' or a short video clip' : ''}. It will appear on the big screen at the event.
+		</p>
+		<GuestUpload client:only="vue" code={code} cfImagesHash={env.CF_IMAGES_HASH} streamDomain={env.CF_STREAM_CUSTOMER_DOMAIN} locale="en" allowVideo={event.tier === 'gold'} />
+	</main>
+</Layout>

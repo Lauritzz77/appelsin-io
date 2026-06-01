@@ -11,11 +11,22 @@ type ClientMessage = ClientHello
 export type NewPhotoMessage = {
 	type: 'new-photo'
 	photoId: string
+	mediaType: 'photo' | 'video'
 	cfImagesId: string | null
+	cfStreamUid: string | null
+	durationSeconds: number | null
 	createdAt: number
+	uploaderName: string | null
+	mediaWidth: number | null
+	mediaHeight: number | null
 }
 
-export type ServerMessage = NewPhotoMessage | { type: 'ack' }
+export type DeletePhotoMessage = {
+	type: 'delete-photo'
+	photoId: string
+}
+
+export type ServerMessage = NewPhotoMessage | DeletePhotoMessage | { type: 'ack' }
 
 export class EventChannel extends DurableObject<Cloudflare.Env> {
 	async fetch(request: Request): Promise<Response> {
@@ -32,7 +43,7 @@ export class EventChannel extends DurableObject<Cloudflare.Env> {
 		}
 
 		if (url.pathname === '/notify' && request.method === 'POST') {
-			const payload = (await request.json()) as NewPhotoMessage
+			const payload = (await request.json()) as NewPhotoMessage | DeletePhotoMessage
 			const body = JSON.stringify(payload)
 			let delivered = 0
 			for (const ws of this.ctx.getWebSockets()) {

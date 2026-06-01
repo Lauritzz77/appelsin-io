@@ -23,7 +23,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
 
 	if (!event) return new Response('Event not found', { status: 404 })
 
-	const pdfBytes = await generateQRPdf(event, env.PUBLIC_APP_URL)
+	const pdfBytes = await generateQRPdf(event, env.PUBLIC_APP_URL, 'da')
 
 	return new Response(pdfBytes as unknown as BodyInit, {
 		status: 200,

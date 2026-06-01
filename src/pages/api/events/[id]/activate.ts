@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/d1'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, ne } from 'drizzle-orm'
 import * as schema from '../../../../db/schema'
 import { TIERS, isTier } from '../../../../lib/tiers'
 
@@ -33,6 +33,23 @@ export const POST: APIRoute = async ({ params, locals, redirect }) => {
 	}
 	if (!isTier(event.tier) || TIERS[event.tier].priceCents > 0) {
 		return new Response('Paid tier — use checkout instead', { status: 402 })
+	}
+
+	// Free tier: only one live event per host at a time.
+	const [otherLiveFree] = await db
+		.select({ id: schema.events.id })
+		.from(schema.events)
+		.where(
+			and(
+				eq(schema.events.hostId, host.id),
+				eq(schema.events.tier, 'free'),
+				eq(schema.events.status, 'live'),
+				ne(schema.events.id, event.id)
+			)
+		)
+		.limit(1)
+	if (otherLiveFree) {
+		return redirect(`/app/events/${event.id}?activate_error=free_limit`, 303)
 	}
 
 	await db.update(schema.events).set({ status: 'live' }).where(eq(schema.events.id, event.id))

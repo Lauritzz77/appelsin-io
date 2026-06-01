@@ -21,6 +21,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 		.select({
 			id: schema.photos.id,
 			cfImagesId: schema.photos.cfImagesId,
+			cfStreamUid: schema.photos.cfStreamUid,
 			r2OriginalKey: schema.photos.r2OriginalKey,
 		})
 		.from(schema.photos)
@@ -32,6 +33,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 
 	const errs = await deletePhotoAssets(env, {
 		cfImagesId: row.cfImagesId,
+		cfStreamUid: row.cfStreamUid,
 		r2OriginalKey: row.r2OriginalKey,
 	})
 	await db.delete(schema.photos).where(eq(schema.photos.id, row.id))

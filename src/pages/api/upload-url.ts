@@ -4,6 +4,7 @@ import { drizzle } from 'drizzle-orm/d1'
 import { eq, ne, and, sql } from 'drizzle-orm'
 import * as schema from '../../db/schema'
 import { TIERS, isTier } from '../../lib/tiers'
+import { verifyGuest } from '../../lib/guest-auth'
 
 export const prerender = false
 
@@ -15,7 +16,9 @@ const UPLOAD_OPENS_BEFORE_EVENT_MS = 24 * 60 * 60 * 1000
 // a specific event by short_code. Guests use this to upload directly to CF
 // Images without their bytes touching our Worker.
 export const POST: APIRoute = async ({ request }) => {
-	const body = (await request.json().catch(() => null)) as { code?: string } | null
+	const body = (await request.json().catch(() => null)) as
+		| { code?: string; userId?: string; token?: string }
+		| null
 	const code = body?.code?.toUpperCase()
 	if (!code) return new Response('Missing code', { status: 400 })
 
@@ -33,6 +36,9 @@ export const POST: APIRoute = async ({ request }) => {
 
 	if (!event) return new Response('Event not found', { status: 404 })
 	if (event.status !== 'live') return new Response('Event not live', { status: 403 })
+
+	const user = await verifyGuest(db, event.id, body?.userId, body?.token)
+	if (!user) return new Response('Unauthorized', { status: 401 })
 
 	const opensAt = event.eventDate.getTime() - UPLOAD_OPENS_BEFORE_EVENT_MS
 	if (Date.now() < opensAt) {

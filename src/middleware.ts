@@ -8,7 +8,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 	if (path.startsWith('/api/auth/')) return next()
 
 	try {
-		const auth = createAuth(env)
+		const auth = createAuth(env, context.url)
 		const session = await auth.api.getSession({ headers: context.request.headers })
 		if (session?.user) {
 			context.locals.host = {
@@ -21,13 +21,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
 		console.error('Session check failed:', e)
 	}
 
-	if (path.startsWith('/app') && !context.locals.host) {
+	if ((path.startsWith('/app') || path.startsWith('/en/app')) && !context.locals.host) {
 		const next = context.url.pathname + context.url.search
-		return context.redirect(`/login?next=${encodeURIComponent(next)}`, 302)
+		const loginPath = path.startsWith('/en/app') ? '/en/login' : '/login'
+		return context.redirect(`${loginPath}?next=${encodeURIComponent(next)}`, 302)
 	}
-	if ((path === '/login' || path === '/signup') && context.locals.host) {
+	if ((path === '/login' || path === '/signup' || path === '/en/login') && context.locals.host) {
 		const requested = context.url.searchParams.get('next')
-		const dest = requested && requested.startsWith('/') ? requested : '/app'
+		const defaultDest = path.startsWith('/en/') ? '/en/app' : '/app'
+		const dest = requested && requested.startsWith('/') ? requested : defaultDest
 		return context.redirect(dest, 302)
 	}
 

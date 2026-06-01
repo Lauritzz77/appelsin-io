@@ -6,8 +6,9 @@ import Button from '../brand/Button.astro'
 interface Props {
 	locale?: Locale
 	isSignedIn?: boolean
+	onDark?: boolean
 }
-const { locale = 'da', isSignedIn = false } = Astro.props
+const { locale = 'da', isSignedIn = false, onDark = false } = Astro.props
 const p = locale === 'en' ? '/en' : ''
 const t =
 	locale === 'en'
@@ -19,7 +20,7 @@ const primaryLabel = isSignedIn ? t.app : t.login
 ---
 
 <nav class="mkt-nav">
-	<Logo href={home} surface="cream" size={50} />
+	<Logo href={home} surface={onDark ? 'dark' : 'cream'} size={50} />
 	<div class="mkt-nav-links">
 		<a href={primaryHref}>{primaryLabel}</a>
 		<a href={`${p}/terms`}>{t.terms}</a>

@@ -4,7 +4,7 @@ export const prerender = false
 import Layout from '../../layouts/Layout.astro'
 import MarketingNav from '../../components/marketing/MarketingNav.astro'
 import MarketingFooter from '../../components/marketing/MarketingFooter.astro'
-import HeroCollage from '../../components/marketing/HeroCollage.astro'
+import HeroPolaroids from '../../components/marketing/HeroPolaroids.astro'
 import PlanCard from '../../components/marketing/PlanCard.astro'
 import Button from '../../components/brand/Button.astro'
 import Icon from '../../components/brand/Icon.astro'
@@ -64,6 +64,7 @@ function ctaHref(tier: TierId): string {
 	return `/en/login?next=${encodeURIComponent(dest)}`
 }
 const startHref = ctaHref('basic')
+const loginHref = isSignedIn ? '/en/app' : '/en/login'
 
 const steps = [
 	{ ic: 'qr', n: '01', t: 'Scan the code', d: 'Guests scan the QR code with their phone camera. No app, no login.' },
@@ -110,47 +111,50 @@ const faq = [
 	surface="cream"
 >
 	<div class="mkt screen-root">
+		{/* NAVY HERO BAND (nav + hero) */}
+		<div class="hero-band band-navy">
+			<div class="mkt-wrap">
+				<MarketingNav locale="en" isSignedIn={isSignedIn} onDark />
+
+				<section class="hero fu">
+					<div>
+						<div
+							style="font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:18px"
+						>
+							For weddings · birthdays · parties
+						</div>
+						<h1 class="hero-h1" style="text-transform:uppercase">
+							Party photos,<br />live on the big screen.
+						</h1>
+						<p style="font-size:19.5px;line-height:1.6;color:var(--tx-2);max-width:480px;margin:22px 0 32px">
+							Guests scan a QR code and upload photos straight from their phone — no app. Everything shows live on the
+							big screen, and you download the whole party afterwards.
+						</p>
+						<div style="display:flex;gap:14px;flex-wrap:wrap">
+							<Button href={startHref} size="lg">Create your event</Button>
+							<a href={loginHref} class="btn btn--lg btn--blue">Log in</a>
+						</div>
+						<div
+							style="display:flex;align-items:center;gap:10px;margin-top:30px;flex-wrap:wrap;color:var(--tx-3);font-size:14.5px;font-weight:600"
+						>
+							{
+								['Free to try', 'No app', 'Ready in 2 min'].map((t, i) => (
+									<>
+										{i > 0 && <span style="opacity:.4">·</span>}
+										<span>{t}</span>
+									</>
+								))
+							}
+						</div>
+					</div>
+					<HeroPolaroids locale="en" />
+				</section>
+			</div>
+		</div>
+
+		{/* CREAM: how it works + pricing */}
 		<div class="mkt-wrap">
-			<MarketingNav locale="en" isSignedIn={isSignedIn} />
-
-			{/* HERO */}
-			<section class="hero fu">
-				<div>
-					<div
-						class="hero-kicker"
-						style="font-family:var(--hand);font-size:30px;line-height:1.15;font-weight:600;color:var(--orange-700);margin-bottom:8px"
-					>
-						share the moments as they happen
-					</div>
-					<h1 class="hero-h1">
-						Party photos,<br />live on the <span style="color:var(--orange)">big screen</span>.
-					</h1>
-					<p style="font-size:19.5px;line-height:1.6;color:var(--warm-body);max-width:480px;margin:22px 0 32px">
-						Guests scan a QR code, upload from their phone, and photos appear on the screen instantly. Pay once per
-						event — no subscriptions.
-					</p>
-					<div style="display:flex;gap:14px;flex-wrap:wrap">
-						<Button href={startHref} size="lg" iconRight="arrow-right">Create your event</Button>
-						<Button href="#pricing" variant="secondary" size="lg">See plans</Button>
-					</div>
-					<div
-						style="display:flex;gap:22px;margin-top:30px;flex-wrap:wrap;color:var(--warm-muted);font-size:14.5px;font-weight:600"
-					>
-						{
-							['No app', 'Ready in 2 min', 'EU hosting'].map((t) => (
-								<span style="display:flex;align-items:center;gap:7px">
-									<Icon name="check" size={15} stroke={3} class="text-[var(--orange-700)]" />
-									{t}
-								</span>
-							))
-						}
-					</div>
-				</div>
-				<HeroCollage locale="en" />
-			</section>
-
-			{/* HOW IT WORKS */}
-			<section style="padding:calc(20px*var(--d)) 0 calc(64px*var(--d))">
+			<section style="padding:calc(56px*var(--d)) 0 calc(64px*var(--d))">
 				<div class="steps">
 					{
 						steps.map((s) => (
@@ -169,8 +173,7 @@ const faq = [
 				</div>
 			</section>
 
-			{/* PRICING */}
-			<section id="pricing" style="padding:calc(28px*var(--d)) 0;scroll-margin-top:24px">
+			<section id="pricing" style="padding:calc(28px*var(--d)) 0 calc(64px*var(--d));scroll-margin-top:24px">
 				<div style="text-align:center;margin-bottom:40px">
 					<h2 style="font-size:clamp(32px,4cqw,46px);font-weight:800;letter-spacing:-.02em;color:var(--ink);margin:0">
 						One price per event
@@ -200,18 +203,25 @@ const faq = [
 					All plans include the QR pack, live photo wall, moderation queue and EU hosting.
 				</p>
 			</section>
+		</div>
 
-			{/* FAQ */}
-			<section style="padding:calc(56px*var(--d)) 0 calc(40px*var(--d));max-width:820px;margin:0 auto">
-				<div style="text-align:center;margin-bottom:36px">
-					<div style="font-family:var(--hand);font-size:27px;color:var(--orange-700);font-weight:600">good to know</div>
-					<h2 style="font-size:clamp(30px,4cqw,42px);font-weight:800;letter-spacing:-.02em;color:var(--ink);margin:2px 0 0">
-						Questions before the party?
-					</h2>
-				</div>
-				<Accordion items={faq} tone="cream" />
-			</section>
+		{/* NAVY FAQ BAND */}
+		<div class="faq-band band-navy">
+			<div class="mkt-wrap" style="max-width:860px">
+				<section style="padding:calc(60px*var(--d)) 0 calc(64px*var(--d))">
+					<div style="text-align:center;margin-bottom:36px">
+						<div style="font-family:var(--hand);font-size:27px;color:var(--accent);font-weight:600">good to know</div>
+						<h2 style="font-size:clamp(30px,4cqw,42px);font-weight:800;letter-spacing:-.02em;color:#fff;margin:2px 0 0">
+							Questions before the party?
+						</h2>
+					</div>
+					<Accordion items={faq} tone="cream" />
+				</section>
+			</div>
+		</div>
 
+		{/* CREAM footer */}
+		<div class="mkt-wrap">
 			<MarketingFooter locale="en" isSignedIn={isSignedIn} />
 		</div>
 	</div>

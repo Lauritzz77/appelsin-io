@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
-import { DENSITIES, FONTS, type EventBranding } from '../lib/branding'
+import { FONTS, type EventBranding } from '../lib/branding'
 import { streamIframeUrl, streamThumbnailUrl } from '../lib/media'
 
 type Photo = {
@@ -43,37 +43,38 @@ const props = withDefaults(
 )
 
 const font = computed(() => FONTS[props.branding.font])
-// Density is parsed but no longer affects the grid — kept so existing
-// branding records don't break parsing.
-const _lanes = computed(() => DENSITIES[props.branding.density].lanes)
-void _lanes
 
-// 9-tile masonry grid: one 2×2 hero + eight 1×1 tiles in a 4 col × 3 row layout.
-const TILE_COUNT = 9
+// Density drives the wall layout (matches the Claude-Design "redo" prototype):
+//   small  → dense grid of many small tiles, no hero
+//   medium → standard 2×2 hero + 8 tiles
+//   large  → cinematic 2×2 hero + 2 tiles
+type Layout = { cols: number; rows: number; count: number; hero: boolean }
+const LAYOUTS: Record<string, Layout> = {
+	small: { cols: 5, rows: 3, count: 15, hero: false },
+	medium: { cols: 4, rows: 3, count: 9, hero: true },
+	large: { cols: 3, rows: 2, count: 3, hero: true },
+}
+const layout = computed<Layout>(() => LAYOUTS[props.branding.density] ?? LAYOUTS.medium)
+const tileCount = computed(() => layout.value.count)
+const tileSpans = computed(() => {
+	const n = layout.value.count
+	if (layout.value.hero) {
+		return [{ col: 2, row: 2 }, ...Array.from({ length: n - 1 }, () => ({ col: 1, row: 1 }))]
+	}
+	return Array.from({ length: n }, () => ({ col: 1, row: 1 }))
+})
+
 const ROTATION_MS = 15_000
 const STAGGER_MS = 180
 
-const TILE_SPANS: { col: number; row: number }[] = [
-	{ col: 2, row: 2 },
-	{ col: 1, row: 1 },
-	{ col: 1, row: 1 },
-	{ col: 1, row: 1 },
-	{ col: 1, row: 1 },
-	{ col: 1, row: 1 },
-	{ col: 1, row: 1 },
-	{ col: 1, row: 1 },
-	{ col: 1, row: 1 },
-]
-
 const pool = ref<Photo[]>([...props.initialPhotos])
-const tilePhotos = ref<(Photo | null)[]>(
-	Array.from(
-		{ length: TILE_COUNT },
-		(_, i) => props.initialPhotos[i % Math.max(1, props.initialPhotos.length)] ?? null
-	)
-)
+function buildTileArray(n: number): (Photo | null)[] {
+	const len = Math.max(1, pool.value.length)
+	return Array.from({ length: n }, (_, i) => pool.value[i % len] ?? null)
+}
+const tilePhotos = ref<(Photo | null)[]>(buildTileArray(tileCount.value))
 let nextTileIdx = 0
-let nextPoolIdx = Math.min(TILE_COUNT, props.initialPhotos.length) % Math.max(1, props.initialPhotos.length)
+let nextPoolIdx = Math.min(tileCount.value, props.initialPhotos.length) % Math.max(1, props.initialPhotos.length)
 let rotationTimer: ReturnType<typeof setInterval> | null = null
 
 function startRotation() {
@@ -81,13 +82,14 @@ function startRotation() {
 	if (pool.value.length === 0) return
 	rotationTimer = setInterval(() => {
 		if (pool.value.length === 0) return
-		for (let k = 0; k < TILE_COUNT; k++) {
+		const n = tileCount.value
+		for (let k = 0; k < n; k++) {
 			const tileIdx = nextTileIdx
 			const photo = pool.value[nextPoolIdx]
 			setTimeout(() => {
 				tilePhotos.value[tileIdx] = photo
 			}, k * STAGGER_MS)
-			nextTileIdx = (nextTileIdx + 1) % TILE_COUNT
+			nextTileIdx = (nextTileIdx + 1) % n
 			nextPoolIdx = (nextPoolIdx + 1) % pool.value.length
 		}
 	}, ROTATION_MS)
@@ -97,6 +99,15 @@ watch(
 	() => pool.value.length,
 	() => startRotation()
 )
+
+// When the density (and thus tile count) changes, rebuild the tile array so
+// the new grid fills immediately, then restart the rotation cursor.
+watch(tileCount, (n) => {
+	tilePhotos.value = buildTileArray(n)
+	nextTileIdx = 0
+	nextPoolIdx = Math.min(n, pool.value.length) % Math.max(1, pool.value.length)
+	startRotation()
+})
 
 function imageUrl(cfImagesId: string | null): string {
 	if (!cfImagesId) {
@@ -116,7 +127,7 @@ function addPhoto(photo: Photo) {
 	if (pool.value.some((p) => p.id === photo.id)) return
 	pool.value = [photo, ...pool.value].slice(0, 20)
 	tilePhotos.value[nextTileIdx] = photo
-	nextTileIdx = (nextTileIdx + 1) % TILE_COUNT
+	nextTileIdx = (nextTileIdx + 1) % tileCount.value
 	nextPoolIdx = 1 % pool.value.length
 }
 
@@ -194,9 +205,13 @@ const collageStyle = computed(() => ({
 	'--theme-heading-transform': font.value.headlineTransform,
 	'--theme-heading-tracking': font.value.headlineTracking,
 }))
+const gridStyle = computed(() => ({
+	gridTemplateColumns: `repeat(${layout.value.cols}, 1fr)`,
+	gridTemplateRows: `repeat(${layout.value.rows}, 1fr)`,
+}))
 
 const title = computed(() => props.branding.titleOverlay)
-const visibleTileCount = computed(() => Math.min(TILE_COUNT, Math.max(1, pool.value.length)))
+const visibleTileCount = computed(() => Math.min(tileCount.value, Math.max(1, pool.value.length)))
 </script>
 
 <template>
@@ -209,14 +224,14 @@ const visibleTileCount = computed(() => Math.min(TILE_COUNT, Math.max(1, pool.va
 			<div v-if="title.line2" class="title-line2">{{ title.line2 }}</div>
 		</div>
 
-		<div class="grid">
+		<div class="grid" :style="gridStyle">
 			<div
 				v-for="i in visibleTileCount"
 				:key="i - 1"
 				class="tile"
 				:style="{
-					gridColumn: `span ${TILE_SPANS[i - 1].col}`,
-					gridRow: `span ${TILE_SPANS[i - 1].row}`,
+					gridColumn: `span ${tileSpans[i - 1].col}`,
+					gridRow: `span ${tileSpans[i - 1].row}`,
 				}"
 			>
 				<Transition name="swap">
@@ -294,8 +309,6 @@ const visibleTileCount = computed(() => Math.min(TILE_COUNT, Math.max(1, pool.va
 
 .grid {
 	display: grid;
-	grid-template-columns: repeat(4, 1fr);
-	grid-template-rows: repeat(3, 1fr);
 	gap: 2px;
 	width: 100%;
 	height: 100%;

@@ -102,28 +102,23 @@ const timelineRows: [string, string, string][] = [
 
 <Layout title={`${event.name} — appelsin`}>
 	<div class="app screen-root">
-		<div class="app-wrap fu" style="padding-top:28px">
-			<a
-				href="/app"
-				style="display:inline-flex;align-items:center;gap:8px;color:var(--tx-3);font-size:15.5px;font-weight:600"
-			>
+		<div class="fu mx-auto max-w-[880px] px-7 pt-7 pb-20">
+			<a href="/app" class="inline-flex items-center gap-2 text-[15.5px] font-semibold text-tx-3">
 				<Icon name="arrow-left" size={18} />Alle events
 			</a>
 
 			{/* header */}
-			<div class="detail-head" style="margin:22px 0 6px">
+			<div class="detail-head mt-[22px] mb-1.5">
 				<div>
-					<h1 style="font-size:clamp(30px,5cqw,42px);font-weight:800;letter-spacing:-.02em;margin:0">{event.name}</h1>
-					<div
-						style="display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;color:var(--tx-3);font-size:15.5px"
-					>
-						<span style="display:inline-flex;gap:7px;align-items:center">
+					<h1 class="m-0 text-[clamp(30px,5cqw,42px)] font-extrabold tracking-[-0.02em]">{event.name}</h1>
+					<div class="mt-3 flex flex-wrap items-center gap-3 text-[15.5px] text-tx-3">
+						<span class="inline-flex items-center gap-[7px]">
 							<Icon name="calendar" size={16} />
 							{new Date(event.eventDate).toLocaleDateString('da-DK', { dateStyle: 'long' })}
 						</span>
-						<span style="opacity:.5">·</span>
+						<span class="opacity-50">·</span>
 						<span>
-							<strong style="color:var(--accent)">{tierConfig.label}</strong>-plan · op til {tierConfig.photoCap.toLocaleString('da-DK')} billeder · {tierConfig.retentionDays} dages opbevaring
+							<strong class="text-accent">{tierConfig.label}</strong>-plan · op til {tierConfig.photoCap.toLocaleString('da-DK')} billeder · {tierConfig.retentionDays} dages opbevaring
 						</span>
 					</div>
 				</div>
@@ -132,21 +127,21 @@ const timelineRows: [string, string, string][] = [
 
 			{
 				justPaid && event.status === 'live' && (
-					<div style="margin-top:16px;border-radius:var(--r-md);border:1px solid rgba(52,211,153,.3);background:var(--live-bg);padding:13px 18px;font-size:14px;color:var(--live)">
+					<div class="mt-4 rounded-md border border-[rgba(52,211,153,.3)] bg-live-bg px-[18px] py-[13px] text-sm text-live">
 						Betaling bekræftet. Dit event er live.
 					</div>
 				)
 			}
 			{
 				justPaid && event.status === 'draft' && (
-					<div style="margin-top:16px;border-radius:var(--r-md);border:1px solid rgba(255,162,41,.3);background:var(--orange-soft);padding:13px 18px;font-size:14px;color:var(--accent)">
+					<div class="mt-4 rounded-md border border-[rgba(255,162,41,.3)] bg-orange-soft px-[18px] py-[13px] text-sm text-accent">
 						Betaling modtaget — afslutter. Opdater om et øjeblik hvis status ikke skifter til <em>live</em>.
 					</div>
 				)
 			}
 			{
 				activateError === 'free_limit' && (
-					<div style="margin-top:16px;border-radius:var(--r-md);border:1px solid rgba(244,63,94,.3);background:rgba(244,63,94,.1);padding:13px 18px;font-size:14px;color:#ff8499">
+					<div class="mt-4 rounded-md border border-[rgba(244,63,94,.3)] bg-[rgba(244,63,94,.1)] px-[18px] py-[13px] text-sm text-danger">
 						Du har allerede et aktivt gratis event. Afslut det først, eller opgrader dette event til Basic eller Gold.
 					</div>
 				)
@@ -154,19 +149,19 @@ const timelineRows: [string, string, string][] = [
 
 			{
 				(event.status === 'draft' || event.status === 'live') && (
-					<div style="background:var(--orange-soft);border:1px solid rgba(255,162,41,.26);border-radius:var(--r-xl);padding:26px 28px;margin-top:26px">
-						<div style="display:flex;align-items:center;gap:9px;color:var(--accent);font-weight:700;font-size:17px;margin-bottom:20px">
+					<div class="mt-[26px] rounded-xl border border-[rgba(255,162,41,.26)] bg-orange-soft px-7 py-[26px]">
+						<div class="mb-5 flex items-center gap-[9px] text-[17px] font-bold text-accent">
 							<Icon name="sparkle" size={19} fill="currentColor" stroke={0} />Sådan kører du dit event
 						</div>
-						<div style="display:grid;gap:16px">
+						<div class="grid gap-4">
 							{runSteps.map((s, i) => (
-								<div style="display:flex;gap:15px;align-items:flex-start">
-									<span style="width:32px;height:32px;border-radius:999px;flex-shrink:0;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;background:var(--accent);color:#2C1700">
+								<div class="flex items-start gap-[15px]">
+									<span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-extrabold text-[#2C1700]">
 										{i + 1}
 									</span>
 									<div>
-										<div style="font-size:16.5px;font-weight:700;color:var(--tx)">{s.title}</div>
-										<div style="font-size:14.5px;color:var(--tx-2);margin-top:2px">{s.desc}</div>
+										<div class="text-[16.5px] font-bold text-tx">{s.title}</div>
+										<div class="mt-0.5 text-[14.5px] text-tx-2">{s.desc}</div>
 									</div>
 								</div>
 							))}
@@ -176,10 +171,10 @@ const timelineRows: [string, string, string][] = [
 			}
 
 			{/* name + code */}
-			<div style="display:grid;gap:16px;grid-template-columns:1fr;margin-top:28px">
+			<div class="mt-7 grid grid-cols-1 gap-4">
 				<Card pad={24}>
 					<form id="rename-event-form" data-event-id={event.id}>
-						<label style="display:block">
+						<label class="block">
 							<span class="field-label">Eventnavn</span>
 							<input
 								id="event-name-input"
@@ -191,14 +186,14 @@ const timelineRows: [string, string, string][] = [
 								required
 							/>
 						</label>
-						<div style="margin-top:14px;display:flex;align-items:center;gap:14px">
+						<div class="mt-[14px] flex items-center gap-[14px]">
 							<Button id="rename-event-btn" type="submit" size="sm">Gem navn</Button>
 							<p id="rename-event-status" class="text-sm text-zinc-500" aria-live="polite"></p>
 						</div>
 					</form>
 				</Card>
 				<Card pad={24}>
-					<div style="display:grid;grid-template-columns:1fr;gap:16px">
+					<div class="grid grid-cols-1 gap-4">
 						<CopyField big label="Kort kode — gæster skriver den på appelsin.io/e" value={event.shortCode} />
 						<CopyField label="Direkte gæste-link" mono={false} value={guestUrl} />
 					</div>
@@ -206,15 +201,13 @@ const timelineRows: [string, string, string][] = [
 			</div>
 
 			{/* big screen toggle */}
-			<Card pad={22} class="bigscreen-card">
-				<span
-					style="width:46px;height:46px;border-radius:var(--r-md);background:rgba(255,255,255,.06);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0"
-				>
+			<Card pad={22} class="mt-4 flex items-center gap-[18px]">
+				<span class="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-md bg-white/[.06] text-accent">
 					<Icon name="monitor" size={22} />
 				</span>
-				<div style="flex:1">
-					<div style="font-size:16.5px;font-weight:700">Storskærm til eventet</div>
-					<div style="font-size:14px;color:var(--tx-3);margin-top:3px">
+				<div class="flex-1">
+					<div class="text-[16.5px] font-bold">Storskærm til eventet</div>
+					<div class="mt-[3px] text-sm text-tx-3">
 						Slå fra, hvis billederne ikke skal vises på en skærm til eventet. Det ændrer teksten i QR-pakken.
 					</div>
 					<p id="has-big-screen-status" class="mt-2 text-xs text-zinc-500" aria-live="polite"></p>
@@ -226,7 +219,7 @@ const timelineRows: [string, string, string][] = [
 			</Card>
 
 			{/* action grid */}
-			<div class="app-sec-label" style="margin-top:32px">Værktøjer</div>
+			<div class="app-sec-label mt-8">Værktøjer</div>
 			<div class="evt-actions">
 				<ActionTile
 					href={`/app/events/${event.id}/qr.pdf`}
@@ -283,32 +276,31 @@ const timelineRows: [string, string, string][] = [
 			</div>
 
 			{/* timeline + counter */}
-			<Card pad={26} class="mt-timeline">
-				<div style="display:flex;align-items:center;gap:9px;font-size:17px;font-weight:700;margin-bottom:18px">
-					<Icon name="clock" size={19} class="text-[var(--accent)]" />Tidslinje
+			<Card pad={26} class="mt-7">
+				<div class="mb-[18px] flex items-center gap-[9px] text-[17px] font-bold">
+					<Icon name="clock" size={19} class="text-accent" />Tidslinje
 				</div>
 				{
 					timelineRows.map((r, i) => (
-						<div
-							style={`display:flex;gap:14px;padding:12px 0;align-items:baseline;${i ? 'border-top:1px solid var(--line-2)' : ''}`}
-						>
+						<div class={`flex items-baseline gap-[14px] py-3 ${i ? 'border-t border-line-2' : ''}`}>
 							<span
-								style={`width:11px;height:11px;border-radius:999px;margin-top:5px;flex-shrink:0;background:${i === 0 ? 'var(--live)' : i === 1 ? 'var(--accent)' : 'var(--tx-4)'}`}
+								class="mt-[5px] h-[11px] w-[11px] shrink-0 rounded-full"
+								style={`background:${i === 0 ? 'var(--live)' : i === 1 ? 'var(--accent)' : 'var(--tx-4)'}`}
 							/>
-							<div style="flex:1">
-								<span style="font-size:15.5px;color:var(--tx-2)">{r[0]} </span>
-								<strong style="font-size:15.5px;color:var(--tx)">{r[1]}</strong>
-								<div style="font-size:13.5px;color:var(--tx-3);margin-top:2px">{r[2]}</div>
+							<div class="flex-1">
+								<span class="text-[15.5px] text-tx-2">{r[0]} </span>
+								<strong class="text-[15.5px] text-tx">{r[1]}</strong>
+								<div class="mt-0.5 text-[13.5px] text-tx-3">{r[2]}</div>
 							</div>
 						</div>
 					))
 				}
-				<div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--line-2)">
-					<div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:15px">
-						<span style="color:var(--tx-2);font-weight:600">Uploads</span>
+				<div class="mt-5 border-t border-line-2 pt-5">
+					<div class="mb-2.5 flex justify-between text-[15px]">
+						<span class="font-semibold text-tx-2">Uploads</span>
 						<span
-							class="tabular-nums"
-							style={`font-family:var(--mono);font-weight:700;color:${capWarn ? '#ff8499' : capNear ? 'var(--accent)' : 'var(--tx)'}`}
+							class="tabular-nums font-mono font-bold"
+							style={`color:${capWarn ? '#ff8499' : capNear ? 'var(--accent)' : 'var(--tx)'}`}
 						>
 							{photoCount.toLocaleString('da-DK')} / {tierConfig.photoCap.toLocaleString('da-DK')}
 						</span>
@@ -318,14 +310,14 @@ const timelineRows: [string, string, string][] = [
 					</div>
 					{
 						capWarn && (
-							<p style="margin-top:12px;font-size:13px;color:#ff8499">
+							<p class="mt-3 text-[13px] text-danger">
 								Eventet har nået sin upload-grænse. Nye uploads er blokeret, indtil du opgraderer planen eller afviste billeder frigør pladser.
 							</p>
 						)
 					}
 					{
 						capNear && (
-							<p style="margin-top:12px;font-size:13px;color:var(--accent)">
+							<p class="mt-3 text-[13px] text-accent">
 								Nærmer sig upload-grænsen — overvej at opgradere, før grænsen er nået.
 							</p>
 						)
@@ -334,14 +326,14 @@ const timelineRows: [string, string, string][] = [
 			</Card>
 
 			{/* recent uploads — markup preserved for the WS/buildTile script */}
-			<div style="display:flex;align-items:center;justify-content:space-between;margin-top:32px;margin-bottom:14px">
+			<div class="mt-8 mb-[14px] flex items-center justify-between">
 				<div class="app-sec-label" style="margin:0">
 					Seneste uploads <span id="recent-uploads-count">{recentPhotos.length === 0 ? '(ingen endnu)' : `(${recentPhotos.length})`}</span>
 				</div>
 				{
 					event.status === 'live' && (
-						<span style="display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--live);font-weight:600">
-							<span style="width:7px;height:7px;border-radius:999px;background:var(--live);animation:pulseDot 2s infinite" />opdateres live
+						<span class="inline-flex items-center gap-[7px] text-[13px] font-semibold text-live">
+							<span class="h-[7px] w-[7px] rounded-full bg-live [animation:pulseDot_2s_infinite]" />opdateres live
 						</span>
 					)
 				}
@@ -408,12 +400,10 @@ const timelineRows: [string, string, string][] = [
 			</section>
 
 			{/* danger zone */}
-			<div
-				style="margin-top:40px;padding:22px 24px;border-radius:var(--r-xl);border:1px solid rgba(244,63,94,.22);background:rgba(244,63,94,.05);display:flex;align-items:center;gap:18px;flex-wrap:wrap"
-			>
-				<div style="flex:1;min-width:200px">
-					<div style="font-size:16px;font-weight:700;color:#ff8499">Slet event</div>
-					<div style="font-size:14px;color:var(--tx-3);margin-top:3px">
+			<div class="mt-10 flex flex-wrap items-center gap-[18px] rounded-xl border border-[rgba(244,63,94,.22)] bg-[rgba(244,63,94,.05)] px-6 py-[22px]">
+				<div class="min-w-[200px] flex-1">
+					<div class="text-base font-bold text-danger">Slet event</div>
+					<div class="mt-[3px] text-sm text-tx-3">
 						Sletter dette event og alle uploadede billeder. Dette kan ikke fortrydes.
 					</div>
 				</div>
@@ -430,18 +420,6 @@ const timelineRows: [string, string, string][] = [
 		</div>
 	</div>
 </Layout>
-
-<style>
-	.bigscreen-card {
-		margin-top: 16px;
-		display: flex;
-		align-items: center;
-		gap: 18px;
-	}
-	.mt-timeline {
-		margin-top: 28px;
-	}
-</style>
 
 <script>
 	document.getElementById('has-big-screen-toggle')?.addEventListener('change', async (event) => {

@@ -4,20 +4,17 @@ import Logo from '../../components/brand/Logo.astro'
 ---
 
 <Layout title="Deltag i event — appelsin" locale="da">
-	<div
-		class="app screen-root"
-		style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:40px 24px"
-	>
-		<div style="width:100%;max-width:440px" class="fu">
-			<div style="display:flex;justify-content:center;margin-bottom:24px"><Logo href="/" surface="dark" size={56} /></div>
-			<div class="card card--dark" style="padding:32px 28px">
-				<h1 style="font-size:26px;font-weight:800;letter-spacing:-.02em;text-align:center;margin:0">Indtast eventkode</h1>
-				<p style="text-align:center;color:var(--tx-3);margin:10px 0 24px;font-size:15px;line-height:1.5">
+	<div class="app screen-root flex min-h-screen items-center justify-center px-6 py-10">
+		<div class="fu w-full max-w-[440px]">
+			<div class="mb-6 flex justify-center"><Logo href="/" surface="dark" size={56} /></div>
+			<div class="rounded-xl border border-line-2 bg-s1 px-7 py-8 shadow-app">
+				<h1 class="m-0 text-center text-[26px] font-extrabold tracking-[-0.02em]">Indtast eventkode</h1>
+				<p class="mt-2.5 mb-6 text-center text-[15px] leading-[1.5] text-tx-3">
 					Skriv koden fra eventskærmen eller invitationen for at dele billeder.
 				</p>
 
 				<form id="event-code-form">
-					<label style="display:block">
+					<label class="block">
 						<span class="field-label">Eventkode</span>
 						<input
 							id="event-code-input"
@@ -28,13 +25,12 @@ import Logo from '../../components/brand/Logo.astro'
 							autocapitalize="characters"
 							spellcheck="false"
 							required
-							class="field-input field-input--mono field-input--big"
-							style="text-transform:uppercase;text-align:center"
+							class="field-input field-input--mono field-input--big text-center uppercase"
 							placeholder="EC4KJL"
 						/>
 					</label>
-					<p id="event-code-error" style="min-height:1.25rem;margin-top:10px;font-size:14px;color:#ff8499" aria-live="polite"></p>
-					<div style="margin-top:6px">
+					<p id="event-code-error" class="mt-2.5 min-h-[1.25rem] text-sm text-danger" aria-live="polite"></p>
+					<div class="mt-1.5">
 						<button type="submit" class="btn btn--primary btn--full btn--lg">Deltag i event</button>
 					</div>
 				</form>

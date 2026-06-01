@@ -25,13 +25,13 @@ if (event.status !== 'live') {
 ---
 
 <Layout title={`Del billeder — ${event.name}`} locale="da">
-	<div style="min-height:100vh;background:radial-gradient(130% 80% at 50% -10%, #0c2a6e, #061541 65%)">
-		<div style="max-width:480px;margin:0 auto;padding:0 24px 48px">
-			<div style="padding:56px 0 24px;text-align:center">
-				<img src="/logo.svg" alt="appelsin.io" style="height:48px;width:auto;margin:0 auto 14px;display:block" />
-				<div style="font-family:var(--hand);font-size:24px;color:var(--orange);font-weight:600;line-height:1">du er med til</div>
-				<h1 style="font-size:26px;font-weight:800;letter-spacing:-.02em;margin:6px 0 0;color:var(--tx)">{event.name}</h1>
-				<p style="font-size:14.5px;color:var(--tx-3);margin:8px 0 0">
+	<div class="min-h-screen bg-[radial-gradient(130%_80%_at_50%_-10%,#0c2a6e,#061541_65%)]">
+		<div class="mx-auto max-w-[480px] px-6 pb-12">
+			<div class="pt-14 pb-6 text-center">
+				<img src="/logo.svg" alt="appelsin.io" class="mx-auto mb-[14px] block h-12 w-auto" />
+				<div class="font-hand text-[24px] font-semibold leading-none text-accent">du er med til</div>
+				<h1 class="mt-1.5 text-[26px] font-extrabold tracking-[-0.02em] text-tx">{event.name}</h1>
+				<p class="mt-2 text-[14.5px] text-tx-3">
 					Tag et billede{event.tier === 'gold' ? ' eller et kort videoklip' : ''} — det vises på skærmen med det samme.
 				</p>
 			</div>

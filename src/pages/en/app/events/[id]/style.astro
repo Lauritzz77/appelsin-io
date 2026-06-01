@@ -86,29 +86,29 @@ const qrDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(qrSvg)}`
 
 <Layout title={`Style — ${event.name}`} locale="en">
 	<div class="app screen-root">
-		<div class="app-wrap fu" style="max-width:1080px;padding-top:28px">
+		<div class="fu mx-auto max-w-[1080px] px-7 pt-7 pb-20">
 			<a
 				href={`/en/app/events/${event.id}`}
-				style="display:inline-flex;align-items:center;gap:8px;color:var(--tx-3);font-size:15.5px;font-weight:600"
+				class="inline-flex items-center gap-2 text-[15.5px] font-semibold text-tx-3"
 			>
 				<Icon name="arrow-left" size={18} />{event.name}
 			</a>
 
-			<div style="margin:22px 0 26px">
-				<h1 style="font-size:clamp(28px,5cqw,38px);font-weight:800;letter-spacing:-.02em;margin:0">Photo wall style</h1>
-				<p style="color:var(--tx-3);font-size:16px;margin:8px 0 0">Customise the live photo wall shown at your venue.</p>
+			<div class="mt-[22px] mb-[26px]">
+				<h1 class="m-0 text-[clamp(28px,5cqw,38px)] font-extrabold tracking-[-0.02em]">Photo wall style</h1>
+				<p class="mt-2 text-base text-tx-3">Customise the live photo wall shown at your venue.</p>
 			</div>
 
 			{
 				isFreeTier ? (
-					<div class="card card--dark" style="padding:40px;text-align:center">
-						<h2 style="font-size:22px;font-weight:700;color:var(--tx)">Custom styling is a paid feature</h2>
-						<p style="margin:12px auto 0;max-width:540px;font-size:15px;line-height:1.6;color:var(--tx-2)">
+					<div class="rounded-xl border border-line-2 bg-s1 p-10 text-center shadow-app">
+						<h2 class="text-[22px] font-bold text-tx">Custom styling is a paid feature</h2>
+						<p class="mx-auto mt-3 max-w-[540px] text-[15px] leading-[1.6] text-tx-2">
 							Upgrade this event to {TIERS.basic.label} ({formatPrice('basic', 'en')}) or {TIERS.gold.label} (
 							{formatPrice('gold', 'en')}) to choose a theme, tile density and add a title overlay. Free events use the
 							appelsin photo collage with a corner QR.
 						</p>
-						<div style="margin-top:24px">
+						<div class="mt-6">
 							<Button href="/en/app/events/new" iconRight="arrow-right">Create a paid event</Button>
 						</div>
 					</div>

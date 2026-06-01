@@ -43,10 +43,13 @@ const branding = reactive<EventBranding>({
 });
 
 const initialSnapshot = JSON.stringify(props.initial);
-const dirty = computed(() => JSON.stringify(branding) !== initialSnapshot);
+const lastSavedSnapshot = ref(initialSnapshot);
+// Compare against the last *saved* state, not the original — otherwise the
+// page stays "dirty" after a successful save and the beforeunload guard keeps
+// warning on navigation.
+const dirty = computed(() => JSON.stringify(branding) !== lastSavedSnapshot.value);
 
 const saving = ref(false);
-const lastSavedSnapshot = ref(initialSnapshot);
 const flash = ref<"saved" | "error" | null>(null);
 const errorMessage = ref("");
 

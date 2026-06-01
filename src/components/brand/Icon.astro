@@ -64,8 +64,7 @@ const paths = parts.filter((p) => p && !p.startsWith('circle:'))
 	stroke-width={stroke}
 	stroke-linecap="round"
 	stroke-linejoin="round"
-	class={className}
-	style="display:block;flex-shrink:0"
+	class:list={['block shrink-0', className]}
 	aria-hidden="true"
 >
 	{paths.map((d) => <path d={d} />)}

@@ -15,21 +15,21 @@ const t =
 		: { app: 'Dine events', login: 'Login', terms: 'Vilkår', privacy: 'Privatliv' }
 const primaryHref = isSignedIn ? `${p}/app` : `${p}/login`
 const primaryLabel = isSignedIn ? t.app : t.login
-const borderColor = onDark ? 'var(--line)' : 'var(--cream-line)'
-const linkColor = onDark ? 'var(--tx-2)' : 'var(--ink-2)'
 // On the navy band the footer butts up against the FAQ band, so no top margin
 // (which would otherwise escape the band and reveal the cream body behind).
-const marginTop = onDark ? '0' : '40px'
 ---
 
 <footer
-	style={`border-top:1px solid ${borderColor};margin-top:${marginTop};padding:40px 0 64px;display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between`}
+	class:list={[
+		'flex flex-wrap items-center justify-between gap-6 border-t pt-10 pb-16',
+		onDark ? 'mt-0 border-line' : 'mt-10 border-cream-line',
+	]}
 >
 	<Logo surface={onDark ? 'dark' : 'cream'} size={42} />
-	<div style={`display:flex;gap:26px;flex-wrap:wrap;font-size:15.5px;font-weight:600;color:${linkColor}`}>
-		<a href={primaryHref} style="cursor:pointer">{primaryLabel}</a>
-		<a href={`${p}/terms`} style="cursor:pointer">{t.terms}</a>
-		<a href={`${p}/privacy`} style="cursor:pointer">{t.privacy}</a>
+	<div class:list={['flex flex-wrap gap-[26px] text-[15.5px] font-semibold', onDark ? 'text-tx-2' : 'text-ink-2']}>
+		<a href={primaryHref} class="cursor-pointer">{primaryLabel}</a>
+		<a href={`${p}/terms`} class="cursor-pointer">{t.terms}</a>
+		<a href={`${p}/privacy`} class="cursor-pointer">{t.privacy}</a>
 		<a href="mailto:hello@appelsin.io">hello@appelsin.io</a>
 	</div>
 </footer>

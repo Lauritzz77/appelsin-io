@@ -11,33 +11,33 @@ interface Props {
 	target?: string
 }
 const { href = null, icon, title, sub, arrow = 'chevron-right', accent = false, target } = Astro.props
-const wrapStyle = `display:flex;align-items:center;gap:16px;width:100%;text-align:left;padding:20px 22px;border-radius:var(--r-lg);cursor:pointer;background:${accent ? 'var(--orange-soft)' : 'var(--s1)'};border:1px solid ${accent ? 'rgba(255,162,41,.32)' : 'var(--line-2)'}`
-const iconStyle = `width:46px;height:46px;border-radius:var(--r-md);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:${accent ? 'var(--accent)' : 'rgba(255,255,255,.06)'};color:${accent ? '#2C1700' : 'var(--accent)'}`
-const titleColor = accent ? 'var(--accent)' : 'var(--tx)'
+const wrapCls = `action-tile flex w-full cursor-pointer items-center gap-4 rounded-lg border px-[22px] py-5 text-left ${accent ? 'border-[rgba(255,162,41,.32)] bg-orange-soft' : 'border-line-2 bg-s1'}`
+const iconCls = `flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-md ${accent ? 'bg-accent text-[#2C1700]' : 'bg-white/[.06] text-accent'}`
+const titleCls = `block text-[16.5px] font-bold ${accent ? 'text-accent' : 'text-tx'}`
 ---
 
 {
 	href ? (
-		<a href={href} target={target} class="action-tile" style={wrapStyle}>
-			<span style={iconStyle}>
+		<a href={href} target={target} class={wrapCls}>
+			<span class={iconCls}>
 				<Icon name={icon} size={22} stroke={2} />
 			</span>
-			<span style="flex:1">
-				<span style={`display:block;font-size:16.5px;font-weight:700;color:${titleColor}`}>{title}</span>
-				<span style="display:block;margin-top:3px;font-size:13.5px;color:var(--tx-3)">{sub}</span>
+			<span class="flex-1">
+				<span class={titleCls}>{title}</span>
+				<span class="mt-[3px] block text-[13.5px] text-tx-3">{sub}</span>
 			</span>
-			<Icon name={arrow} size={18} class="text-[var(--tx-3)]" />
+			<Icon name={arrow} size={18} class="text-tx-3" />
 		</a>
 	) : (
-		<button type="submit" class="action-tile" style={wrapStyle}>
-			<span style={iconStyle}>
+		<button type="submit" class={wrapCls}>
+			<span class={iconCls}>
 				<Icon name={icon} size={22} stroke={2} />
 			</span>
-			<span style="flex:1">
-				<span style={`display:block;font-size:16.5px;font-weight:700;color:${titleColor}`}>{title}</span>
-				<span style="display:block;margin-top:3px;font-size:13.5px;color:var(--tx-3)">{sub}</span>
+			<span class="flex-1">
+				<span class={titleCls}>{title}</span>
+				<span class="mt-[3px] block text-[13.5px] text-tx-3">{sub}</span>
 			</span>
-			<Icon name={arrow} size={18} class="text-[var(--tx-3)]" />
+			<Icon name={arrow} size={18} class="text-tx-3" />
 		</button>
 	)
 }

@@ -14,32 +14,29 @@ interface Props {
 	popularLabel?: string
 }
 const { name, price, priceNote, tagline, features, cta, href, featured = false, popularLabel = 'Mest populær' } = Astro.props
-const ink = featured ? '#fff' : 'var(--ink)'
-const sub = featured ? 'var(--tx-2)' : 'var(--warm-body)'
-const muted = featured ? 'var(--tx-3)' : 'var(--warm-muted)'
 ---
 
 <div class={featured ? 'plan-card plan-card--featured' : 'plan-card'}>
-	{featured && <div style="position:absolute;top:20px;right:24px"><span class="badge">{popularLabel}</span></div>}
-	<div style={`font-size:21px;font-weight:700;color:${ink}`}>{name}</div>
-	<div style="display:flex;align-items:baseline;gap:8px;margin-top:14px">
-		<span style={`font-size:46px;font-weight:800;letter-spacing:-.03em;color:${featured ? 'var(--orange)' : 'var(--ink)'}`}>{price}</span>
-		<span style={`font-size:15px;color:${muted}`}>{priceNote}</span>
+	{featured && <div class="absolute right-6 top-5"><span class="badge">{popularLabel}</span></div>}
+	<div class:list={['text-[21px] font-bold', featured ? 'text-white' : 'text-ink']}>{name}</div>
+	<div class="mt-[14px] flex items-baseline gap-2">
+		<span class:list={['text-[46px] font-extrabold tracking-[-0.03em]', featured ? 'text-accent' : 'text-ink']}>{price}</span>
+		<span class:list={['text-[15px]', featured ? 'text-tx-3' : 'text-warm-muted']}>{priceNote}</span>
 	</div>
-	<div style={`margin-top:8px;font-size:15.5px;line-height:1.5;color:${sub};min-height:46px`}>{tagline}</div>
-	<div style="display:flex;flex-direction:column;gap:13px;margin:24px 0 26px">
+	<div class:list={['mt-2 min-h-[46px] text-[15.5px] leading-[1.5]', featured ? 'text-tx-2' : 'text-warm-body']}>{tagline}</div>
+	<div class="mt-6 mb-[26px] flex flex-col gap-[13px]">
 		{
 			features.map((f) => (
-				<div style="display:flex;gap:11px;align-items:flex-start">
-					<span style={`width:22px;height:22px;border-radius:999px;flex-shrink:0;margin-top:1px;background:${featured ? 'rgba(255,162,41,.18)' : 'var(--peach)'};color:var(--orange-700);display:flex;align-items:center;justify-content:center`}>
+				<div class="flex items-start gap-[11px]">
+					<span class:list={['mt-px flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full text-orange-deep', featured ? 'bg-[rgba(255,162,41,.18)]' : 'bg-peach']}>
 						<Icon name="check" size={14} stroke={3} />
 					</span>
-					<span style={`font-size:15.5px;line-height:1.45;color:${sub}`}>{f}</span>
+					<span class:list={['text-[15.5px] leading-[1.45]', featured ? 'text-tx-2' : 'text-warm-body']}>{f}</span>
 				</div>
 			))
 		}
 	</div>
-	<div style="margin-top:auto">
+	<div class="mt-auto">
 		<Button href={href} variant={featured ? 'primary' : 'secondary'} full size="md" iconRight="arrow-right">{cta}</Button>
 	</div>
 </div>

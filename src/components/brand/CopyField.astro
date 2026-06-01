@@ -8,30 +8,21 @@ interface Props {
 	mono?: boolean
 }
 const { value, label, big = false, mono = true } = Astro.props
-const valueStyle = [
-	'flex:1',
-	`font-family:${mono ? 'var(--mono)' : 'var(--sans)'}`,
-	`font-size:${big ? '30px' : '15px'}`,
-	'font-weight:700',
-	`letter-spacing:${mono ? (big ? '.2em' : '.08em') : 'normal'}`,
-	`color:${big ? 'var(--accent)' : 'var(--tx)'}`,
-	'word-break:break-all',
-].join(';')
+const btnCls = `copy-btn flex w-full cursor-pointer items-center gap-3 rounded-md border border-line bg-black/[0.26] text-left ${big ? 'px-[18px] py-[14px]' : 'px-[15px] py-[11px]'}`
+const valueCls = [
+	'flex-1 break-all font-bold',
+	mono ? 'font-mono' : 'font-sans',
+	big ? 'text-[30px]' : 'text-[15px]',
+	big ? 'text-accent' : 'text-tx',
+	mono ? (big ? 'tracking-[0.2em]' : 'tracking-[0.08em]') : '',
+].join(' ')
 ---
 
 <div>
-	{label && <div style="font-size:13px;font-weight:600;color:var(--tx-3);margin-bottom:8px">{label}</div>}
-	<button
-		type="button"
-		class="copy-btn"
-		data-copy={value}
-		style={`display:flex;align-items:center;gap:12px;width:100%;padding:${big ? '14px 18px' : '11px 15px'};border-radius:var(--r-md);text-align:left;background:rgba(0,0,0,.26);border:1px solid var(--line);cursor:pointer`}
-	>
-		<span style={valueStyle}>{value}</span>
-		<span
-			class="copy-ind"
-			style="color:var(--tx-3);display:flex;gap:6px;align-items:center;font-size:13px;font-weight:600;flex-shrink:0"
-		>
+	{label && <div class="mb-2 text-[13px] font-semibold text-tx-3">{label}</div>}
+	<button type="button" class={btnCls} data-copy={value}>
+		<span class={valueCls}>{value}</span>
+		<span class="copy-ind flex shrink-0 items-center gap-1.5 text-[13px] font-semibold text-tx-3">
 			<Icon name="copy" size={17} stroke={2.2} />
 		</span>
 	</button>

@@ -24,40 +24,35 @@ const tierDescription = (tier: Tier) => {
 
 <Layout title="New event — appelsin" locale="en">
 	<div class="app screen-root">
-		<div class="app-wrap fu" style="max-width:640px;padding-top:30px">
-			<a
-				href="/en/app"
-				style="display:inline-flex;align-items:center;gap:8px;color:var(--tx-3);font-size:15.5px;font-weight:600"
-			>
+		<div class="fu mx-auto max-w-[640px] px-7 pt-[30px] pb-20">
+			<a href="/en/app" class="inline-flex items-center gap-2 text-[15.5px] font-semibold text-tx-3">
 				<Icon name="arrow-left" size={18} />Back
 			</a>
-			<h1 style="font-size:clamp(30px,5cqw,40px);font-weight:800;letter-spacing:-.02em;margin:24px 0 12px">
-				New event
-			</h1>
-			<div style="display:flex;flex-direction:column;gap:12px;font-size:17px;line-height:1.6;color:var(--tx-2);max-width:520px;margin:0">
-				<p style="margin:0">
+			<h1 class="mt-6 mb-3 text-[clamp(30px,5cqw,40px)] font-extrabold tracking-[-0.02em]">New event</h1>
+			<div class="m-0 flex max-w-[520px] flex-col gap-3 text-[17px] leading-[1.6] text-tx-2">
+				<p class="m-0">
 					Gather all the memories from your occasion in one place. When you create an event you get a unique code and QR
 					that your guests can scan to upload photos straight from the party.
 				</p>
-				<p style="margin:0">
+				<p class="m-0">
 					The photos can show live on a big screen, iPad or laptop during the event, so everyone can follow the moments
 					as they happen. Afterwards you can download the whole set and keep the memories forever.
 				</p>
-				<p style="margin:0;color:var(--tx-3)">Perfect for weddings, birthdays, company parties and other special occasions.</p>
+				<p class="m-0 text-tx-3">Perfect for weddings, birthdays, company parties and other special occasions.</p>
 			</div>
 
 			{
 				createError === 'free_exists' && (
-					<div style="margin-top:24px;border-radius:var(--r-md);border:1px solid rgba(244,63,94,.3);background:rgba(244,63,94,.1);padding:14px 18px;font-size:14px;color:#ff8499">
+					<div class="mt-6 rounded-md border border-[rgba(244,63,94,.3)] bg-[rgba(244,63,94,.1)] px-[18px] py-[14px] text-sm text-danger">
 						You already have a free event. Delete the existing one first, or pick Basic or Gold for this event.
 					</div>
 				)
 			}
 
-			<form method="post" action="/api/events/new" style="display:flex;flex-direction:column;gap:26px;margin-top:34px">
+			<form method="post" action="/api/events/new" class="mt-[34px] flex flex-col gap-[26px]">
 				<input type="hidden" name="returnToPrefix" value="/en/app/events" />
 
-				<label style="display:block">
+				<label class="block">
 					<span class="field-label">Event name</span>
 					<input
 						id="name"
@@ -71,38 +66,34 @@ const tierDescription = (tier: Tier) => {
 				</label>
 
 				<div>
-					<label style="display:block">
+					<label class="block">
 						<span class="field-label">Event date</span>
 						<input id="eventDate" name="eventDate" type="date" required class="field-input field-input--big" />
 					</label>
-					<div
-						style="margin-top:16px;background:var(--orange-soft);border:1px solid rgba(255,162,41,.28);border-radius:var(--r-lg);padding:20px 22px"
-					>
-						<div
-							style="display:flex;align-items:center;gap:9px;color:var(--accent);font-weight:700;font-size:13.5px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px"
-						>
+					<div class="mt-4 rounded-lg border border-[rgba(255,162,41,.28)] bg-orange-soft px-[22px] py-5">
+						<div class="mb-[14px] flex items-center gap-[9px] text-[13.5px] font-bold uppercase tracking-[0.04em] text-accent">
 							<Icon name="clock" size={16} />The date drives the timeline
 						</div>
-						<div style="display:flex;flex-direction:column;gap:11px;font-size:15px;line-height:1.5;color:var(--tx-2)">
-							<div style="display:flex;gap:12px">
-								<span style="color:var(--accent);font-weight:800">·</span>
+						<div class="flex flex-col gap-[11px] text-[15px] leading-[1.5] text-tx-2">
+							<div class="flex gap-3">
+								<span class="font-extrabold text-accent">·</span>
 								<span>Guests can upload from <strong>24 hours before</strong> — so anyone scanning the QR the night before can get going.</span>
 							</div>
-							<div style="display:flex;gap:12px">
-								<span style="color:var(--accent);font-weight:800">·</span>
+							<div class="flex gap-3">
+								<span class="font-extrabold text-accent">·</span>
 								<span>The event is <strong>live for 2 days after</strong> — catching late-night and morning-after photos.</span>
 							</div>
-							<div style="display:flex;gap:12px">
-								<span style="color:var(--accent);font-weight:800">·</span>
+							<div class="flex gap-3">
+								<span class="font-extrabold text-accent">·</span>
 								<span>Then it's marked <strong>ended</strong>, and photos are kept for <strong>7-90 days</strong> depending on plan, then everything is deleted automatically.</span>
 							</div>
 						</div>
 					</div>
 				</div>
 
-				<fieldset style="border:none;padding:0;margin:0">
-					<legend class="app-sec-label" style="padding:0">Choose plan</legend>
-					<div style="display:flex;flex-direction:column;gap:12px">
+				<fieldset class="m-0 border-none p-0">
+					<legend class="app-sec-label">Choose plan</legend>
+					<div class="flex flex-col gap-3">
 						{
 							TIER_IDS.map((id) => {
 								const t = TIERS[id]
@@ -110,16 +101,16 @@ const tierDescription = (tier: Tier) => {
 									<label class="radio-card">
 										<input type="radio" name="tier" value={id} checked={id === selectedTier} />
 										<span class="radio-dot" />
-										<span style="flex:1">
-											<span style="display:flex;align-items:center;gap:10px">
-												<span style="font-size:18px;font-weight:700;color:var(--tx)">{tierLabel(id)}</span>
+										<span class="flex-1">
+											<span class="flex items-center gap-[10px]">
+												<span class="text-[18px] font-bold text-tx">{tierLabel(id)}</span>
 												{id === 'basic' && <span class="badge badge--soft">Popular</span>}
 											</span>
-											<span style="display:block;margin-top:4px;font-size:14.5px;color:var(--tx-3)">{tierDescription(id)}</span>
+											<span class="mt-1 block text-[14.5px] text-tx-3">{tierDescription(id)}</span>
 										</span>
 										<span class="rc-price">
 											{tierPrice(id)}
-											{t.priceCents > 0 && <span style="color:var(--tx-3)"> / event</span>}
+											{t.priceCents > 0 && <span class="text-tx-3"> / event</span>}
 										</span>
 									</label>
 								)
@@ -130,9 +121,9 @@ const tierDescription = (tier: Tier) => {
 
 				<div>
 					<Button type="submit" full size="lg" iconRight="arrow-right">Create event</Button>
-					<p style="font-size:13.5px;color:var(--tx-3);text-align:center;margin-top:14px;line-height:1.5">
-						Created as {host.email}. Status starts as <span style="font-family:var(--mono)">draft</span>; paid plans go
-						<span style="font-family:var(--mono)">live</span> after payment.
+					<p class="mt-[14px] text-center text-[13.5px] leading-[1.5] text-tx-3">
+						Created as {host.email}. Status starts as <span class="font-mono">draft</span>; paid plans go
+						<span class="font-mono">live</span> after payment.
 					</p>
 				</div>
 			</form>

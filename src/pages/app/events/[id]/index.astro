@@ -621,7 +621,7 @@ const timelineRows: [string, string, string][] = [
 	function addPhoto(p: IncomingPhoto) {
 		if (!photoGrid) return
 		if (photoGrid.querySelector(`[data-photo-id="${p.photoId}"]`)) return
-		photoGrid.prepend(buildTile(p))
+		photoGrid.insertBefore(buildTile(p), photoGrid.firstChild)
 		updateRecentCount()
 	}
 

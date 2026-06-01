@@ -551,9 +551,9 @@ onMounted(() => {
 
 <template>
 	<!-- Name + email gate. Shown until the guest claims a per-event display name. -->
-	<div v-if="!hasIdentity" class="card card--dark" style="padding: 26px">
-		<form style="display: flex; flex-direction: column; gap: 18px" @submit.prevent="join">
-			<label style="display: block">
+	<div v-if="!hasIdentity" class="card card--dark">
+		<form class="flex flex-col gap-[18px]" @submit.prevent="join">
+			<label class="block">
 				<span class="field-label">{{ text.nameLabel }}</span>
 				<input
 					v-model="nameInput"
@@ -567,7 +567,7 @@ onMounted(() => {
 					:disabled="joining"
 				/>
 			</label>
-			<label style="display: block">
+			<label class="block">
 				<span class="field-label">{{ text.emailLabel }}</span>
 				<input
 					v-model="emailInput"
@@ -583,7 +583,7 @@ onMounted(() => {
 					class="field-input"
 					:disabled="joining"
 				/>
-				<span style="margin-top: 8px; display: block; font-size: 12.5px; color: var(--tx-3)">
+				<span class="mt-2 block text-[12.5px] text-tx-3">
 					{{ text.emailHelp }}
 				</span>
 			</label>
@@ -594,8 +594,8 @@ onMounted(() => {
 			>
 				{{ joining ? text.saving : text.continue }}
 			</button>
-			<p v-if="joinError" style="font-size: 14px; color: #ff8499">{{ joinError }}</p>
-			<p style="font-size: 12.5px; line-height: 1.5; color: var(--tx-3)">
+			<p v-if="joinError" class="text-sm text-danger">{{ joinError }}</p>
+			<p class="text-[12.5px] leading-[1.5] text-tx-3">
 				{{ text.identityNote }}
 			</p>
 		</form>
@@ -612,37 +612,27 @@ onMounted(() => {
 				style="display: none"
 				@change="onFileChange"
 			/>
-			<span
-				:style="{
-					width: '78px',
-					height: '78px',
-					borderRadius: '999px',
-					background: iconBg,
-					display: 'flex',
-					alignItems: 'center',
-					justifyContent: 'center',
-				}"
-			>
+			<span class="flex h-[78px] w-[78px] items-center justify-center rounded-full" :style="{ background: iconBg }">
 				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 					<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
 					<circle cx="12" cy="13" r="4" />
 				</svg>
 			</span>
-			<span style="font-size: 21px; font-weight: 800">{{ labelText(status) }}</span>
-			<span v-if="status === 'idle'" style="font-size: 13.5px; font-weight: 600; opacity: 0.72">
+			<span class="text-[21px] font-extrabold">{{ labelText(status) }}</span>
+			<span v-if="status === 'idle'" class="text-[13.5px] font-semibold opacity-[.72]">
 				{{ text.camera }}
 			</span>
-			<span v-if="status === 'error'" style="font-size: 13px; margin-top: 2px">{{ errorMsg }}</span>
-			<span v-if="status === 'full' || status === 'not_open'" style="font-size: 13px; margin-top: 2px">{{ errorMsg }}</span>
+			<span v-if="status === 'error'" class="mt-0.5 text-[13px]">{{ errorMsg }}</span>
+			<span v-if="status === 'full' || status === 'not_open'" class="mt-0.5 text-[13px]">{{ errorMsg }}</span>
 		</label>
 
 		<!-- Sharing as -->
-		<div style="padding: 18px 0 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14.5px; flex-wrap: wrap">
-			<span style="color: var(--tx-3)">{{ text.sharingAs }}</span>
-			<span style="font-family: var(--hand); font-size: 22px; color: var(--orange); font-weight: 700">{{ identity!.name }}</span>
+		<div class="flex flex-wrap items-center justify-center gap-2 pt-[18px] text-[14.5px]">
+			<span class="text-tx-3">{{ text.sharingAs }}</span>
+			<span class="font-hand text-[22px] font-bold text-accent">{{ identity!.name }}</span>
 			<button
 				type="button"
-				style="color: var(--tx-2); font-size: 13.5px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px"
+				class="text-[13.5px] font-semibold text-tx-2 underline underline-offset-[3px]"
 				@click="clearIdentity"
 			>
 				{{ text.differentName }}
@@ -650,44 +640,43 @@ onMounted(() => {
 		</div>
 
 		<!-- Your uploads -->
-		<section style="padding: 26px 0 8px">
-			<div style="font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx-3); margin-bottom: 14px">
+		<section class="pt-[26px] pb-2">
+			<div class="mb-[14px] text-[13px] font-bold uppercase tracking-[0.06em] text-tx-3">
 				{{ text.photos }}<span v-if="myPhotos.length > 0"> ({{ myPhotos.length }})</span>
 			</div>
-			<div v-if="myPhotos.length === 0 && !loadingPhotos" style="font-size: 14px; color: var(--tx-3)">
+			<div v-if="myPhotos.length === 0 && !loadingPhotos" class="text-sm text-tx-3">
 				{{ text.empty }}
 			</div>
-			<div v-else style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px">
+			<div v-else class="grid grid-cols-3 gap-[9px]">
 				<div
 					v-for="(photo, idx) in myPhotos"
 					:key="photo.id"
-					class="guest-tile"
-					style="position: relative; aspect-ratio: 1; border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--line)"
+					class="guest-tile relative aspect-square overflow-hidden rounded-md border border-line"
 				>
 					<a
 						:href="photo.mediaType === 'video' && photo.cfStreamUid ? `https://iframe.videodelivery.net/${photo.cfStreamUid}` : photoUrl(photo.cfImagesId)"
 						target="_blank"
 						rel="noopener"
-						style="display: block; height: 100%; width: 100%"
+						class="block h-full w-full"
 					>
 						<img
 							v-if="mediaPreviewUrl(photo)"
 							:src="mediaPreviewUrl(photo)"
 							alt=""
 							loading="lazy"
-							style="height: 100%; width: 100%; object-fit: cover; display: block"
+							class="block h-full w-full object-cover"
 							:style="{ opacity: isDeleting(photo.id) ? 0.45 : 1 }"
 						/>
 						<span
 							v-if="photo.mediaType === 'video'"
-							style="position: absolute; bottom: 6px; left: 6px; border-radius: 6px; background: rgba(0,0,0,.6); color: #fff; padding: 2px 6px; font-size: 10.5px; font-weight: 700"
+							class="absolute bottom-1.5 left-1.5 rounded-md bg-black/60 px-1.5 py-0.5 text-[10.5px] font-bold text-white"
 						>
 							{{ photo.durationSeconds ? `${photo.durationSeconds}s` : 'Video' }}
 						</span>
 					</a>
 					<span
 						v-if="idx === 0"
-						style="position: absolute; left: 6px; top: 6px; padding: 2px 7px; border-radius: 6px; background: var(--accent); color: #2C1700; font-size: 10.5px; font-weight: 800"
+						class="absolute left-1.5 top-1.5 rounded-md bg-accent px-[7px] py-0.5 text-[10.5px] font-extrabold text-[#2C1700]"
 					>
 						{{ props.locale === 'da' ? 'ny' : 'new' }}
 					</span>
@@ -709,8 +698,8 @@ onMounted(() => {
 					</button>
 				</div>
 			</div>
-			<p v-if="deleteError" style="margin-top: 14px; font-size: 14px; color: #ff8499">{{ deleteError }}</p>
-			<p style="font-size: 12.5px; color: var(--tx-4); text-align: center; margin-top: 22px; line-height: 1.5">
+			<p v-if="deleteError" class="mt-[14px] text-sm text-danger">{{ deleteError }}</p>
+			<p class="mt-[22px] text-center text-[12.5px] leading-[1.5] text-tx-4">
 				{{ props.locale === 'da'
 					? 'Billederne gemmes hos værten og slettes efter eventet.'
 					: 'Photos are stored by the host and deleted after the event.' }}

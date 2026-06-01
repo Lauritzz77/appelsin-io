@@ -113,41 +113,40 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
 
 <template>
   <div class="style-cols">
-    <aside style="display: flex; flex-direction: column; gap: 16px">
-      <section class="card card--dark" style="padding: 22px">
-        <h2 style="font-size: 15px; font-weight: 700; margin: 0 0 16px">Farver</h2>
-        <div style="display: flex; flex-direction: column; gap: 14px">
-          <label style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
-            <span style="font-size: 13.5px; color: var(--tx-3)">Baggrund</span>
-            <span style="display: flex; align-items: center; gap: 10px">
-              <span style="font-family: var(--mono); font-size: 12px; color: var(--tx-4)">{{ branding.background }}</span>
+    <aside class="flex flex-col gap-4">
+      <section class="card card--dark">
+        <h2 class="m-0 mb-4 text-[15px] font-bold">Farver</h2>
+        <div class="flex flex-col gap-[14px]">
+          <label class="flex items-center justify-between gap-3">
+            <span class="text-[13.5px] text-tx-3">Baggrund</span>
+            <span class="flex items-center gap-2.5">
+              <span class="font-mono text-[12px] text-tx-4">{{ branding.background }}</span>
               <input v-model="branding.background" type="color" class="color-input" />
             </span>
           </label>
-          <label style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
-            <span style="font-size: 13.5px; color: var(--tx-3)">Tekst</span>
-            <span style="display: flex; align-items: center; gap: 10px">
-              <span style="font-family: var(--mono); font-size: 12px; color: var(--tx-4)">{{ branding.text }}</span>
+          <label class="flex items-center justify-between gap-3">
+            <span class="text-[13.5px] text-tx-3">Tekst</span>
+            <span class="flex items-center gap-2.5">
+              <span class="font-mono text-[12px] text-tx-4">{{ branding.text }}</span>
               <input v-model="branding.text" type="color" class="color-input" />
             </span>
           </label>
         </div>
       </section>
 
-      <section class="card card--dark" style="padding: 22px">
-        <h2 style="font-size: 15px; font-weight: 700; margin: 0 0 14px">Skrifttype</h2>
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px">
+      <section class="card card--dark">
+        <h2 class="m-0 mb-[14px] text-[15px] font-bold">Skrifttype</h2>
+        <div class="grid grid-cols-3 gap-[9px]">
           <button
             v-for="id in FONT_IDS"
             :key="id"
             type="button"
-            class="opt"
+            class="opt px-1.5 py-[14px] text-center"
             :class="{ 'opt--sel': branding.font === id }"
-            style="padding: 14px 6px; text-align: center"
             @click="branding.font = id"
           >
             <div
-              style="font-size: 26px"
+              class="text-[26px]"
               :style="{
                 fontFamily: FONTS[id].family,
                 fontWeight: FONTS[id].headlineWeight,
@@ -157,21 +156,20 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
             >
               Aa
             </div>
-            <div style="margin-top: 4px; font-size: 12px; color: var(--tx-3)">{{ FONTS[id].label }}</div>
+            <div class="mt-1 text-[12px] text-tx-3">{{ FONTS[id].label }}</div>
           </button>
         </div>
       </section>
 
-      <section class="card card--dark" style="padding: 22px">
-        <h2 style="font-size: 15px; font-weight: 700; margin: 0 0 14px">Fliseopdeling</h2>
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px">
+      <section class="card card--dark">
+        <h2 class="m-0 mb-[14px] text-[15px] font-bold">Fliseopdeling</h2>
+        <div class="grid grid-cols-3 gap-[9px]">
           <button
             v-for="id in DENSITY_IDS"
             :key="id"
             type="button"
-            class="opt"
+            class="opt px-2 py-2.5 text-sm font-semibold"
             :class="{ 'opt--sel': branding.density === id }"
-            style="padding: 10px 8px; font-size: 14px; font-weight: 600"
             @click="branding.density = id"
           >
             {{ DENSITIES[id].label }}
@@ -179,43 +177,43 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
         </div>
       </section>
 
-      <section class="card card--dark" style="padding: 22px">
-        <div style="display: flex; align-items: center; justify-content: space-between">
-          <span style="font-size: 15px; font-weight: 700">Titel-overlay</span>
+      <section class="card card--dark">
+        <div class="flex items-center justify-between">
+          <span class="text-[15px] font-bold">Titel-overlay</span>
           <label class="toggle">
             <input type="checkbox" v-model="branding.titleOverlay.enabled" />
             <span class="knob"></span>
           </label>
         </div>
-        <div v-if="branding.titleOverlay.enabled" style="margin-top: 16px; display: flex; flex-direction: column; gap: 14px">
-          <label style="display: block">
+        <div v-if="branding.titleOverlay.enabled" class="mt-4 flex flex-col gap-[14px]">
+          <label class="block">
             <span class="field-label">Overskrift</span>
             <input v-model="branding.titleOverlay.line1" type="text" maxlength="80" placeholder="Anna & Jonas" class="field-input" />
           </label>
-          <label style="display: block">
+          <label class="block">
             <span class="field-label">Underlinje</span>
             <input v-model="branding.titleOverlay.line2" type="text" maxlength="80" placeholder="20. maj 2026" class="field-input" />
           </label>
         </div>
       </section>
 
-      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+      <div class="flex flex-wrap items-center gap-3">
         <button type="button" class="btn btn--primary btn--sm" :disabled="!dirty || saving" @click="save">
           {{ saving ? "Gemmer…" : "Gem ændringer" }}
         </button>
         <button type="button" class="btn btn--ghost btn--sm" :disabled="!dirty || saving" @click="reset">Annullér</button>
-        <span v-if="flash === 'saved'" style="font-size: 13px; color: var(--live)">Gemt.</span>
-        <span v-if="flash === 'error'" style="font-size: 13px; color: #ff8499">{{ errorMessage }}</span>
+        <span v-if="flash === 'saved'" class="text-[13px] text-live">Gemt.</span>
+        <span v-if="flash === 'error'" class="text-[13px] text-danger">{{ errorMessage }}</span>
       </div>
     </aside>
 
     <div>
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px">
-        <span style="font-size: 13.5px; color: var(--tx-3)">Forhåndsvisning · live spejling af fotovæggen</span>
+      <div class="mb-3 flex items-center justify-between">
+        <span class="text-[13.5px] text-tx-3">Forhåndsvisning · live spejling af fotovæggen</span>
         <a
           :href="`/display/${eventCode}`"
           target="_blank"
-          style="display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--accent); font-weight: 600"
+          class="inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-accent"
           >Åbn fuld væg ↗</a
         >
       </div>

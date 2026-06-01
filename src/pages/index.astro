@@ -37,7 +37,7 @@ const cards: Card[] = [
 		features: [
 			'500 billeder pr. event',
 			'15 dages opbevaring',
-			'Custom eventtitel og accentfarve',
+			'Rediger eventtitel og tekstfarve',
 			'Download billeder efter festen',
 		],
 		cta: 'Vælg Basic',
@@ -50,7 +50,7 @@ const cards: Card[] = [
 		features: [
 			'2.000 billeder pr. event',
 			'1 måneds opbevaring',
-			'Custom eventtitel og accentfarve',
+			'Rediger eventtitel og tekstfarve',
 			'15 sekunders videoklip',
 			'Download billeder efter festen',
 		],
@@ -118,29 +118,24 @@ const faq = [
 
 				<section class="hero fu">
 					<div>
-						<div
-							style="font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:18px"
-						>
+						<div class="mb-[18px] text-sm font-bold uppercase tracking-[0.14em] text-accent">
 							Til bryllup · fødselsdag · firmafest
 						</div>
-						<h1 class="hero-h1" style="text-transform:uppercase">
-							Festens billeder,<br />live på storskærmen.
+						<h1 class="hero-h1 uppercase">
+							Festens billeder,<br /> samlet et sted.
 						</h1>
-						<p style="font-size:19.5px;line-height:1.6;color:var(--tx-2);max-width:480px;margin:22px 0 32px">
-							Gæsterne scanner en QR-kode og uploader billeder direkte fra telefonen — ingen app. Alt vises live på
-							storskærmen, og du downloader hele festen bagefter.
+						<p class="mt-[22px] mb-8 max-w-[480px] text-[19.5px] leading-[1.6] text-tx-2">
+							Gæsterne scanner en QR-kode og uploader billeder direkte fra telefonen — ingen app. Alle billeder er samlet et sted, og du downloader hele festen bagefter.
 						</p>
-						<div style="display:flex;gap:14px;flex-wrap:wrap">
+						<div class="flex flex-wrap gap-[14px]">
 							<Button href={startHref} size="lg">Opret dit event</Button>
 							<a href={loginHref} class="btn btn--lg btn--blue">Log ind</a>
 						</div>
-						<div
-							style="display:flex;align-items:center;gap:10px;margin-top:30px;flex-wrap:wrap;color:var(--tx-3);font-size:14.5px;font-weight:600"
-						>
+						<div class="mt-[30px] flex flex-wrap items-center gap-[10px] text-[14.5px] font-semibold text-tx-3">
 							{
 								['Gratis at prøve', 'Ingen app', 'Klar på 2 minutter'].map((t, i) => (
 									<>
-										{i > 0 && <span style="opacity:.4">·</span>}
+										{i > 0 && <span class="opacity-40">·</span>}
 										<span>{t}</span>
 									</>
 								))
@@ -154,33 +149,29 @@ const faq = [
 
 		{/* CREAM: how it works + pricing */}
 		<div class="mkt-wrap">
-			<section style="padding:calc(56px*var(--d)) 0 calc(64px*var(--d))">
+			<section class="pt-[56px] pb-16">
 				<div class="steps">
 					{
 						steps.map((s) => (
-							<div style="background:#fff;border-radius:var(--r-xl);padding:28px;border:1px solid var(--cream-line);box-shadow:var(--sh-cream-sm)">
-								<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-									<span style="width:52px;height:52px;border-radius:var(--r-md);background:var(--peach);color:var(--orange-700);display:flex;align-items:center;justify-content:center">
+							<div class="rounded-xl border border-cream-line bg-white p-7 shadow-cream-sm">
+								<div class="mb-4 flex items-center gap-[14px]">
+									<span class="flex h-[52px] w-[52px] items-center justify-center rounded-md bg-peach text-orange-deep">
 										<Icon name={s.ic} size={26} stroke={2} />
 									</span>
-									<span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--warm-muted)">{s.n}</span>
+									<span class="font-mono text-[15px] font-bold text-warm-muted">{s.n}</span>
 								</div>
-								<div style="font-size:21px;font-weight:700;color:var(--ink);margin-bottom:8px">{s.t}</div>
-								<div style="font-size:16px;line-height:1.6;color:var(--warm-body)">{s.d}</div>
+								<div class="mb-2 text-[21px] font-bold text-ink">{s.t}</div>
+								<div class="text-base leading-[1.6] text-warm-body">{s.d}</div>
 							</div>
 						))
 					}
 				</div>
 			</section>
 
-			<section id="priser" style="padding:calc(28px*var(--d)) 0 calc(64px*var(--d));scroll-margin-top:24px">
-				<div style="text-align:center;margin-bottom:40px">
-					<h2 style="font-size:clamp(32px,4cqw,46px);font-weight:800;letter-spacing:-.02em;color:var(--ink);margin:0">
-						Én pris pr. event
-					</h2>
-					<p style="font-size:18px;color:var(--warm-body);margin-top:12px">
-						Vælg en plan til dagen. Ingen abonnementer, ingen overraskelser.
-					</p>
+			<section id="priser" class="scroll-mt-6 pt-[28px] pb-16">
+				<div class="mb-10 text-center">
+					<h2 class="m-0 text-[clamp(32px,4cqw,46px)] font-extrabold tracking-[-0.02em] text-ink">Én pris pr. event</h2>
+					<p class="mt-3 text-[18px] text-warm-body">Vælg en plan til dagen. Ingen abonnementer, ingen overraskelser.</p>
 				</div>
 				<div class="pricing">
 					{
@@ -199,7 +190,7 @@ const faq = [
 						))
 					}
 				</div>
-				<p style="text-align:center;margin-top:28px;font-size:15px;color:var(--warm-muted)">
+				<p class="mt-7 text-center text-[15px] text-warm-muted">
 					Alle planer inkluderer QR-pakke, live fotovæg, moderation og EU-hosting.
 				</p>
 			</section>
@@ -207,11 +198,11 @@ const faq = [
 
 		{/* NAVY FAQ BAND */}
 		<div class="faq-band band-navy">
-			<div class="mkt-wrap" style="max-width:860px">
-				<section style="padding:calc(60px*var(--d)) 0 calc(64px*var(--d))">
-					<div style="text-align:center;margin-bottom:36px">
-						<div style="font-family:var(--hand);font-size:27px;color:var(--accent);font-weight:600">godt at vide</div>
-						<h2 style="font-size:clamp(30px,4cqw,42px);font-weight:800;letter-spacing:-.02em;color:#fff;margin:2px 0 0">
+			<div class="mx-auto max-w-[860px] px-10">
+				<section class="pt-[60px] pb-16">
+					<div class="mb-9 text-center">
+						<div class="font-hand text-[27px] font-semibold text-accent">godt at vide</div>
+						<h2 class="mt-0.5 text-[clamp(30px,4cqw,42px)] font-extrabold tracking-[-0.02em] text-white">
 							Spørgsmål før festen?
 						</h2>
 					</div>

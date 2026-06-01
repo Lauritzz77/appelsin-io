@@ -4,71 +4,119 @@
    appelsin.io — design tokens (ported from the Claude-Design "redo" bundle)
    Two surfaces: warm cream marketing + premium dark-navy app/guest/wall.
    ════════════════════════════════════════════════════════════════════════ */
-:root {
-	/* ── brand signature ── */
-	--orange: #ffa229;
-	--orange-600: #f58e12;
-	--orange-700: #e07d08;
-	--orange-soft: color-mix(in srgb, var(--accent) 14%, transparent);
-	--navy: #071952;
-	--navy-ink: #0a1b45;
+/* Design tokens registered with Tailwind v4 → generates utilities like
+   bg-navy, text-ink, text-accent, bg-s1, rounded-xl, shadow-app, font-hand … */
+@theme {
+	/* brand */
+	--color-accent: #ffa229;
+	--color-accent-600: #f58e12;
+	--color-orange-deep: #e07d08;
+	--color-navy: #071952;
+	--color-navy-ink: #0a1b45;
 
-	/* live-tweakable accent (kept stable here) */
-	--accent: #ffa229;
-	--accent-600: #f58e12;
-	--d: 1; /* density multiplier */
+	/* warm marketing surfaces */
+	--color-cream: #fbf6ee;
+	--color-cream-2: #f4ecdf;
+	--color-cream-3: #efe5d4;
+	--color-peach: #fbe6ce;
+	--color-peach-line: #e7d6be;
+	--color-cream-line: #e8dcc8;
+	--color-ink: #0a1b45;
+	--color-ink-2: #3c4663;
+	--color-warm-body: #5a5544;
+	--color-warm-muted: #8c846e;
 
-	/* ── warm marketing surfaces ── */
-	--cream: #fbf6ee;
-	--cream-2: #f4ecdf;
-	--cream-3: #efe5d4;
-	--peach: #fbe6ce;
-	--peach-line: #e7d6be;
-	--cream-line: #e8dcc8;
-	--ink: #0a1b45; /* headings on cream */
-	--ink-2: #3c4663; /* sub on cream */
-	--warm-body: #5a5544; /* body on cream */
-	--warm-muted: #8c846e; /* muted on cream */
-
-	/* ── premium dark app surfaces ── */
-	--app-bg: #061541;
-	--app-bg-2: #08184a;
-	--app-deep: #040e30;
-	--s1: #0c2059; /* card */
-	--s2: #102765; /* raised */
-	--s3: #163074;
-	--line: rgba(255, 255, 255, 0.09);
-	--line-2: rgba(255, 255, 255, 0.06);
-	--tx: #eef2fc; /* heading on navy */
-	--tx-2: #c2cae6; /* body on navy */
-	--tx-3: #8c97c2; /* muted on navy */
-	--tx-4: #5e6796; /* faint on navy */
+	/* premium dark app surfaces */
+	--color-app-bg: #061541;
+	--color-app-bg-2: #08184a;
+	--color-app-deep: #040e30;
+	--color-s1: #0c2059;
+	--color-s2: #102765;
+	--color-s3: #163074;
+	--color-tx: #eef2fc;
+	--color-tx-2: #c2cae6;
+	--color-tx-3: #8c97c2;
+	--color-tx-4: #5e6796;
 
 	/* status */
-	--live: #34d399;
-	--live-bg: rgba(52, 211, 153, 0.14);
-	--draft: #ffc368;
-	--ended: #8c97c2;
+	--color-live: #34d399;
+	--color-draft: #ffc368;
+	--color-ended: #8c97c2;
+	--color-danger: #ff8499;
 
 	/* radii */
-	--r-sm: 10px;
-	--r-md: 14px;
-	--r-lg: 20px;
-	--r-xl: 28px;
-	--r-2xl: 36px;
+	--radius-sm: 10px;
+	--radius-md: 14px;
+	--radius-lg: 20px;
+	--radius-xl: 28px;
+	--radius-2xl: 36px;
 
-	/* shadow */
-	--sh-cream-sm: 0 1px 2px rgba(40, 28, 8, 0.05), 0 6px 16px rgba(40, 28, 8, 0.06);
-	--sh-cream: 0 2px 6px rgba(40, 28, 8, 0.06), 0 18px 44px rgba(40, 28, 8, 0.1);
-	--sh-cream-lg: 0 4px 12px rgba(40, 28, 8, 0.08), 0 32px 70px rgba(40, 28, 8, 0.14);
-	--sh-app: 0 2px 6px rgba(0, 0, 0, 0.25), 0 18px 50px rgba(0, 0, 0, 0.4);
-	--sh-app-lg: 0 8px 24px rgba(0, 0, 0, 0.35), 0 40px 90px rgba(0, 0, 0, 0.55);
-	--glow: 0 10px 34px color-mix(in srgb, var(--accent) 38%, transparent);
+	/* shadows */
+	--shadow-cream-sm: 0 1px 2px rgba(40, 28, 8, 0.05), 0 6px 16px rgba(40, 28, 8, 0.06);
+	--shadow-cream: 0 2px 6px rgba(40, 28, 8, 0.06), 0 18px 44px rgba(40, 28, 8, 0.1);
+	--shadow-cream-lg: 0 4px 12px rgba(40, 28, 8, 0.08), 0 32px 70px rgba(40, 28, 8, 0.14);
+	--shadow-app: 0 2px 6px rgba(0, 0, 0, 0.25), 0 18px 50px rgba(0, 0, 0, 0.4);
+	--shadow-app-lg: 0 8px 24px rgba(0, 0, 0, 0.35), 0 40px 90px rgba(0, 0, 0, 0.55);
 
 	/* type */
-	--sans: "Schibsted Grotesk", system-ui, -apple-system, sans-serif;
-	--hand: "Caveat", cursive;
-	--mono: "Space Mono", ui-monospace, monospace;
+	--font-sans: "Schibsted Grotesk", system-ui, -apple-system, sans-serif;
+	--font-hand: "Caveat", cursive;
+	--font-mono: "Space Mono", ui-monospace, monospace;
+}
+
+/* Legacy short aliases — keep existing var(--navy)/var(--r-md)/var(--sh-app)…
+   references working during/after the Tailwind migration. */
+:root {
+	--orange: var(--color-accent);
+	--orange-600: var(--color-accent-600);
+	--orange-700: var(--color-orange-deep);
+	--accent: var(--color-accent);
+	--accent-600: var(--color-accent-600);
+	--navy: var(--color-navy);
+	--navy-ink: var(--color-navy-ink);
+	--cream: var(--color-cream);
+	--cream-2: var(--color-cream-2);
+	--cream-3: var(--color-cream-3);
+	--peach: var(--color-peach);
+	--peach-line: var(--color-peach-line);
+	--cream-line: var(--color-cream-line);
+	--ink: var(--color-ink);
+	--ink-2: var(--color-ink-2);
+	--warm-body: var(--color-warm-body);
+	--warm-muted: var(--color-warm-muted);
+	--app-bg: var(--color-app-bg);
+	--app-bg-2: var(--color-app-bg-2);
+	--app-deep: var(--color-app-deep);
+	--s1: var(--color-s1);
+	--s2: var(--color-s2);
+	--s3: var(--color-s3);
+	--tx: var(--color-tx);
+	--tx-2: var(--color-tx-2);
+	--tx-3: var(--color-tx-3);
+	--tx-4: var(--color-tx-4);
+	--live: var(--color-live);
+	--draft: var(--color-draft);
+	--ended: var(--color-ended);
+	--r-sm: var(--radius-sm);
+	--r-md: var(--radius-md);
+	--r-lg: var(--radius-lg);
+	--r-xl: var(--radius-xl);
+	--r-2xl: var(--radius-2xl);
+	--sh-cream-sm: var(--shadow-cream-sm);
+	--sh-cream: var(--shadow-cream);
+	--sh-cream-lg: var(--shadow-cream-lg);
+	--sh-app: var(--shadow-app);
+	--sh-app-lg: var(--shadow-app-lg);
+	--sans: var(--font-sans);
+	--hand: var(--font-hand);
+	--mono: var(--font-mono);
+	/* computed / non-theme tokens */
+	--orange-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+	--line: rgba(255, 255, 255, 0.09);
+	--line-2: rgba(255, 255, 255, 0.06);
+	--live-bg: rgba(52, 211, 153, 0.14);
+	--glow: 0 10px 34px color-mix(in srgb, var(--accent) 38%, transparent);
+	--d: 1;
 }
 
 /* ── base ── */

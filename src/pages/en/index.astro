@@ -2,14 +2,19 @@
 export const prerender = false
 
 import Layout from '../../layouts/Layout.astro'
-import type { Tier as TierId } from '../../lib/tiers'
+import MarketingNav from '../../components/marketing/MarketingNav.astro'
+import MarketingFooter from '../../components/marketing/MarketingFooter.astro'
+import HeroCollage from '../../components/marketing/HeroCollage.astro'
+import PlanCard from '../../components/marketing/PlanCard.astro'
+import Button from '../../components/brand/Button.astro'
+import Icon from '../../components/brand/Icon.astro'
+import Accordion from '../../components/brand/Accordion.astro'
+import { formatPrice, type Tier as TierId } from '../../lib/tiers'
 
 const isSignedIn = !!Astro.locals.host
 
 type Card = {
 	id: TierId
-	name: string
-	price: string
 	priceNote: string
 	tagline: string
 	features: string[]
@@ -17,24 +22,16 @@ type Card = {
 	featured?: boolean
 }
 
-const tiers: Card[] = [
+const cards: Card[] = [
 	{
 		id: 'free',
-		name: 'Free',
-		price: '€0',
 		priceNote: 'Only 1 active event',
 		tagline: 'Try it at a real event — no card required.',
-		features: [
-			'20 photos per event',
-			'7-day retention',
-			'Download photos after the event',
-		],
+		features: ['20 photos per event', '7-day retention', 'Download photos after the event'],
 		cta: 'Start free',
 	},
 	{
 		id: 'basic',
-		name: 'Basic',
-		price: '€33',
 		priceNote: 'per event',
 		tagline: 'Clean, branded, ready for a wedding.',
 		features: [
@@ -48,8 +45,6 @@ const tiers: Card[] = [
 	},
 	{
 		id: 'gold',
-		name: 'Gold',
-		price: '€67',
 		priceNote: 'per event',
 		tagline: 'For big nights and long parties.',
 		features: [
@@ -68,215 +63,156 @@ function ctaHref(tier: TierId): string {
 	if (isSignedIn) return dest
 	return `/en/login?next=${encodeURIComponent(dest)}`
 }
+const startHref = ctaHref('basic')
+
+const steps = [
+	{ ic: 'qr', n: '01', t: 'Scan the code', d: 'Guests scan the QR code with their phone camera. No app, no login.' },
+	{ ic: 'camera', n: '02', t: 'Upload a photo', d: 'They pick a photo or record a clip — straight from the phone.' },
+	{ ic: 'monitor', n: '03', t: 'Live on screen', d: 'The photo appears on the wall instantly, so everyone can follow along.' },
+]
+
+const faq = [
+	{
+		q: 'Do my guests need to download an app?',
+		a: "No. Guests scan the QR code with their phone's camera and upload directly in the browser. No app, no account.",
+	},
+	{
+		q: 'What happens if we hit the photo limit?',
+		a: 'New uploads are blocked once the cap is reached. You can delete rejected photos to free up slots, or upgrade the event to a bigger plan. Free is meant for testing — pick Basic or Gold for the real party.',
+	},
+	{
+		q: 'What happens to the photos after the event?',
+		a: 'The event automatically marks as ended 2 days after the event date. You and your guests (with email) get a download link by email. Photos are then kept for 7-30 days depending on plan, after which everything is deleted automatically.',
+	},
+	{
+		q: 'Can I show the photo wall on an iPad or laptop?',
+		a: 'Yes. The photo wall is just a URL — open it in any browser on a big screen, iPad, laptop, or projector. Photos update live as guests upload.',
+	},
+	{
+		q: "Can I delete a photo that shouldn't be shown?",
+		a: "Yes. You can delete individual photos from the event dashboard — they disappear from the photo wall instantly and aren't included in the final download.",
+	},
+	{
+		q: 'When can guests start uploading?',
+		a: 'The upload window opens 24 hours before the event date, so anyone scanning the QR the night before can get going. The event stays live until 2 days after the event date to catch late-night and morning-after photos.',
+	},
+	{
+		q: 'Where are the photos stored?',
+		a: "All photos are hosted on Cloudflare's EU infrastructure. We don't sell your data and won't use it for anything other than serving and delivering the photos during the agreed retention period.",
+	},
+]
 ---
 
 <Layout
 	title="appelsin — live event photos"
 	description="Guests scan a QR code, upload photos from their phone, and the photos appear live on the big screen."
 	locale="en"
+	surface="cream"
 >
-	<div class="splash" aria-hidden="true">
-		<img src="/logo.svg" alt="" width="320" height="320" />
-	</div>
+	<div class="mkt screen-root">
+		<div class="mkt-wrap">
+			<MarketingNav locale="en" isSignedIn={isSignedIn} />
 
-	<div class="page flex min-h-screen flex-col">
-		<header class="flex items-start justify-between px-8 pt-6 sm:px-12 sm:pt-8">
-			<a href="/en" aria-label="appelsin.io home" class="block">
-				<img src="/logo.svg" alt="appelsin.io" width="110" height="110" />
-			</a>
-			<nav class="flex items-center gap-3 pt-4 text-sm sm:text-base">
-				<a href={isSignedIn ? '/en/app' : '/en/login'} class="text-zinc-100 hover:text-orange-400">
-					{isSignedIn ? 'Your events' : 'Sign in'}
-				</a>
-				<span class="text-zinc-400">|</span>
-				<a href="/en/terms" class="text-zinc-100 hover:text-orange-400">Terms</a>
-				<span class="text-zinc-400">|</span>
-				<a href="/en/privacy" class="text-zinc-100 hover:text-orange-400">Privacy</a>
-			</nav>
-		</header>
-
-		<main class="flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-12 sm:px-12">
-			<div class="mb-12 max-w-2xl text-center">
-				<h1 class="text-3xl font-semibold text-white sm:text-4xl">
-					Live event photos on the big screen.
-				</h1>
-				<p class="mt-4 text-base text-zinc-300 sm:text-lg">
-					Guests scan a QR code, upload from their phone, and photos appear live on the screen. Pick a plan per event — no subscriptions.
-				</p>
-			</div>
-
-			<div class="grid w-full max-w-5xl grid-cols-1 gap-6 sm:grid-cols-3">
-				{tiers.map((tier) => (
+			{/* HERO */}
+			<section class="hero fu">
+				<div>
 					<div
-						class:list={[
-							'flex flex-col rounded-md p-6 transition',
-							tier.featured
-								? 'bg-orange-500/20 ring-1 ring-orange-400/60'
-								: 'bg-white/10 hover:bg-white/15',
-						]}
+						class="hero-kicker"
+						style="font-family:var(--hand);font-size:30px;line-height:1.15;font-weight:600;color:var(--orange-700);margin-bottom:8px"
 					>
-						<div class="flex items-baseline justify-between">
-							<h2 class="text-xl font-semibold text-white">{tier.name}</h2>
-							{tier.featured && (
-								<span class="rounded-full bg-orange-400/90 px-2 py-0.5 text-xs font-medium text-zinc-900">
-									Most popular
-								</span>
-							)}
-						</div>
-
-						<div class="mt-4 flex items-baseline gap-2">
-							<span class="text-4xl font-semibold text-white">{tier.price}</span>
-							<span class="text-sm text-zinc-300">{tier.priceNote}</span>
-						</div>
-
-						<p class="mt-2 text-sm text-zinc-300">{tier.tagline}</p>
-
-						<ul class="mt-6 space-y-2 text-sm text-zinc-100">
-							{tier.features.map((feature) => (
-								<li class="flex gap-2">
-									<span class="text-orange-400" aria-hidden="true">✓</span>
-									<span>{feature}</span>
-								</li>
-							))}
-						</ul>
-
-						<a
-							href={ctaHref(tier.id)}
-							class:list={[
-								'mt-8 inline-flex justify-center rounded-md px-4 py-2 text-sm font-medium transition',
-								tier.featured
-									? 'bg-orange-400 text-zinc-900 hover:bg-orange-300'
-									: 'bg-white/10 text-white hover:bg-white/20',
-							]}
-						>
-							{tier.cta} →
-						</a>
+						share the moments as they happen
 					</div>
-				))}
-			</div>
+					<h1 class="hero-h1">
+						Party photos,<br />live on the <span style="color:var(--orange)">big screen</span>.
+					</h1>
+					<p style="font-size:19.5px;line-height:1.6;color:var(--warm-body);max-width:480px;margin:22px 0 32px">
+						Guests scan a QR code, upload from their phone, and photos appear on the screen instantly. Pay once per
+						event — no subscriptions.
+					</p>
+					<div style="display:flex;gap:14px;flex-wrap:wrap">
+						<Button href={startHref} size="lg" iconRight="arrow-right">Create your event</Button>
+						<Button href="#pricing" variant="secondary" size="lg">See plans</Button>
+					</div>
+					<div
+						style="display:flex;gap:22px;margin-top:30px;flex-wrap:wrap;color:var(--warm-muted);font-size:14.5px;font-weight:600"
+					>
+						{
+							['No app', 'Ready in 2 min', 'EU hosting'].map((t) => (
+								<span style="display:flex;align-items:center;gap:7px">
+									<Icon name="check" size={15} stroke={3} class="text-[var(--orange-700)]" />
+									{t}
+								</span>
+							))
+						}
+					</div>
+				</div>
+				<HeroCollage locale="en" />
+			</section>
 
-			<p class="mt-10 text-sm text-zinc-400">
-				All plans include the QR pack, live photo wall, moderation queue and EU hosting.
-			</p>
-
-			<section class="mt-24 w-full max-w-3xl">
-				<h2 class="mb-8 text-center text-2xl font-semibold text-white">Frequently asked questions</h2>
-				<div class="space-y-2">
-					<details class="group rounded-md bg-white/5 transition open:bg-white/10">
-						<summary class="cursor-pointer list-none px-5 py-4 text-base font-medium text-white">
-							<span class="mr-2 inline-block text-orange-400 group-open:rotate-45 transition">+</span>
-							Do my guests need to download an app?
-						</summary>
-						<p class="px-5 pb-4 text-sm leading-6 text-zinc-300">
-							No. Guests scan the QR code with their phone's camera and upload directly in the browser. No app, no account.
-						</p>
-					</details>
-
-					<details class="group rounded-md bg-white/5 transition open:bg-white/10">
-						<summary class="cursor-pointer list-none px-5 py-4 text-base font-medium text-white">
-							<span class="mr-2 inline-block text-orange-400 group-open:rotate-45 transition">+</span>
-							What happens if we hit the photo limit?
-						</summary>
-						<p class="px-5 pb-4 text-sm leading-6 text-zinc-300">
-							New uploads are blocked once the cap is reached. You can delete rejected photos to free up slots, or upgrade the event to a bigger plan. Free is meant for testing — pick Basic or Gold for the real party.
-						</p>
-					</details>
-
-					<details class="group rounded-md bg-white/5 transition open:bg-white/10">
-						<summary class="cursor-pointer list-none px-5 py-4 text-base font-medium text-white">
-							<span class="mr-2 inline-block text-orange-400 group-open:rotate-45 transition">+</span>
-							What happens to the photos after the event?
-						</summary>
-						<p class="px-5 pb-4 text-sm leading-6 text-zinc-300">
-							The event automatically marks as ended 2 days after the event date. You and your guests (with email) get a download link by email. Photos are then kept for 7-30 days depending on plan, after which everything is deleted automatically.
-						</p>
-					</details>
-
-					<details class="group rounded-md bg-white/5 transition open:bg-white/10">
-						<summary class="cursor-pointer list-none px-5 py-4 text-base font-medium text-white">
-							<span class="mr-2 inline-block text-orange-400 group-open:rotate-45 transition">+</span>
-							Can I show the photo wall on an iPad or laptop?
-						</summary>
-						<p class="px-5 pb-4 text-sm leading-6 text-zinc-300">
-							Yes. The photo wall is just a URL — open it in any browser on a big screen, iPad, laptop, or projector. Photos update live as guests upload.
-						</p>
-					</details>
-
-					<details class="group rounded-md bg-white/5 transition open:bg-white/10">
-						<summary class="cursor-pointer list-none px-5 py-4 text-base font-medium text-white">
-							<span class="mr-2 inline-block text-orange-400 group-open:rotate-45 transition">+</span>
-							Can I delete a photo that shouldn't be shown?
-						</summary>
-						<p class="px-5 pb-4 text-sm leading-6 text-zinc-300">
-							Yes. You can delete individual photos from the event dashboard — they disappear from the photo wall instantly and aren't included in the final download.
-						</p>
-					</details>
-
-					<details class="group rounded-md bg-white/5 transition open:bg-white/10">
-						<summary class="cursor-pointer list-none px-5 py-4 text-base font-medium text-white">
-							<span class="mr-2 inline-block text-orange-400 group-open:rotate-45 transition">+</span>
-							When can guests start uploading?
-						</summary>
-						<p class="px-5 pb-4 text-sm leading-6 text-zinc-300">
-							The upload window opens 24 hours before the event date, so anyone scanning the QR the night before can get going. The event stays live until 2 days after the event date to catch late-night and morning-after photos.
-						</p>
-					</details>
-
-					<details class="group rounded-md bg-white/5 transition open:bg-white/10">
-						<summary class="cursor-pointer list-none px-5 py-4 text-base font-medium text-white">
-							<span class="mr-2 inline-block text-orange-400 group-open:rotate-45 transition">+</span>
-							Where are the photos stored?
-						</summary>
-						<p class="px-5 pb-4 text-sm leading-6 text-zinc-300">
-							All photos are hosted on Cloudflare's EU infrastructure. We don't sell your data and won't use it for anything other than serving and delivering the photos during the agreed retention period.
-						</p>
-					</details>
+			{/* HOW IT WORKS */}
+			<section style="padding:calc(20px*var(--d)) 0 calc(64px*var(--d))">
+				<div class="steps">
+					{
+						steps.map((s) => (
+							<div style="background:#fff;border-radius:var(--r-xl);padding:28px;border:1px solid var(--cream-line);box-shadow:var(--sh-cream-sm)">
+								<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+									<span style="width:52px;height:52px;border-radius:var(--r-md);background:var(--peach);color:var(--orange-700);display:flex;align-items:center;justify-content:center">
+										<Icon name={s.ic} size={26} stroke={2} />
+									</span>
+									<span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--warm-muted)">{s.n}</span>
+								</div>
+								<div style="font-size:21px;font-weight:700;color:var(--ink);margin-bottom:8px">{s.t}</div>
+								<div style="font-size:16px;line-height:1.6;color:var(--warm-body)">{s.d}</div>
+							</div>
+						))
+					}
 				</div>
 			</section>
-		</main>
+
+			{/* PRICING */}
+			<section id="pricing" style="padding:calc(28px*var(--d)) 0;scroll-margin-top:24px">
+				<div style="text-align:center;margin-bottom:40px">
+					<h2 style="font-size:clamp(32px,4cqw,46px);font-weight:800;letter-spacing:-.02em;color:var(--ink);margin:0">
+						One price per event
+					</h2>
+					<p style="font-size:18px;color:var(--warm-body);margin-top:12px">
+						Pick a plan for the day. No subscriptions, no surprises.
+					</p>
+				</div>
+				<div class="pricing">
+					{
+						cards.map((c) => (
+							<PlanCard
+								name={c.id === 'free' ? 'Free' : c.id === 'basic' ? 'Basic' : 'Gold'}
+								price={formatPrice(c.id, 'en')}
+								priceNote={c.priceNote}
+								tagline={c.tagline}
+								features={c.features}
+								cta={c.cta}
+								href={ctaHref(c.id)}
+								featured={c.featured}
+								popularLabel="Most popular"
+							/>
+						))
+					}
+				</div>
+				<p style="text-align:center;margin-top:28px;font-size:15px;color:var(--warm-muted)">
+					All plans include the QR pack, live photo wall, moderation queue and EU hosting.
+				</p>
+			</section>
+
+			{/* FAQ */}
+			<section style="padding:calc(56px*var(--d)) 0 calc(40px*var(--d));max-width:820px;margin:0 auto">
+				<div style="text-align:center;margin-bottom:36px">
+					<div style="font-family:var(--hand);font-size:27px;color:var(--orange-700);font-weight:600">good to know</div>
+					<h2 style="font-size:clamp(30px,4cqw,42px);font-weight:800;letter-spacing:-.02em;color:var(--ink);margin:2px 0 0">
+						Questions before the party?
+					</h2>
+				</div>
+				<Accordion items={faq} tone="cream" />
+			</section>
+
+			<MarketingFooter locale="en" isSignedIn={isSignedIn} />
+		</div>
 	</div>
 </Layout>
-
-<style>
-	.splash {
-		position: fixed;
-		inset: 0;
-		display: grid;
-		place-items: center;
-		background: #071952;
-		z-index: 50;
-		animation: splash-out 0.5s ease-in 0.8s forwards;
-	}
-
-	.page {
-		opacity: 0;
-		animation: page-in 0.5s ease-out 1s forwards;
-	}
-
-	@keyframes splash-out {
-		to {
-			opacity: 0;
-			visibility: hidden;
-			pointer-events: none;
-		}
-	}
-
-	@keyframes page-in {
-		to {
-			opacity: 1;
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.splash {
-			animation: none;
-			opacity: 0;
-			visibility: hidden;
-			pointer-events: none;
-		}
-		.page {
-			opacity: 1;
-			animation: none;
-		}
-	}
-</style>

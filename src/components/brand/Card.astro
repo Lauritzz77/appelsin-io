@@ -1,0 +1,17 @@
+---
+interface Props {
+	tone?: 'dark' | 'cream'
+	raised?: boolean
+	pad?: number
+	class?: string
+	id?: string
+}
+const { tone = 'dark', raised = false, pad = 28, class: className = '', id } = Astro.props
+const cls = ['card', tone === 'dark' ? 'card--dark' : 'card--cream', raised ? 'card--raised' : '', className]
+	.filter(Boolean)
+	.join(' ')
+---
+
+<div id={id} class={cls} style={`padding:${pad}px`}>
+	<slot />
+</div>

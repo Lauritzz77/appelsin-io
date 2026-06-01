@@ -109,57 +109,42 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
 </script>
 
 <template>
-  <div class="grid gap-6 lg:grid-cols-[360px_1fr]">
-    <aside class="space-y-6">
-      <section class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
-        <h2 class="mb-3 text-sm font-medium">Farver</h2>
-        <div class="space-y-3">
-          <label class="flex items-center justify-between gap-3">
-            <span class="text-xs text-zinc-400">Baggrund</span>
-            <span class="flex items-center gap-2">
-              <span class="font-mono text-xs text-zinc-500">{{
-                branding.background
-              }}</span>
-              <input
-                v-model="branding.background"
-                type="color"
-                class="h-8 w-12 cursor-pointer rounded-md border border-zinc-700 bg-transparent p-0.5"
-              />
+  <div class="style-cols">
+    <aside style="display: flex; flex-direction: column; gap: 16px">
+      <section class="card card--dark" style="padding: 22px">
+        <h2 style="font-size: 15px; font-weight: 700; margin: 0 0 16px">Farver</h2>
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <label style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+            <span style="font-size: 13.5px; color: var(--tx-3)">Baggrund</span>
+            <span style="display: flex; align-items: center; gap: 10px">
+              <span style="font-family: var(--mono); font-size: 12px; color: var(--tx-4)">{{ branding.background }}</span>
+              <input v-model="branding.background" type="color" class="color-input" />
             </span>
           </label>
-          <label class="flex items-center justify-between gap-3">
-            <span class="text-xs text-zinc-400">Tekst</span>
-            <span class="flex items-center gap-2">
-              <span class="font-mono text-xs text-zinc-500">{{
-                branding.text
-              }}</span>
-              <input
-                v-model="branding.text"
-                type="color"
-                class="h-8 w-12 cursor-pointer rounded-md border border-zinc-700 bg-transparent p-0.5"
-              />
+          <label style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+            <span style="font-size: 13.5px; color: var(--tx-3)">Tekst</span>
+            <span style="display: flex; align-items: center; gap: 10px">
+              <span style="font-family: var(--mono); font-size: 12px; color: var(--tx-4)">{{ branding.text }}</span>
+              <input v-model="branding.text" type="color" class="color-input" />
             </span>
           </label>
         </div>
       </section>
 
-      <section class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
-        <h2 class="mb-3 text-sm font-medium">Skrifttype</h2>
-        <div class="grid grid-cols-3 gap-2">
+      <section class="card card--dark" style="padding: 22px">
+        <h2 style="font-size: 15px; font-weight: 700; margin: 0 0 14px">Skrifttype</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px">
           <button
             v-for="id in FONT_IDS"
             :key="id"
             type="button"
-            class="rounded-lg border p-3 text-center transition"
-            :class="
-              branding.font === id
-                ? 'border-orange-500 bg-orange-500/10'
-                : 'border-zinc-800 hover:border-zinc-700'
-            "
+            class="opt"
+            :class="{ 'opt--sel': branding.font === id }"
+            style="padding: 14px 6px; text-align: center"
             @click="branding.font = id"
           >
             <div
-              class="text-2xl"
+              style="font-size: 26px"
               :style="{
                 fontFamily: FONTS[id].family,
                 fontWeight: FONTS[id].headlineWeight,
@@ -169,24 +154,21 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
             >
               Aa
             </div>
-            <div class="mt-1 text-xs text-zinc-400">{{ FONTS[id].label }}</div>
+            <div style="margin-top: 4px; font-size: 12px; color: var(--tx-3)">{{ FONTS[id].label }}</div>
           </button>
         </div>
       </section>
 
-      <section class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
-        <h2 class="mb-3 text-sm font-medium">Fliseopdeling</h2>
-        <div class="grid grid-cols-3 gap-2">
+      <section class="card card--dark" style="padding: 22px">
+        <h2 style="font-size: 15px; font-weight: 700; margin: 0 0 14px">Fliseopdeling</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px">
           <button
             v-for="id in DENSITY_IDS"
             :key="id"
             type="button"
-            class="rounded-lg border px-3 py-2 text-sm transition"
-            :class="
-              branding.density === id
-                ? 'border-orange-500 bg-orange-500/10 text-orange-300'
-                : 'border-zinc-800 text-zinc-300 hover:border-zinc-700'
-            "
+            class="opt"
+            :class="{ 'opt--sel': branding.density === id }"
+            style="padding: 10px 8px; font-size: 14px; font-weight: 600"
             @click="branding.density = id"
           >
             {{ DENSITIES[id].label }}
@@ -194,75 +176,47 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
         </div>
       </section>
 
-      <section class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
-        <label class="flex items-center justify-between text-sm font-medium">
-          <span>Titel-overlay</span>
-          <input
-            type="checkbox"
-            v-model="branding.titleOverlay.enabled"
-            class="h-4 w-4 accent-orange-500"
-          />
-        </label>
-        <div v-if="branding.titleOverlay.enabled" class="mt-4 space-y-3">
-          <div>
-            <label class="block text-xs text-zinc-400">Overskrift</label>
-            <input
-              v-model="branding.titleOverlay.line1"
-              type="text"
-              maxlength="80"
-              placeholder="Anna & Jonas"
-              class="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label class="block text-xs text-zinc-400">Underlinje</label>
-            <input
-              v-model="branding.titleOverlay.line2"
-              type="text"
-              maxlength="80"
-              placeholder="20. maj 2026"
-              class="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
-            />
-          </div>
+      <section class="card card--dark" style="padding: 22px">
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <span style="font-size: 15px; font-weight: 700">Titel-overlay</span>
+          <label class="toggle">
+            <input type="checkbox" v-model="branding.titleOverlay.enabled" />
+            <span class="knob"></span>
+          </label>
+        </div>
+        <div v-if="branding.titleOverlay.enabled" style="margin-top: 16px; display: flex; flex-direction: column; gap: 14px">
+          <label style="display: block">
+            <span class="field-label">Overskrift</span>
+            <input v-model="branding.titleOverlay.line1" type="text" maxlength="80" placeholder="Anna & Jonas" class="field-input" />
+          </label>
+          <label style="display: block">
+            <span class="field-label">Underlinje</span>
+            <input v-model="branding.titleOverlay.line2" type="text" maxlength="80" placeholder="20. maj 2026" class="field-input" />
+          </label>
         </div>
       </section>
 
-      <div class="flex items-center gap-3">
-        <button
-          type="button"
-          :disabled="!dirty || saving"
-          class="rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-500"
-          @click="save"
-        >
-          {{ saving ? "Gemmer…" : "Gem" }}
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+        <button type="button" class="btn btn--primary btn--sm" :disabled="!dirty || saving" @click="save">
+          {{ saving ? "Gemmer…" : "Gem ændringer" }}
         </button>
-        <button
-          type="button"
-          :disabled="!dirty || saving"
-          class="text-sm text-zinc-400 underline disabled:cursor-not-allowed disabled:no-underline disabled:opacity-50"
-          @click="reset"
-        >
-          Annullér
-        </button>
-        <span v-if="flash === 'saved'" class="text-xs text-green-400"
-          >Gemt.</span
-        >
-        <span v-if="flash === 'error'" class="text-xs text-red-400">{{
-          errorMessage
-        }}</span>
+        <button type="button" class="btn btn--ghost btn--sm" :disabled="!dirty || saving" @click="reset">Annullér</button>
+        <span v-if="flash === 'saved'" style="font-size: 13px; color: var(--live)">Gemt.</span>
+        <span v-if="flash === 'error'" style="font-size: 13px; color: #ff8499">{{ errorMessage }}</span>
       </div>
     </aside>
+
     <div>
-      <div class="rounded-2xl border border-zinc-800 bg-zinc-950 p-2">
-        <div class="mb-2 px-2 text-xs text-zinc-500">
-          Forhåndsvisning · live spejling af fotovæggen ·
-          <a
-            :href="`/display/${eventCode}`"
-            target="_blank"
-            class="underline hover:text-zinc-300"
-            >åbn fuld væg ↗</a
-          >
-        </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px">
+        <span style="font-size: 13.5px; color: var(--tx-3)">Forhåndsvisning · live spejling af fotovæggen</span>
+        <a
+          :href="`/display/${eventCode}`"
+          target="_blank"
+          style="display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--accent); font-weight: 600"
+          >Åbn fuld væg ↗</a
+        >
+      </div>
+      <div class="preview-card">
         <div class="preview-stage">
           <PhotoWall
             :code="eventCode"
@@ -279,12 +233,43 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
 </template>
 
 <style scoped>
+.preview-card {
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-app);
+}
 .preview-stage {
   aspect-ratio: 16 / 9;
   width: 100%;
   overflow: hidden;
   /* Makes PhotoWall's cqw/cqh measurements size to this box instead of
-	   falling back to the viewport. */
+		   falling back to the viewport. */
   container-type: size;
+}
+.color-input {
+  height: 34px;
+  width: 48px;
+  cursor: pointer;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: transparent;
+  padding: 2px;
+}
+.opt {
+  border-radius: var(--r-md);
+  border: 1.5px solid var(--line);
+  background: var(--app-deep);
+  color: var(--tx);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.opt:hover {
+  border-color: var(--tx-4);
+}
+.opt--sel {
+  border-color: var(--accent);
+  background: var(--orange-soft);
+  color: var(--accent);
 }
 </style>

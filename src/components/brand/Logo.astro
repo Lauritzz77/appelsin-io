@@ -1,0 +1,25 @@
+---
+// appelsin.io brand mark. Uses OUR logo asset (not the design bundle's).
+// logo.svg has a white wordmark (for dark surfaces); logo-ink.svg is the same
+// artwork with a navy wordmark (for cream surfaces).
+interface Props {
+	size?: number // rendered height in px
+	surface?: 'cream' | 'dark'
+	href?: string | null
+	class?: string
+	alt?: string
+}
+const { size = 48, surface = 'dark', href = null, class: className = '', alt = 'appelsin.io' } = Astro.props
+const src = surface === 'cream' ? '/logo-ink.svg' : '/logo.svg'
+const shadow = surface === 'cream' ? 'none' : 'drop-shadow(0 2px 6px rgba(0,0,0,.18))'
+---
+
+{
+	href ? (
+		<a href={href} aria-label={alt} class={className} style="display:inline-block;line-height:0">
+			<img src={src} alt={alt} height={size} style={`height:${size}px;width:auto;display:block;filter:${shadow}`} />
+		</a>
+	) : (
+		<img src={src} alt={alt} height={size} class={className} style={`height:${size}px;width:auto;display:block;filter:${shadow}`} />
+	)
+}

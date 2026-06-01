@@ -1,0 +1,24 @@
+---
+import Icon from './Icon.astro'
+
+interface Props {
+	items: { q: string; a: string }[]
+	tone?: 'cream' | 'dark'
+	openFirst?: boolean
+}
+const { items, tone = 'cream', openFirst = true } = Astro.props
+---
+
+<div class={tone === 'dark' ? 'accordion accordion--dark' : 'accordion'}>
+	{
+		items.map((it, i) => (
+			<details open={openFirst && i === 0}>
+				<summary>
+					<span>{it.q}</span>
+					<span class="chev"><Icon name="chevron-down" size={18} stroke={2.4} /></span>
+				</summary>
+				<div class="answer">{it.a}</div>
+			</details>
+		))
+	}
+</div>

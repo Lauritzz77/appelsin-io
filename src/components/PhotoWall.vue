@@ -372,8 +372,11 @@ const visibleTileCount = computed(() => Math.min(TILE_COUNT, Math.max(1, pool.va
 	bottom: clamp(8px, 2cqh, 32px);
 	width: clamp(40px, 6cqw, 96px);
 	height: clamp(40px, 6cqw, 96px);
-	background: transparent;
-	padding: clamp(2px, 0.4cqw, 6px);
+	background: rgba(255, 255, 255, 0.94);
+	padding: clamp(4px, 0.7cqw, 8px);
+	border-radius: clamp(8px, 1.4cqw, 18px);
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+	box-sizing: border-box;
 	z-index: 20;
 }
 

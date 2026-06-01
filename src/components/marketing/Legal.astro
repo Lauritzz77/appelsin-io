@@ -1,0 +1,47 @@
+---
+import type { Locale } from '../../lib/i18n'
+import Icon from '../brand/Icon.astro'
+
+interface Props {
+	locale?: Locale
+	kind: 'terms' | 'privacy'
+	badge: string
+	title: string
+	paras: string[]
+	contactPrefix: string
+	contactSuffix: string
+	backLabel: string
+}
+const { locale = 'da', kind, badge, title, paras, contactPrefix, contactSuffix, backLabel } = Astro.props
+const home = locale === 'en' ? '/en' : '/'
+---
+
+<div class="mkt screen-root">
+	<div class="mkt-wrap" style="max-width:760px;padding-top:28px;padding-bottom:80px">
+		<a
+			href={home}
+			style="display:inline-flex;align-items:center;gap:8px;color:var(--ink-2);font-size:15.5px;font-weight:600"
+		>
+			<Icon name="arrow-left" size={18} />{backLabel}
+		</a>
+		<div class="fu" style="margin-top:44px">
+			<div
+				style="display:inline-flex;align-items:center;gap:9px;padding:6px 13px;border-radius:999px;background:var(--peach);color:var(--orange-700);font-size:13.5px;font-weight:600;margin-bottom:18px"
+			>
+				<Icon name={kind === 'terms' ? 'file' : 'shield'} size={15} />{badge}
+			</div>
+			<h1 style="font-size:clamp(38px,5cqw,56px);font-weight:800;letter-spacing:-.02em;color:var(--ink);margin:0">
+				{title}
+			</h1>
+			<div style="display:flex;flex-direction:column;gap:24px;margin-top:32px">
+				{paras.map((para) => <p style="font-size:18px;line-height:1.72;color:var(--warm-body);margin:0">{para}</p>)}
+				<p style="font-size:18px;line-height:1.72;color:var(--warm-body);margin:0">
+					{contactPrefix}<a
+						href="mailto:hello@appelsin.io"
+						style="color:var(--orange-700);font-weight:600;text-decoration:underline">hello@appelsin.io</a
+					>{contactSuffix}
+				</p>
+			</div>
+		</div>
+	</div>
+</div>

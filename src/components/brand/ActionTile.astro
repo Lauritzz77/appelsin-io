@@ -1,0 +1,43 @@
+---
+import Icon from './Icon.astro'
+
+interface Props {
+	href?: string | null
+	icon: string
+	title: string
+	sub: string
+	arrow?: string
+	accent?: boolean
+	target?: string
+}
+const { href = null, icon, title, sub, arrow = 'chevron-right', accent = false, target } = Astro.props
+const wrapStyle = `display:flex;align-items:center;gap:16px;width:100%;text-align:left;padding:20px 22px;border-radius:var(--r-lg);cursor:pointer;background:${accent ? 'var(--orange-soft)' : 'var(--s1)'};border:1px solid ${accent ? 'rgba(255,162,41,.32)' : 'var(--line-2)'}`
+const iconStyle = `width:46px;height:46px;border-radius:var(--r-md);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:${accent ? 'var(--accent)' : 'rgba(255,255,255,.06)'};color:${accent ? '#2C1700' : 'var(--accent)'}`
+const titleColor = accent ? 'var(--accent)' : 'var(--tx)'
+---
+
+{
+	href ? (
+		<a href={href} target={target} class="action-tile" style={wrapStyle}>
+			<span style={iconStyle}>
+				<Icon name={icon} size={22} stroke={2} />
+			</span>
+			<span style="flex:1">
+				<span style={`display:block;font-size:16.5px;font-weight:700;color:${titleColor}`}>{title}</span>
+				<span style="display:block;margin-top:3px;font-size:13.5px;color:var(--tx-3)">{sub}</span>
+			</span>
+			<Icon name={arrow} size={18} class="text-[var(--tx-3)]" />
+		</a>
+	) : (
+		<button type="submit" class="action-tile" style={wrapStyle}>
+			<span style={iconStyle}>
+				<Icon name={icon} size={22} stroke={2} />
+			</span>
+			<span style="flex:1">
+				<span style={`display:block;font-size:16.5px;font-weight:700;color:${titleColor}`}>{title}</span>
+				<span style="display:block;margin-top:3px;font-size:13.5px;color:var(--tx-3)">{sub}</span>
+			</span>
+			<Icon name={arrow} size={18} class="text-[var(--tx-3)]" />
+		</button>
+	)
+}

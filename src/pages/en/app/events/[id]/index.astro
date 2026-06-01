@@ -4,6 +4,12 @@ import { drizzle } from 'drizzle-orm/d1'
 import { eq, and, ne, desc, sql } from 'drizzle-orm'
 import * as schema from '../../../../../db/schema'
 import Layout from '../../../../../layouts/Layout.astro'
+import Icon from '../../../../../components/brand/Icon.astro'
+import Button from '../../../../../components/brand/Button.astro'
+import Card from '../../../../../components/brand/Card.astro'
+import StatusPill from '../../../../../components/brand/StatusPill.astro'
+import CopyField from '../../../../../components/brand/CopyField.astro'
+import ActionTile from '../../../../../components/brand/ActionTile.astro'
 import { TIERS, isTier, formatPrice } from '../../../../../lib/tiers'
 import { streamThumbnailUrl } from '../../../../../lib/media'
 import { createStripe } from '../../../../../lib/stripe'
@@ -57,16 +63,8 @@ const [{ photoCount }] = await db
 	.from(schema.photos)
 	.where(and(eq(schema.photos.eventId, event.id), ne(schema.photos.status, 'rejected')))
 
-const statusColor =
-	event.status === 'live'
-		? 'bg-green-500/15 text-green-400 border-green-500/30'
-		: event.status === 'ended'
-			? 'bg-zinc-700/40 text-zinc-300 border-zinc-600/40'
-			: 'bg-orange-500/15 text-orange-400 border-orange-500/30'
-
-const statusLabel = event.status
-
 const guestUrl = `${env.PUBLIC_APP_URL}/e/${event.shortCode}`
+const displayUrl = `${env.PUBLIC_APP_URL}/display/${event.shortCode}`
 
 const tier = isTier(event.tier) ? event.tier : 'free'
 const tierConfig = TIERS[tier]
@@ -75,339 +73,366 @@ const isPaidTier = tierConfig.priceCents > 0
 const capPct = Math.min(100, Math.round((photoCount / tierConfig.photoCap) * 100))
 const capWarn = photoCount >= tierConfig.photoCap
 const capNear = !capWarn && photoCount >= tierConfig.photoCap * 0.8
+const barColor = capWarn ? '#ef4444' : capNear ? 'var(--accent)' : undefined
 
 const uploadOpensAt = new Date(event.eventDate.getTime() - 24 * 60 * 60 * 1000)
 const uploadClosesAt = new Date(event.eventDate.getTime() + 2 * 24 * 60 * 60 * 1000)
-const fmtDateTime = (d: Date) =>
-	d.toLocaleString('en-IE', { dateStyle: 'long', timeStyle: 'short' })
+const fmtDateTime = (d: Date) => d.toLocaleString('en-IE', { dateStyle: 'long', timeStyle: 'short' })
+
+const runSteps: { title: string; desc: string }[] = []
+if (event.status === 'draft' && isPaidTier)
+	runSteps.push({ title: 'Pay for the event', desc: 'Stripe payment activates the event and opens uploads.' })
+runSteps.push({ title: 'Download the QR pack', desc: `Print the A4 sign + 8 table cards with code ${event.shortCode}.` })
+if (event.hasBigScreen)
+	runSteps.push({ title: 'Open the photo wall', desc: `Show photos on the big screen — ${displayUrl}.` })
+runSteps.push({
+	title: 'Guests scan the QR',
+	desc: `Photos appear instantly${event.hasBigScreen ? ' on the screen' : ' in the collection'}.`,
+})
+runSteps.push({ title: 'After the event', desc: 'Download everything as a zip — you and guests with email get a link.' })
+
+const timelineRows: [string, string, string][] = [
+	['Uploads open', fmtDateTime(uploadOpensAt), '24 hours before the event'],
+	['Event closes', fmtDateTime(uploadClosesAt), '2 days after the event'],
+	['Photos deleted', `after ${tierConfig.retentionDays} days`, 'then everything is deleted automatically'],
+]
 ---
 
 <Layout title={`${event.name} — appelsin`} locale="en">
-	<main class="mx-auto max-w-3xl px-6 py-8">
-		<a href="/en/app" class="mb-4 inline-block text-sm text-zinc-400 hover:text-zinc-200"
-			>← All events</a
-		>
-
-		<header class="mb-8 flex items-start justify-between gap-4">
-			<div>
-				<h1 class="text-3xl font-semibold tracking-tight">{event.name}</h1>
-				<p class="mt-2 text-sm text-zinc-400">
-					{new Date(event.eventDate).toLocaleDateString('en-IE', { dateStyle: 'long' })}
-				</p>
-				<p class="mt-1 text-xs text-zinc-500">
-					{tierConfig.label} plan · up to {tierConfig.photoCap.toLocaleString('en-IE')} uploads · {tierConfig.retentionDays}-day retention
-				</p>
-			</div>
-			<span class={`rounded-full border px-3 py-1 text-xs font-medium ${statusColor}`}>
-				{statusLabel}
-			</span>
-		</header>
-
-		{
-			justPaid && event.status === 'live' && (
-				<div class="mb-6 rounded-md border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300">
-					Payment confirmed. Your event is live.
-				</div>
-			)
-		}
-		{
-			justPaid && event.status === 'draft' && (
-				<div class="mb-6 rounded-md border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-sm text-orange-300">
-					Payment received — finalising. Refresh in a moment if the status doesn’t flip to <em>live</em>.
-				</div>
-			)
-		}
-		{
-			activateError === 'free_limit' && (
-				<div class="mb-6 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-					You already have an active free event. End it first, or upgrade this one to Basic or Gold.
-				</div>
-			)
-		}
-
-		{
-			(event.status === 'draft' || event.status === 'live') && (
-				<section class="mb-8 rounded-2xl border border-orange-500/30 bg-orange-500/5 p-6">
-					<h2 class="mb-3 text-sm font-medium text-orange-300">How to run your event</h2>
-					<ol class="space-y-2.5 text-sm text-zinc-300">
-						{event.status === 'draft' && isPaidTier && (
-							<li class="flex gap-3">
-								<span class="font-mono text-xs text-orange-400 mt-0.5">1.</span>
-								<span><strong class="text-zinc-100">Pay for the event</strong> below — Stripe payment activates the event and opens uploads.</span>
-							</li>
-						)}
-						<li class="flex gap-3">
-							<span class="font-mono text-xs text-orange-400 mt-0.5">{event.status === 'draft' && isPaidTier ? '2.' : '1.'}</span>
-							<span><strong class="text-zinc-100">Download the QR pack</strong> as a PDF and print it. One A4 sign + 8 table cards with code <code class="font-mono text-orange-400">{event.shortCode}</code>.</span>
-						</li>
-						{event.hasBigScreen && (
-							<li class="flex gap-3">
-								<span class="font-mono text-xs text-orange-400 mt-0.5">{event.status === 'draft' && isPaidTier ? '3.' : '2.'}</span>
-								<span><strong class="text-zinc-100">Open the photo wall</strong> on the big screen at the venue — visit <span class="font-mono text-xs text-orange-300">{env.PUBLIC_APP_URL}/display/{event.shortCode}</span> in a browser.</span>
-							</li>
-						)}
-						<li class="flex gap-3">
-							<span class="font-mono text-xs text-orange-400 mt-0.5">{(event.status === 'draft' && isPaidTier ? 1 : 0) + (event.hasBigScreen ? 3 : 2)}.</span>
-							<span><strong class="text-zinc-100">Guests scan the QR</strong> and upload from their phone. Photos appear instantly{event.hasBigScreen ? ' on the screen' : ' in the collection'}.</span>
-						</li>
-						<li class="flex gap-3">
-							<span class="font-mono text-xs text-orange-400 mt-0.5">{(event.status === 'draft' && isPaidTier ? 1 : 0) + (event.hasBigScreen ? 4 : 3)}.</span>
-							<span><strong class="text-zinc-100">After the event</strong> download everything as a zip — you and guests with email get a download link.</span>
-						</li>
-					</ol>
-				</section>
-			)
-		}
-
-		<section class="mb-8 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
-			<form id="rename-event-form" class="space-y-3" data-event-id={event.id}>
-				<label class="block">
-					<span class="mb-2 block text-sm font-medium text-zinc-300">Event name</span>
-					<input
-						id="event-name-input"
-						name="name"
-						type="text"
-						value={event.name}
-						maxlength="80"
-						class="w-full rounded-md border border-zinc-700 bg-zinc-950 px-4 py-3 text-base focus:border-orange-500 focus:outline-none"
-						required
-					/>
-				</label>
-				<div class="flex items-center gap-3">
-					<button
-						id="rename-event-btn"
-						type="submit"
-						class="rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-500"
-					>
-						Save name
-					</button>
-					<p id="rename-event-status" class="text-sm text-zinc-500" aria-live="polite"></p>
-				</div>
-			</form>
-		</section>
-
-		<section class="mb-8 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
-			<p class="text-sm text-zinc-400">Short code</p>
-			<p class="mt-1 font-mono text-4xl tracking-widest text-orange-400">{event.shortCode}</p>
-			<p class="mt-3 text-xs text-zinc-500">
-				Guest URL: <span class="font-mono">{guestUrl}</span>
-			</p>
-		</section>
-
-		<section class="mb-8 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
-			<label class="flex items-start justify-between gap-4">
-				<span class="flex-1">
-					<span class="block text-sm font-medium text-zinc-200">Big screen at the event</span>
-					<span class="mt-1 block text-xs text-zinc-500">
-						Turn off if photos won’t be shown on a screen at the venue. Changes the QR pack copy.
-					</span>
-				</span>
-				<input
-					id="has-big-screen-toggle"
-					type="checkbox"
-					checked={event.hasBigScreen}
-					data-event-id={event.id}
-					class="mt-1 h-5 w-5 accent-orange-500"
-				/>
-			</label>
-			<p id="has-big-screen-status" class="mt-2 text-xs text-zinc-500" aria-live="polite"></p>
-		</section>
-
-		<section class="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+	<div class="app screen-root">
+		<div class="app-wrap fu" style="padding-top:28px">
 			<a
-				href={`/en/app/events/${event.id}/qr.pdf`}
-				class="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 hover:bg-zinc-900"
+				href="/en/app"
+				style="display:inline-flex;align-items:center;gap:8px;color:var(--tx-3);font-size:15.5px;font-weight:600"
 			>
-				<span>
-					<span class="block font-medium">Download QR pack</span>
-					<span class="text-xs text-zinc-500">A4 sign + 8 table cards (PDF)</span>
-				</span>
-				<span class="text-zinc-500">↓</span>
+				<Icon name="arrow-left" size={18} />All events
 			</a>
 
-			{
-				photoCount > 0 && (
-					<a
-						href={`/api/events/${event.id}/download`}
-						class="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 hover:bg-zinc-900"
-					>
-						<span>
-							<span class="block font-medium">Download all photos</span>
-							<span class="text-xs text-zinc-500">
-								ZIP with {photoCount.toLocaleString('en-IE')} originals
-							</span>
-						</span>
-						<span class="text-zinc-500">↓</span>
-					</a>
-				)
-			}
-
-			{
-				isPaidTier && (
-					<a
-						href={`/en/app/events/${event.id}/style`}
-						class="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 hover:bg-zinc-900"
-					>
-						<span>
-							<span class="block font-medium">Customise photo wall</span>
-							<span class="text-xs text-zinc-500">Theme, density, title overlay</span>
-						</span>
-						<span class="text-zinc-500">→</span>
-					</a>
-				)
-			}
-
-			{
-				event.status === 'live' ? (
-					<a
-						href={`/display/${event.shortCode}`}
-						target="_blank"
-						class="flex items-center justify-between rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-3 hover:bg-orange-500/20"
-					>
-						<span>
-							<span class="block font-medium text-orange-300">Open photo wall</span>
-							<span class="text-xs text-orange-400/70">Big-screen view ↗</span>
-						</span>
-					</a>
-				) : event.status === 'draft' && isPaidTier ? (
-					<form method="post" action={`/api/events/${event.id}/checkout`} class="contents">
-						<button
-							type="submit"
-							class="flex items-center justify-between rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-3 hover:bg-orange-500/20"
-						>
-							<span class="text-left">
-								<span class="block font-medium text-orange-300">
-									Pay {formatPrice(tier, 'en')} & activate
-								</span>
-								<span class="text-xs text-orange-400/70">{tierConfig.label} — opens Stripe checkout</span>
-							</span>
-						</button>
-					</form>
-				) : null
-			}
-		</section>
-
-		<section class="mb-8 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
-			<h2 class="mb-3 text-sm font-medium text-zinc-300">Timeline</h2>
-			<ul class="mb-5 space-y-1.5 text-xs leading-5 text-zinc-500">
-				<li>• Uploads <strong class="text-zinc-300">open {fmtDateTime(uploadOpensAt)}</strong> — 24 hours before the event date, so anyone who scans the QR the night before can get started.</li>
-				<li>• The event <strong class="text-zinc-300">closes {fmtDateTime(uploadClosesAt)}</strong> — 2 days after the event date, catching late-night and morning-after photos.</li>
-				<li>• Then it's marked <em>ended</em>. Photos are retained for {tierConfig.retentionDays} days, after which everything is deleted automatically.</li>
-			</ul>
-			<div class="flex items-baseline justify-between text-sm">
-				<span class="text-zinc-300">Uploads</span>
-				<span
-					class:list={[
-						'tabular-nums',
-						capWarn ? 'text-red-400' : capNear ? 'text-orange-400' : 'text-zinc-100',
-					]}
-				>
-					{photoCount.toLocaleString('en-IE')} / {tierConfig.photoCap.toLocaleString('en-IE')}
-				</span>
-			</div>
-			<div class="mt-3 h-2 overflow-hidden rounded-full bg-zinc-800">
-				<div
-					class:list={[
-						'h-full rounded-full transition-all',
-						capWarn ? 'bg-red-500' : capNear ? 'bg-orange-500' : 'bg-zinc-500',
-					]}
-					style={`width: ${capPct}%`}
-				></div>
-			</div>
-			{capWarn && (
-				<p class="mt-3 text-xs text-red-400">
-					This event has reached its upload limit. New uploads are blocked until you upgrade the tier or rejected photos free up slots.
-				</p>
-			)}
-			{capNear && (
-				<p class="mt-3 text-xs text-orange-400">
-					Approaching the upload limit — consider upgrading before the cap is hit.
-				</p>
-			)}
-		</section>
-
-		<section
-			id="recent-uploads"
-			data-event-code={event.shortCode}
-			data-event-status={event.status}
-			data-cf-images-hash={env.CF_IMAGES_HASH}
-			data-cf-stream-domain={env.CF_STREAM_CUSTOMER_DOMAIN}
-		>
-			<h2 class="mb-4 text-sm font-medium text-zinc-400">
-				Recent uploads <span id="recent-uploads-count">{recentPhotos.length === 0 ? '(none yet)' : `(${recentPhotos.length})`}</span>
-			</h2>
-			<div id="photo-grid" class="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
-				{recentPhotos.map((p) => (
-					<div class="photo-tile group relative aspect-square overflow-hidden rounded bg-zinc-900" data-photo-id={p.id}>
-						{p.mediaType === 'video' && p.cfStreamUid ? (
-							<>
-								<img
-									src={streamThumbnailUrl(p.cfStreamUid, env.CF_STREAM_CUSTOMER_DOMAIN)}
-									alt=""
-									class="h-full w-full object-cover"
-								/>
-								<span class="absolute bottom-1 left-1 rounded bg-zinc-950/80 px-1.5 py-0.5 text-[10px] font-medium text-white">
-									{p.durationSeconds ? `${p.durationSeconds}s` : 'Video'}
-								</span>
-							</>
-						) : p.cfImagesId ? (
-							<img
-								src={`https://imagedelivery.net/${env.CF_IMAGES_HASH}/${p.cfImagesId}/public`}
-								alt=""
-								class="h-full w-full object-cover"
-							/>
-						) : (
-							<div class="flex h-full w-full items-center justify-center text-xs text-zinc-600">
-								no image
-							</div>
-						)}
-						<button
-							type="button"
-							class="photo-delete absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950/70 text-zinc-100 opacity-0 transition group-hover:opacity-100 focus:opacity-100 hover:bg-red-600 hover:text-white"
-							data-photo-id={p.id}
-							aria-label="Delete photo"
-							title="Delete photo"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 20 20"
-								fill="currentColor"
-								class="h-4 w-4"
-								aria-hidden="true"
-							>
-								<path
-									fill-rule="evenodd"
-									d="M8.75 1.5A1.5 1.5 0 0 0 7.25 3v.5H4.5a.75.75 0 0 0 0 1.5h.443l.737 11.05A2 2 0 0 0 7.676 18h4.648a2 2 0 0 0 1.996-1.95L15.057 5h.443a.75.75 0 0 0 0-1.5H12.75V3a1.5 1.5 0 0 0-1.5-1.5h-2.5Zm2 2.5V3h-2v1h2ZM8.5 7.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Z"
-									clip-rule="evenodd"
-								/>
-							</svg>
-						</button>
-					</div>
-				))}
-			</div>
-		</section>
-
-		<section class="mt-10 rounded-2xl border border-red-500/20 bg-red-500/5 p-6">
-			<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+			<div class="detail-head" style="margin:22px 0 6px">
 				<div>
-					<h2 class="text-sm font-medium text-red-200">Delete event</h2>
-					<p class="mt-1 text-sm text-zinc-400">
+					<h1 style="font-size:clamp(30px,5cqw,42px);font-weight:800;letter-spacing:-.02em;margin:0">{event.name}</h1>
+					<div
+						style="display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;color:var(--tx-3);font-size:15.5px"
+					>
+						<span style="display:inline-flex;gap:7px;align-items:center">
+							<Icon name="calendar" size={16} />
+							{new Date(event.eventDate).toLocaleDateString('en-IE', { dateStyle: 'long' })}
+						</span>
+						<span style="opacity:.5">·</span>
+						<span>
+							<strong style="color:var(--accent)">{tierConfig.label}</strong> plan · up to {tierConfig.photoCap.toLocaleString('en-IE')} photos · {tierConfig.retentionDays}-day retention
+						</span>
+					</div>
+				</div>
+				<StatusPill status={event.status} locale="en" />
+			</div>
+
+			{
+				justPaid && event.status === 'live' && (
+					<div style="margin-top:16px;border-radius:var(--r-md);border:1px solid rgba(52,211,153,.3);background:var(--live-bg);padding:13px 18px;font-size:14px;color:var(--live)">
+						Payment confirmed. Your event is live.
+					</div>
+				)
+			}
+			{
+				justPaid && event.status === 'draft' && (
+					<div style="margin-top:16px;border-radius:var(--r-md);border:1px solid rgba(255,162,41,.3);background:var(--orange-soft);padding:13px 18px;font-size:14px;color:var(--accent)">
+						Payment received — finalising. Refresh in a moment if the status doesn’t flip to <em>live</em>.
+					</div>
+				)
+			}
+			{
+				activateError === 'free_limit' && (
+					<div style="margin-top:16px;border-radius:var(--r-md);border:1px solid rgba(244,63,94,.3);background:rgba(244,63,94,.1);padding:13px 18px;font-size:14px;color:#ff8499">
+						You already have an active free event. End it first, or upgrade this one to Basic or Gold.
+					</div>
+				)
+			}
+
+			{
+				(event.status === 'draft' || event.status === 'live') && (
+					<div style="background:var(--orange-soft);border:1px solid rgba(255,162,41,.26);border-radius:var(--r-xl);padding:26px 28px;margin-top:26px">
+						<div style="display:flex;align-items:center;gap:9px;color:var(--accent);font-weight:700;font-size:17px;margin-bottom:20px">
+							<Icon name="sparkle" size={19} fill="currentColor" stroke={0} />How to run your event
+						</div>
+						<div style="display:grid;gap:16px">
+							{runSteps.map((s, i) => (
+								<div style="display:flex;gap:15px;align-items:flex-start">
+									<span style="width:32px;height:32px;border-radius:999px;flex-shrink:0;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;background:var(--accent);color:#2C1700">
+										{i + 1}
+									</span>
+									<div>
+										<div style="font-size:16.5px;font-weight:700;color:var(--tx)">{s.title}</div>
+										<div style="font-size:14.5px;color:var(--tx-2);margin-top:2px">{s.desc}</div>
+									</div>
+								</div>
+							))}
+						</div>
+					</div>
+				)
+			}
+
+			<div style="display:grid;gap:16px;grid-template-columns:1fr;margin-top:28px">
+				<Card pad={24}>
+					<form id="rename-event-form" data-event-id={event.id}>
+						<label style="display:block">
+							<span class="field-label">Event name</span>
+							<input
+								id="event-name-input"
+								name="name"
+								type="text"
+								value={event.name}
+								maxlength="80"
+								class="field-input"
+								required
+							/>
+						</label>
+						<div style="margin-top:14px;display:flex;align-items:center;gap:14px">
+							<Button id="rename-event-btn" type="submit" size="sm">Save name</Button>
+							<p id="rename-event-status" class="text-sm text-zinc-500" aria-live="polite"></p>
+						</div>
+					</form>
+				</Card>
+				<Card pad={24}>
+					<div style="display:grid;grid-template-columns:1fr;gap:16px">
+						<CopyField big label="Short code — guests type it at appelsin.io" value={event.shortCode} />
+						<CopyField label="Direct guest link" mono={false} value={guestUrl} />
+					</div>
+				</Card>
+			</div>
+
+			<Card pad={22} class="bigscreen-card">
+				<span
+					style="width:46px;height:46px;border-radius:var(--r-md);background:rgba(255,255,255,.06);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0"
+				>
+					<Icon name="monitor" size={22} />
+				</span>
+				<div style="flex:1">
+					<div style="font-size:16.5px;font-weight:700">Big screen at the event</div>
+					<div style="font-size:14px;color:var(--tx-3);margin-top:3px">
+						Turn off if photos won’t be shown on a screen at the venue. Changes the QR pack copy.
+					</div>
+					<p id="has-big-screen-status" class="mt-2 text-xs text-zinc-500" aria-live="polite"></p>
+				</div>
+				<label class="toggle">
+					<input id="has-big-screen-toggle" type="checkbox" checked={event.hasBigScreen} data-event-id={event.id} />
+					<span class="knob"></span>
+				</label>
+			</Card>
+
+			<div class="app-sec-label" style="margin-top:32px">Tools</div>
+			<div class="evt-actions">
+				<ActionTile
+					href={`/en/app/events/${event.id}/qr.pdf`}
+					icon="qr"
+					title="Download QR pack"
+					sub="A4 sign + 8 table cards (PDF)"
+					arrow="download"
+				/>
+				{
+					photoCount > 0 && (
+						<ActionTile
+							href={`/api/events/${event.id}/download`}
+							icon="image"
+							title="Download all photos"
+							sub={`ZIP with ${photoCount.toLocaleString('en-IE')} originals`}
+							arrow="download"
+						/>
+					)
+				}
+				{
+					isPaidTier && (
+						<ActionTile
+							href={`/en/app/events/${event.id}/style`}
+							icon="pencil"
+							title="Customise photo wall"
+							sub="Theme, density and title overlay"
+							arrow="chevron-right"
+						/>
+					)
+				}
+				{
+					event.status === 'live' ? (
+						<ActionTile
+							href={`/display/${event.shortCode}`}
+							target="_blank"
+							icon="monitor"
+							title="Open photo wall"
+							sub={`appelsin.io/display/${event.shortCode}`}
+							arrow="external"
+							accent
+						/>
+					) : event.status === 'draft' && isPaidTier ? (
+						<form method="post" action={`/api/events/${event.id}/checkout`} style="display:contents">
+							<ActionTile
+								icon="card"
+								title={`Pay ${formatPrice(tier, 'en')} & activate`}
+								sub={`${tierConfig.label} — opens Stripe checkout`}
+								arrow="external"
+								accent
+							/>
+						</form>
+					) : null
+				}
+			</div>
+
+			<Card pad={26} class="mt-timeline">
+				<div style="display:flex;align-items:center;gap:9px;font-size:17px;font-weight:700;margin-bottom:18px">
+					<Icon name="clock" size={19} class="text-[var(--accent)]" />Timeline
+				</div>
+				{
+					timelineRows.map((r, i) => (
+						<div
+							style={`display:flex;gap:14px;padding:12px 0;align-items:baseline;${i ? 'border-top:1px solid var(--line-2)' : ''}`}
+						>
+							<span
+								style={`width:11px;height:11px;border-radius:999px;margin-top:5px;flex-shrink:0;background:${i === 0 ? 'var(--live)' : i === 1 ? 'var(--accent)' : 'var(--tx-4)'}`}
+							/>
+							<div style="flex:1">
+								<span style="font-size:15.5px;color:var(--tx-2)">{r[0]} </span>
+								<strong style="font-size:15.5px;color:var(--tx)">{r[1]}</strong>
+								<div style="font-size:13.5px;color:var(--tx-3);margin-top:2px">{r[2]}</div>
+							</div>
+						</div>
+					))
+				}
+				<div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--line-2)">
+					<div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:15px">
+						<span style="color:var(--tx-2);font-weight:600">Uploads</span>
+						<span
+							class="tabular-nums"
+							style={`font-family:var(--mono);font-weight:700;color:${capWarn ? '#ff8499' : capNear ? 'var(--accent)' : 'var(--tx)'}`}
+						>
+							{photoCount.toLocaleString('en-IE')} / {tierConfig.photoCap.toLocaleString('en-IE')}
+						</span>
+					</div>
+					<div class="progress">
+						<div class="bar" style={`width:${capPct}%${barColor ? `;background:${barColor};box-shadow:none` : ''}`}></div>
+					</div>
+					{
+						capWarn && (
+							<p style="margin-top:12px;font-size:13px;color:#ff8499">
+								This event has reached its upload limit. New uploads are blocked until you upgrade the tier or rejected photos free up slots.
+							</p>
+						)
+					}
+					{
+						capNear && (
+							<p style="margin-top:12px;font-size:13px;color:var(--accent)">
+								Approaching the upload limit — consider upgrading before the cap is hit.
+							</p>
+						)
+					}
+				</div>
+			</Card>
+
+			<div style="display:flex;align-items:center;justify-content:space-between;margin-top:32px;margin-bottom:14px">
+				<div class="app-sec-label" style="margin:0">
+					Recent uploads <span id="recent-uploads-count">{recentPhotos.length === 0 ? '(none yet)' : `(${recentPhotos.length})`}</span>
+				</div>
+				{
+					event.status === 'live' && (
+						<span style="display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--live);font-weight:600">
+							<span style="width:7px;height:7px;border-radius:999px;background:var(--live);animation:pulseDot 2s infinite" />updating live
+						</span>
+					)
+				}
+			</div>
+			<section
+				id="recent-uploads"
+				data-event-code={event.shortCode}
+				data-event-status={event.status}
+				data-cf-images-hash={env.CF_IMAGES_HASH}
+				data-cf-stream-domain={env.CF_STREAM_CUSTOMER_DOMAIN}
+			>
+				<div id="photo-grid" class="up-grid">
+					{
+						recentPhotos.map((p) => (
+							<div
+								class="photo-tile group relative aspect-square overflow-hidden rounded bg-zinc-900"
+								data-photo-id={p.id}
+							>
+								{p.mediaType === 'video' && p.cfStreamUid ? (
+									<>
+										<img
+											src={streamThumbnailUrl(p.cfStreamUid, env.CF_STREAM_CUSTOMER_DOMAIN)}
+											alt=""
+											class="h-full w-full object-cover"
+										/>
+										<span class="absolute bottom-1 left-1 rounded bg-zinc-950/80 px-1.5 py-0.5 text-[10px] font-medium text-white">
+											{p.durationSeconds ? `${p.durationSeconds}s` : 'Video'}
+										</span>
+									</>
+								) : p.cfImagesId ? (
+									<img
+										src={`https://imagedelivery.net/${env.CF_IMAGES_HASH}/${p.cfImagesId}/public`}
+										alt=""
+										class="h-full w-full object-cover"
+									/>
+								) : (
+									<div class="flex h-full w-full items-center justify-center text-xs text-zinc-600">no image</div>
+								)}
+								<button
+									type="button"
+									class="photo-delete absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950/70 text-zinc-100 opacity-0 transition group-hover:opacity-100 focus:opacity-100 hover:bg-red-600 hover:text-white"
+									data-photo-id={p.id}
+									aria-label="Delete photo"
+									title="Delete photo"
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 20 20"
+										fill="currentColor"
+										class="h-4 w-4"
+										aria-hidden="true"
+									>
+										<path
+											fill-rule="evenodd"
+											d="M8.75 1.5A1.5 1.5 0 0 0 7.25 3v.5H4.5a.75.75 0 0 0 0 1.5h.443l.737 11.05A2 2 0 0 0 7.676 18h4.648a2 2 0 0 0 1.996-1.95L15.057 5h.443a.75.75 0 0 0 0-1.5H12.75V3a1.5 1.5 0 0 0-1.5-1.5h-2.5Zm2 2.5V3h-2v1h2ZM8.5 7.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Z"
+											clip-rule="evenodd"
+										/>
+									</svg>
+								</button>
+							</div>
+						))
+					}
+				</div>
+			</section>
+
+			<div
+				style="margin-top:40px;padding:22px 24px;border-radius:var(--r-xl);border:1px solid rgba(244,63,94,.22);background:rgba(244,63,94,.05);display:flex;align-items:center;gap:18px;flex-wrap:wrap"
+			>
+				<div style="flex:1;min-width:200px">
+					<div style="font-size:16px;font-weight:700;color:#ff8499">Delete event</div>
+					<div style="font-size:14px;color:var(--tx-3);margin-top:3px">
 						Deletes this event and all uploaded photos. This cannot be undone.
-					</p>
+					</div>
 				</div>
 				<button
 					id="delete-event-btn"
 					type="button"
-					class="rounded-md border border-red-500/40 px-4 py-2 text-sm font-medium text-red-200 transition hover:bg-red-500/15 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:cursor-wait disabled:opacity-50"
+					class="btn btn--danger btn--sm"
 					data-event-id={event.id}
 					data-event-name={event.name}
 				>
-					Delete event
+					<Icon name="trash" size={16} stroke={2.2} />Delete event
 				</button>
 			</div>
-		</section>
-	</main>
+		</div>
+	</div>
 </Layout>
+
+<style>
+	.bigscreen-card {
+		margin-top: 16px;
+		display: flex;
+		align-items: center;
+		gap: 18px;
+	}
+	.mt-timeline {
+		margin-top: 28px;
+	}
+</style>
 
 <script>
 	document.getElementById('has-big-screen-toggle')?.addEventListener('change', async (event) => {
@@ -514,6 +539,23 @@ const fmtDateTime = (d: Date) =>
 		}
 	})
 
+	// Click-to-copy fields (code + guest link).
+	document.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const value = btn.dataset.copy || ''
+			navigator.clipboard?.writeText(value)
+			const ind = btn.querySelector<HTMLElement>('.copy-ind')
+			if (!ind) return
+			const prev = ind.innerHTML
+			ind.textContent = 'Copied'
+			ind.style.color = 'var(--live)'
+			window.setTimeout(() => {
+				ind.innerHTML = prev
+				ind.style.color = 'var(--tx-3)'
+			}, 1400)
+		})
+	})
+
 	const recentUploads = document.getElementById('recent-uploads')
 	const photoGrid = document.getElementById('photo-grid')
 	const recentCount = document.getElementById('recent-uploads-count')
@@ -542,8 +584,7 @@ const fmtDateTime = (d: Date) =>
 
 	function buildTile(p: IncomingPhoto): HTMLDivElement {
 		const tile = document.createElement('div')
-		tile.className =
-			'photo-tile group relative aspect-square overflow-hidden rounded bg-zinc-900'
+		tile.className = 'photo-tile group relative aspect-square overflow-hidden rounded bg-zinc-900'
 		tile.dataset.photoId = p.photoId
 
 		let inner = ''
@@ -622,7 +663,7 @@ const fmtDateTime = (d: Date) =>
 			socket.onmessage = (e) => {
 				try {
 					const msg = JSON.parse(e.data) as
-						| { type: 'new-photo' } & IncomingPhoto
+						| ({ type: 'new-photo' } & IncomingPhoto)
 						| { type: 'delete-photo'; photoId: string }
 						| { type: 'ack' }
 					if (msg.type === 'new-photo') {

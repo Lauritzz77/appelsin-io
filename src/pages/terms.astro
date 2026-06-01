@@ -1,27 +1,22 @@
 ---
 import Layout from '../layouts/Layout.astro'
+import Legal from '../components/marketing/Legal.astro'
 ---
 
-<Layout title="Vilkår — appelsin" locale="da">
-	<main class="mx-auto max-w-3xl px-6 py-12">
-		<a href="/" class="mb-8 inline-block text-sm text-zinc-400 hover:text-zinc-200">← Forside</a>
-		<h1 class="mb-6 text-3xl font-semibold tracking-tight">Vilkår</h1>
-		<div class="space-y-5 text-sm leading-6 text-zinc-300">
-			<p>
-				appelsin.io bruges til live deling af billeder ved events. Når du opretter eller bruger et event, accepterer du at bruge tjenesten ansvarligt og kun uploade indhold, du har ret til at dele.
-			</p>
-			<p>
-				Eventværten er ansvarlig for at informere gæster om, hvordan billeder bruges ved eventet. Billeder kan vises live på eventets skærm og gemmes i den opbevaringsperiode, der hører til den valgte plan.
-			</p>
-			<p>
-				Vi kan fjerne indhold eller lukke adgang, hvis tjenesten misbruges, eller hvis der uploades ulovligt, krænkende eller skadeligt indhold.
-			</p>
-			<p>
-				Betalte eventpas og abonnementer håndteres via Stripe. Eventpas gælder for det enkelte event, mens abonnementer følger de betingelser, der vises ved køb.
-			</p>
-			<p>
-				Kontakt os på <a class="underline hover:text-white" href="mailto:hello@appelsin.io">hello@appelsin.io</a>, hvis du har spørgsmål til vilkårene.
-			</p>
-		</div>
-	</main>
+<Layout title="Vilkår — appelsin" locale="da" surface="cream">
+	<Legal
+		locale="da"
+		kind="terms"
+		backLabel="Forside"
+		badge="Sidst opdateret 1. juni 2026"
+		title="Vilkår"
+		paras={[
+			'appelsin.io bruges til live deling af billeder ved events. Når du opretter eller bruger et event, accepterer du at bruge tjenesten ansvarligt og kun uploade indhold, du har ret til at dele.',
+			'Eventværten er ansvarlig for at informere gæster om, hvordan billeder bruges ved eventet. Billeder kan vises live på eventets skærm og gemmes i den opbevaringsperiode, der hører til den valgte plan.',
+			'Vi kan fjerne indhold eller lukke adgang, hvis tjenesten misbruges, eller hvis der uploades ulovligt, krænkende eller skadeligt indhold.',
+			'Betalte eventpas og abonnementer håndteres via Stripe. Eventpas gælder for det enkelte event, mens abonnementer følger de betingelser, der vises ved køb.',
+		]}
+		contactPrefix="Kontakt os på "
+		contactSuffix=", hvis du har spørgsmål til vilkårene."
+	/>
 </Layout>

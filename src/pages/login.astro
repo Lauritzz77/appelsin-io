@@ -2,46 +2,108 @@
 export const prerender = false
 
 import Layout from '../layouts/Layout.astro'
+import Logo from '../components/brand/Logo.astro'
+import Icon from '../components/brand/Icon.astro'
+import Button from '../components/brand/Button.astro'
 
 const requested = Astro.url.searchParams.get('next')
 const next = requested && requested.startsWith('/') ? requested : '/app/events/new'
 ---
 
-<Layout title="Log ind — appelsin" locale="da">
-	<main class="mx-auto max-w-md px-6 py-24">
-		<a href="/" class="mb-8 inline-block">
-			<img src="/logo.svg" alt="appelsin" width="80" height="80" class="-ml-1" />
-		</a>
-		<h1 class="mb-2 text-3xl font-semibold tracking-tight">Log ind</h1>
-		<p class="mb-8 text-sm text-zinc-400">
-			Skriv din email - vi sender dig et login-link.
-		</p>
-
-		<form id="magic-link-form" data-next={next} class="space-y-4">
-			<input
-				type="email"
-				name="email"
-				required
-				autocomplete="email"
-				placeholder="dig@example.com"
-				class="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:border-orange-500 focus:outline-none"
-			/>
-			<button
-				type="submit"
-				class="w-full rounded-md bg-orange-500 px-4 py-2 font-medium text-zinc-950 hover:bg-orange-400 disabled:opacity-50"
+<Layout title="Log ind — appelsin" locale="da" surface="cream">
+	<div class="mkt screen-root" style="display:flex;flex-direction:column;min-height:100vh">
+		<div class="mkt-wrap" style="padding-top:26px">
+			<a
+				href="/"
+				style="display:inline-flex;align-items:center;gap:8px;color:var(--ink-2);font-size:15.5px;font-weight:600"
 			>
-				Send login-link
-			</button>
-		</form>
+				<Icon name="arrow-left" size={18} />Forside
+			</a>
+		</div>
+		<div
+			style="flex:1;display:flex;align-items:center;justify-content:center;padding:48px 24px 100px"
+		>
+			<div style="width:100%;max-width:440px" class="fu">
+				<div style="display:flex;justify-content:center;margin-bottom:30px">
+					<Logo surface="cream" size={72} />
+				</div>
 
-		<p id="status" class="mt-4 min-h-[1.25rem] text-sm text-zinc-400"></p>
-	</main>
+				<div
+					id="login-form-card"
+					style="background:#fff;border-radius:var(--r-2xl);padding:38px 34px;border:1px solid var(--cream-line);box-shadow:var(--sh-cream-lg)"
+				>
+					<h1 style="font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--ink);margin:0;text-align:center">
+						Log ind
+					</h1>
+					<p style="font-size:16.5px;color:var(--warm-body);text-align:center;margin:12px 0 28px;line-height:1.55">
+						Skriv din email — vi sender dig et sikkert login-link.
+					</p>
+
+					<form id="magic-link-form" data-next={next}>
+						<div class="field-input field-input--big" style="display:flex;align-items:center;gap:10px">
+							<Icon name="mail" size={18} class="text-[var(--warm-muted)]" />
+							<input
+								type="email"
+								name="email"
+								required
+								autocomplete="email"
+								placeholder="dig@example.com"
+								style="flex:1;background:transparent;border:none;outline:none;font-size:18px;color:var(--ink)"
+							/>
+						</div>
+						<div style="margin-top:16px">
+							<Button type="submit" full size="lg" iconRight="arrow-right">Send login-link</Button>
+						</div>
+					</form>
+
+					<div
+						style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:22px;color:var(--warm-muted);font-size:14px"
+					>
+						<Icon name="lock" size={15} />Intet kodeord. Linket gælder i 15 minutter.
+					</div>
+					<p id="status" style="margin-top:14px;min-height:1.25rem;text-align:center;font-size:14px;color:var(--warm-body)"></p>
+				</div>
+
+				<div
+					id="login-success-card"
+					style="display:none;background:#fff;border-radius:var(--r-2xl);padding:44px 34px;text-align:center;border:1px solid var(--cream-line);box-shadow:var(--sh-cream-lg);animation:popIn .3s both"
+				>
+					<div
+						style="width:72px;height:72px;border-radius:999px;background:var(--peach);margin:0 auto 20px;display:flex;align-items:center;justify-content:center;color:var(--orange-700)"
+					>
+						<Icon name="mail" size={34} stroke={1.8} />
+					</div>
+					<h1 style="font-size:27px;font-weight:800;color:var(--ink);margin:0">Tjek din indbakke</h1>
+					<p style="font-size:16.5px;color:var(--warm-body);margin:12px 0 26px;line-height:1.6">
+						Vi har sendt et login-link til<br /><strong id="login-email" style="color:var(--ink)">dig@example.com</strong>
+					</p>
+					<a
+						id="login-retry"
+						href="#"
+						style="color:var(--orange-700);font-size:14.5px;font-weight:600;cursor:pointer"
+					>Brug en anden email</a>
+				</div>
+			</div>
+		</div>
+	</div>
 </Layout>
 
 <script>
 	const form = document.getElementById('magic-link-form') as HTMLFormElement
 	const status = document.getElementById('status') as HTMLParagraphElement
 	const button = form.querySelector('button') as HTMLButtonElement
+	const formCard = document.getElementById('login-form-card') as HTMLElement
+	const successCard = document.getElementById('login-success-card') as HTMLElement
+	const emailOut = document.getElementById('login-email') as HTMLElement
+	const retry = document.getElementById('login-retry') as HTMLAnchorElement
+
+	retry.addEventListener('click', (e) => {
+		e.preventDefault()
+		successCard.style.display = 'none'
+		formCard.style.display = ''
+		button.disabled = false
+		status.textContent = ''
+	})
 
 	form.addEventListener('submit', async (e) => {
 		e.preventDefault()
@@ -57,7 +119,10 @@ const next = requested && requested.startsWith('/') ? requested : '/app/events/n
 				body: JSON.stringify({ email, callbackURL, metadata: { locale } }),
 			})
 			if (res.ok) {
-				status.textContent = 'Tjek din email for login-linket.'
+				status.textContent = ''
+				emailOut.textContent = email || 'dig@example.com'
+				formCard.style.display = 'none'
+				successCard.style.display = ''
 			} else {
 				const txt = await res.text()
 				status.textContent = `Fejl: ${txt}`

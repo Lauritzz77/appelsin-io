@@ -1,0 +1,59 @@
+---
+// Floating photo collage for the marketing hero. Placeholder party photos live
+// in /public/marketing (swap for real ones any time).
+interface Props {
+	locale?: 'da' | 'en'
+}
+const { locale = 'da' } = Astro.props
+const scanLabel = locale === 'en' ? 'scan me' : 'scan mig'
+const cards = [
+	{ src: '/marketing/p01.jpg', name: 'Lau', style: 'width:46%;height:54%;left:4%;top:6%;transform:rotate(-6deg);z-index:3', float: 'floaty 7s ease-in-out infinite' },
+	{ src: '/marketing/p02.jpg', name: 'Anna', style: 'width:42%;height:46%;right:3%;top:2%;transform:rotate(5deg);z-index:2', float: 'floaty 8.5s ease-in-out infinite .6s' },
+	{ src: '/marketing/p03.jpg', name: 'Jonas', style: 'width:40%;height:44%;right:8%;bottom:4%;transform:rotate(-4deg);z-index:4', float: 'floaty 7.8s ease-in-out infinite 1.1s' },
+]
+---
+
+<div class="collage" aria-hidden="true">
+	<div style="position:absolute;inset:6% 8% 10% 6%;border-radius:50%;background:radial-gradient(circle, var(--peach), transparent 68%);filter:blur(8px)"></div>
+	{
+		cards.map((c) => (
+			<div style={`position:absolute;inset:0;animation:${c.float}`}>
+				<div style={`position:absolute;border-radius:22px;overflow:hidden;box-shadow:0 18px 50px rgba(40,28,8,.22),0 2px 8px rgba(40,28,8,.1);border:5px solid #fff;${c.style}`}>
+					<img src={c.src} alt="" style="width:100%;height:100%;object-fit:cover;display:block" />
+					<span style="position:absolute;right:12px;bottom:8px;font-family:var(--hand);font-size:27px;font-weight:700;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.6)">
+						{c.name}
+					</span>
+				</div>
+			</div>
+		))
+	}
+	{/* mini phone scanning */}
+	<div style="position:absolute;left:0;bottom:2%;width:128px;z-index:5;animation:floaty 9s ease-in-out infinite .3s">
+		<div style="background:var(--navy);border-radius:22px;padding:10px;box-shadow:0 20px 44px rgba(7,25,82,.4);border:4px solid #0d2052">
+			<div style="border-radius:14px;overflow:hidden;background:#04102e;padding:12px;display:flex;flex-direction:column;align-items:center;gap:9px">
+				<svg width="64" height="64" viewBox="0 0 64 64" style="display:block">
+					<rect width="64" height="64" rx="6" fill="var(--navy)"></rect>
+					<g fill="#fff">
+						<rect x="6" y="6" width="16" height="16" rx="2"></rect>
+						<rect x="42" y="6" width="16" height="16" rx="2"></rect>
+						<rect x="6" y="42" width="16" height="16" rx="2"></rect>
+						<rect x="10" y="10" width="8" height="8" rx="1" fill="var(--navy)"></rect>
+						<rect x="46" y="10" width="8" height="8" rx="1" fill="var(--navy)"></rect>
+						<rect x="10" y="46" width="8" height="8" rx="1" fill="var(--navy)"></rect>
+						<rect x="28" y="6" width="5" height="5"></rect>
+						<rect x="28" y="16" width="5" height="5"></rect>
+						<rect x="28" y="28" width="5" height="5"></rect>
+						<rect x="40" y="28" width="5" height="5"></rect>
+						<rect x="52" y="28" width="5" height="5"></rect>
+						<rect x="28" y="40" width="5" height="5"></rect>
+						<rect x="40" y="40" width="5" height="5"></rect>
+						<rect x="46" y="46" width="5" height="5"></rect>
+						<rect x="40" y="52" width="5" height="5"></rect>
+						<rect x="52" y="52" width="5" height="5"></rect>
+					</g>
+				</svg>
+				<span style="font-family:var(--hand);color:var(--orange);font-size:20px;font-weight:700;line-height:1">{scanLabel}</span>
+			</div>
+		</div>
+	</div>
+</div>

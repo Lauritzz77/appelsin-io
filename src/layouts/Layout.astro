@@ -7,6 +7,8 @@ interface Props {
 	description?: string;
 	locale?: Locale;
 	showLanguageSwitch?: boolean;
+	/** Visual surface. 'cream' = warm marketing pages, 'dark' = navy app/guest/wall. */
+	surface?: 'cream' | 'dark';
 }
 
 const path = Astro.url.pathname
@@ -14,44 +16,59 @@ const {
 	title = 'appelsin — live event photos',
 	description = 'Guests scan a QR code, upload photos from their phone, and the photos appear live on the big screen.',
 	locale = localeFromPath(path),
+	surface = 'dark',
 	// Hide the switcher on app dashboard and on the photo wall (display).
 	showLanguageSwitch = !path.startsWith('/app') && !path.startsWith('/en/app') && !path.startsWith('/display') && !path.startsWith('/en/display'),
 } = Astro.props;
 const otherLocale = locale === 'da' ? 'en' : 'da'
 const languageHref = localisePath(path, otherLocale)
+
+const isCream = surface === 'cream'
+const htmlBg = isCream ? '#FBF6EE' : '#040E30'
+const themeColor = isCream ? '#FBF6EE' : '#071952'
+const bodyClass = isCream
+	? 'surface-cream min-h-screen bg-[#FBF6EE] text-[#0A1B45] antialiased'
+	: 'surface-dark min-h-screen bg-[#040E30] text-[#EEF2FC] antialiased'
+const langPillClass = isCream
+	? 'fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#071952] px-3.5 py-2 text-sm font-semibold text-white shadow-[0_6px_20px_rgba(7,25,82,0.28)] transition hover:brightness-110'
+	: 'fixed bottom-4 right-4 z-40 rounded-full border border-white/15 bg-zinc-950/80 px-3 py-1.5 text-xs font-medium text-zinc-200 shadow-lg backdrop-blur transition hover:bg-zinc-900 hover:text-white'
 ---
 
 <!doctype html>
-<html lang={locale} style="background-color: #071952">
+<html lang={locale} style={`background-color: ${htmlBg}`}>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="theme-color" content="#071952" />
+		<meta name="theme-color" content={themeColor} />
 		<meta name="generator" content={Astro.generator} />
 		<meta name="description" content={description} />
 		<meta name="robots" content="noindex" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@400;600&family=Playfair+Display:wght@400;500;700&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=Caveat:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,600&family=Bebas+Neue&display=swap"
 			rel="stylesheet"
 		/>
 		<title>{title}</title>
 	</head>
-	<body class="min-h-screen bg-[#071952] text-zinc-100 antialiased">
+	<body class={bodyClass}>
 		<slot />
 		{
 			showLanguageSwitch && (
 				<a
 					href={languageHref}
-					class="fixed bottom-4 right-4 z-40 rounded-full border border-white/15 bg-zinc-950/80 px-3 py-1.5 text-xs font-medium text-zinc-200 shadow-lg backdrop-blur transition hover:bg-zinc-900 hover:text-white"
+					class={langPillClass}
 					aria-label={`Switch language to ${commonText[otherLocale].languageName}`}
 				>
 					{commonText[locale].switchLanguage}
 				</a>
 			)
 		}
+		<script is:inline>
+			// fade-up reveal for elements marked with .fu
+			requestAnimationFrame(() => document.body.classList.add('ready'))
+		</script>
 		<script is:inline>
 			(() => {
 				if (window.AppDialog) return

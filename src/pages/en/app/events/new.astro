@@ -1,5 +1,7 @@
 ---
 import Layout from '../../../../layouts/Layout.astro'
+import Icon from '../../../../components/brand/Icon.astro'
+import Button from '../../../../components/brand/Button.astro'
 import { TIERS, TIER_IDS, isTier, formatPrice, type Tier } from '../../../../lib/tiers'
 
 export const prerender = false
@@ -14,116 +16,196 @@ const tierLabel = (tier: Tier) => (tier === 'free' ? 'Free' : TIERS[tier].label)
 const tierPrice = (tier: Tier) => formatPrice(tier, 'en')
 const tierDescription = (tier: Tier) => {
 	const t = TIERS[tier]
-	const parts = [
-		`Up to ${t.photoCap.toLocaleString('en-IE')} photos`,
-		`${t.retentionDays}-day retention`,
-	]
+	const parts = [`Up to ${t.photoCap.toLocaleString('en-IE')} photos`, `${t.retentionDays}-day retention`]
 	if (t.watermark) parts.push('appelsin watermark')
 	return parts.join(' · ')
 }
 ---
 
 <Layout title="New event — appelsin" locale="en">
-	<main class="mx-auto max-w-xl px-6 py-12">
-		<a href="/en" class="mb-6 inline-block text-sm text-zinc-400 hover:text-zinc-200">← Back</a>
-		<h1 class="mb-2 text-2xl font-semibold tracking-tight">New event</h1>
-		<p class="mb-8 text-sm text-zinc-400 leading-6">
-			An event groups photos from one occasion — a wedding, birthday, or company party. You get a short code and a QR that guests scan to upload pictures. Everything shows live on a big screen, and you can download the whole set as a zip afterwards.
-		</p>
-
-		{
-			createError === 'free_exists' && (
-				<div class="mb-6 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-					You already have a free event. Delete the existing one first, or pick Basic or Gold for this event.
-				</div>
-			)
-		}
-
-		<form method="post" action="/api/events/new" class="space-y-6">
-			<input type="hidden" name="returnToPrefix" value="/en/app/events" />
-			<div>
-				<label for="name" class="mb-1 block text-sm text-zinc-300">Event name</label>
-				<input
-					id="name"
-					name="name"
-					type="text"
-					required
-					maxlength="80"
-					placeholder="Anna & Jonas — wedding"
-					class="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:border-orange-500 focus:outline-none"
-				/>
-			</div>
-			<div>
-				<label for="eventDate" class="mb-1 block text-sm text-zinc-300">Event date</label>
-				<input
-					id="eventDate"
-					name="eventDate"
-					type="date"
-					required
-					class="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-zinc-100 focus:border-orange-500 focus:outline-none"
-				/>
-				<div class="mt-3 rounded-md border border-zinc-800 bg-zinc-900/40 p-4 text-sm leading-6 text-zinc-300">
-					<p class="mb-2 text-xs font-medium uppercase tracking-wider text-orange-400">
-						The date drives the timeline
-					</p>
-					<ul class="space-y-2">
-						<li>• Guests can upload from <strong class="text-zinc-100">24 hours before</strong> — so anyone scanning the QR the night before can get going.</li>
-						<li>• The event is <strong class="text-zinc-100">live for 2 days after</strong> — catching late-night and morning-after photos.</li>
-						<li>• Then it's marked <em class="not-italic font-medium text-zinc-100">ended</em>, and photos are kept for <strong class="text-zinc-100">7-90 days</strong> depending on plan, then everything is deleted automatically.</li>
-					</ul>
-				</div>
-			</div>
-
-			<fieldset>
-				<legend class="mb-2 block text-sm text-zinc-300">Plan</legend>
-				<div class="space-y-2">
-					{TIER_IDS.map((id) => {
-						const t = TIERS[id]
-						const isSelected = id === selectedTier
-						return (
-							<label
-								class:list={[
-									'flex cursor-pointer items-start gap-3 rounded-md border p-3 transition',
-									isSelected
-										? 'border-orange-500 bg-orange-500/10'
-										: 'border-zinc-800 bg-zinc-900 hover:border-zinc-700',
-								]}
-							>
-								<input
-									type="radio"
-									name="tier"
-									value={id}
-									checked={isSelected}
-									class="mt-1 accent-orange-500"
-								/>
-								<div class="flex-1">
-									<div class="flex items-baseline justify-between">
-										<span class="font-medium text-zinc-100">{tierLabel(id)}</span>
-										<span class="text-sm text-zinc-300">
-											{tierPrice(id)}
-											{t.priceCents > 0 && <span class="text-zinc-500"> / event</span>}
-										</span>
-									</div>
-									<div class="mt-1 text-xs text-zinc-500">
-										{tierDescription(id)}
-									</div>
-								</div>
-							</label>
-						)
-					})}
-				</div>
-			</fieldset>
-
-			<button
-				type="submit"
-				class="w-full rounded-md bg-orange-500 px-4 py-2 font-medium text-zinc-950 hover:bg-orange-400"
+	<div class="app screen-root">
+		<div class="app-wrap fu" style="max-width:640px;padding-top:30px">
+			<a
+				href="/en/app"
+				style="display:inline-flex;align-items:center;gap:8px;color:var(--tx-3);font-size:15.5px;font-weight:600"
 			>
-				Create event
-			</button>
-		</form>
+				<Icon name="arrow-left" size={18} />Back
+			</a>
+			<h1 style="font-size:clamp(30px,5cqw,40px);font-weight:800;letter-spacing:-.02em;margin:24px 0 12px">
+				New event
+			</h1>
+			<div style="display:flex;flex-direction:column;gap:12px;font-size:17px;line-height:1.6;color:var(--tx-2);max-width:520px;margin:0">
+				<p style="margin:0">
+					Gather all the memories from your occasion in one place. When you create an event you get a unique code and QR
+					that your guests can scan to upload photos straight from the party.
+				</p>
+				<p style="margin:0">
+					The photos can show live on a big screen, iPad or laptop during the event, so everyone can follow the moments
+					as they happen. Afterwards you can download the whole set and keep the memories forever.
+				</p>
+				<p style="margin:0;color:var(--tx-3)">Perfect for weddings, birthdays, company parties and other special occasions.</p>
+			</div>
 
-		<p class="mt-4 text-xs text-zinc-500">
-			Created as {host.email}. Status starts as <code>draft</code>; paid plans go <code>live</code> after payment.
-		</p>
-	</main>
+			{
+				createError === 'free_exists' && (
+					<div style="margin-top:24px;border-radius:var(--r-md);border:1px solid rgba(244,63,94,.3);background:rgba(244,63,94,.1);padding:14px 18px;font-size:14px;color:#ff8499">
+						You already have a free event. Delete the existing one first, or pick Basic or Gold for this event.
+					</div>
+				)
+			}
+
+			<form method="post" action="/api/events/new" style="display:flex;flex-direction:column;gap:26px;margin-top:34px">
+				<input type="hidden" name="returnToPrefix" value="/en/app/events" />
+
+				<label style="display:block">
+					<span class="field-label">Event name</span>
+					<input
+						id="name"
+						name="name"
+						type="text"
+						required
+						maxlength="80"
+						placeholder="Anna & Jonas — wedding"
+						class="field-input field-input--big"
+					/>
+				</label>
+
+				<div>
+					<label style="display:block">
+						<span class="field-label">Event date</span>
+						<input id="eventDate" name="eventDate" type="date" required class="field-input field-input--big" />
+					</label>
+					<div
+						style="margin-top:16px;background:var(--orange-soft);border:1px solid rgba(255,162,41,.28);border-radius:var(--r-lg);padding:20px 22px"
+					>
+						<div
+							style="display:flex;align-items:center;gap:9px;color:var(--accent);font-weight:700;font-size:13.5px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px"
+						>
+							<Icon name="clock" size={16} />The date drives the timeline
+						</div>
+						<div style="display:flex;flex-direction:column;gap:11px;font-size:15px;line-height:1.5;color:var(--tx-2)">
+							<div style="display:flex;gap:12px">
+								<span style="color:var(--accent);font-weight:800">·</span>
+								<span>Guests can upload from <strong>24 hours before</strong> — so anyone scanning the QR the night before can get going.</span>
+							</div>
+							<div style="display:flex;gap:12px">
+								<span style="color:var(--accent);font-weight:800">·</span>
+								<span>The event is <strong>live for 2 days after</strong> — catching late-night and morning-after photos.</span>
+							</div>
+							<div style="display:flex;gap:12px">
+								<span style="color:var(--accent);font-weight:800">·</span>
+								<span>Then it's marked <strong>ended</strong>, and photos are kept for <strong>7-90 days</strong> depending on plan, then everything is deleted automatically.</span>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<fieldset style="border:none;padding:0;margin:0">
+					<legend class="app-sec-label" style="padding:0">Choose plan</legend>
+					<div style="display:flex;flex-direction:column;gap:12px">
+						{
+							TIER_IDS.map((id) => {
+								const t = TIERS[id]
+								return (
+									<label class="radio-card">
+										<input type="radio" name="tier" value={id} checked={id === selectedTier} />
+										<span class="radio-dot" />
+										<span style="flex:1">
+											<span style="display:flex;align-items:center;gap:10px">
+												<span style="font-size:18px;font-weight:700;color:var(--tx)">{tierLabel(id)}</span>
+												{id === 'basic' && <span class="badge badge--soft">Popular</span>}
+											</span>
+											<span style="display:block;margin-top:4px;font-size:14.5px;color:var(--tx-3)">{tierDescription(id)}</span>
+										</span>
+										<span class="rc-price">
+											{tierPrice(id)}
+											{t.priceCents > 0 && <span style="color:var(--tx-3)"> / event</span>}
+										</span>
+									</label>
+								)
+							})
+						}
+					</div>
+				</fieldset>
+
+				<div>
+					<Button type="submit" full size="lg" iconRight="arrow-right">Create event</Button>
+					<p style="font-size:13.5px;color:var(--tx-3);text-align:center;margin-top:14px;line-height:1.5">
+						Created as {host.email}. Status starts as <span style="font-family:var(--mono)">draft</span>; paid plans go
+						<span style="font-family:var(--mono)">live</span> after payment.
+					</p>
+				</div>
+			</form>
+		</div>
+	</div>
 </Layout>
+
+<style>
+	.radio-card {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		width: 100%;
+		text-align: left;
+		padding: 18px 20px;
+		border-radius: var(--r-lg);
+		cursor: pointer;
+		background: var(--s1);
+		border: 1.5px solid var(--line-2);
+		transition: all 0.18s;
+		position: relative;
+	}
+	.radio-card:hover {
+		border-color: var(--line);
+	}
+	.radio-card input {
+		position: absolute;
+		opacity: 0;
+		width: 1px;
+		height: 1px;
+		pointer-events: none;
+	}
+	.radio-card:has(input:checked) {
+		background: var(--orange-soft);
+		border-color: var(--accent);
+		box-shadow: 0 0 0 4px var(--orange-soft);
+	}
+	.radio-dot {
+		width: 22px;
+		height: 22px;
+		border-radius: 999px;
+		flex-shrink: 0;
+		border: 2px solid var(--tx-3);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: border-color 0.15s;
+	}
+	.radio-card:has(input:checked) .radio-dot {
+		border-color: var(--accent);
+	}
+	.radio-dot::after {
+		content: '';
+		width: 11px;
+		height: 11px;
+		border-radius: 999px;
+		background: var(--accent);
+		transform: scale(0);
+		transition: transform 0.15s;
+	}
+	.radio-card:has(input:checked) .radio-dot::after {
+		transform: scale(1);
+	}
+	.radio-card:focus-within {
+		border-color: var(--accent);
+	}
+	.rc-price {
+		font-size: 17px;
+		font-weight: 700;
+		color: var(--tx-2);
+		white-space: nowrap;
+	}
+	.radio-card:has(input:checked) .rc-price {
+		color: var(--accent);
+	}
+</style>

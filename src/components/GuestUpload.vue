@@ -508,6 +508,38 @@ const mediaPreviewUrl = (photo: Photo) =>
 
 const hasIdentity = computed(() => identity.value !== null)
 
+// Big tap-to-capture button styling, driven by upload status.
+const captureStyle = computed(() => {
+	const base: Record<string, string> = {
+		width: '100%',
+		borderRadius: 'var(--r-2xl)',
+		padding: '40px 24px',
+		cursor: 'pointer',
+		display: 'flex',
+		flexDirection: 'column',
+		alignItems: 'center',
+		gap: '14px',
+		border: '1px solid rgba(255,255,255,.2)',
+		transition: 'all .2s',
+		background: 'var(--accent)',
+		color: '#2C1700',
+		boxShadow: '0 18px 50px rgba(255,162,41,.4)',
+		textAlign: 'center',
+	}
+	const s = status.value
+	if (s === 'success')
+		return { ...base, background: 'var(--live)', color: '#04321f', boxShadow: '0 18px 50px rgba(52,211,153,.4)' }
+	if (s === 'error')
+		return { ...base, background: 'rgba(244,63,94,.14)', color: '#ff8499', border: '1px solid rgba(244,63,94,.32)', boxShadow: 'none' }
+	if (s === 'full' || s === 'not_open')
+		return { ...base, background: 'var(--s2)', color: 'var(--tx-2)', border: '1px solid var(--line)', boxShadow: 'none', cursor: 'default' }
+	if (s === 'compressing' || s === 'uploading') return { ...base, opacity: '0.85', pointerEvents: 'none' }
+	return base
+})
+const iconBg = computed(() =>
+	status.value === 'full' || status.value === 'not_open' ? 'rgba(255,255,255,.08)' : 'rgba(255,255,255,.35)'
+)
+
 onMounted(() => {
 	const existing = loadIdentity()
 	if (existing) {
@@ -519,159 +551,155 @@ onMounted(() => {
 
 <template>
 	<!-- Name + email gate. Shown until the guest claims a per-event display name. -->
-	<form v-if="!hasIdentity" class="space-y-4" @submit.prevent="join">
-		<label class="block">
-			<span class="mb-2 block text-sm font-medium">{{ text.nameLabel }}</span>
-			<input
-				v-model="nameInput"
-				type="text"
-				name="name"
-				maxlength="32"
-				:placeholder="text.namePlaceholder"
-				autocomplete="nickname"
-				autocapitalize="words"
-				class="w-full rounded-md border border-zinc-700 bg-zinc-950 px-4 py-3 text-base focus:border-orange-500 focus:outline-none"
-				:disabled="joining"
-			/>
-		</label>
-		<label class="block">
-			<span class="mb-2 block text-sm font-medium">{{ text.emailLabel }}</span>
-			<input
-				v-model="emailInput"
-				type="email"
-				name="email"
-				inputmode="email"
-				maxlength="254"
-				placeholder="you@example.com"
-				autocomplete="email"
-				autocapitalize="off"
-				autocorrect="off"
-				spellcheck="false"
-				class="w-full rounded-md border border-zinc-700 bg-zinc-950 px-4 py-3 text-base focus:border-orange-500 focus:outline-none"
-				:disabled="joining"
-			/>
-			<span class="mt-1 block text-xs text-zinc-500">
-				{{ text.emailHelp }}
-			</span>
-		</label>
-		<button
-			type="submit"
-			class="w-full rounded-md bg-orange-500 px-4 py-3 text-base font-medium text-zinc-950 transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-500"
-			:disabled="joining || !nameInput.trim() || !emailInput.trim()"
-		>
-			{{ joining ? text.saving : text.continue }}
-		</button>
-		<p v-if="joinError" class="text-sm text-red-400">{{ joinError }}</p>
-		<p class="text-xs text-zinc-500">
-			{{ text.identityNote }}
-		</p>
-	</form>
+	<div v-if="!hasIdentity" class="card card--dark" style="padding: 26px">
+		<form style="display: flex; flex-direction: column; gap: 18px" @submit.prevent="join">
+			<label style="display: block">
+				<span class="field-label">{{ text.nameLabel }}</span>
+				<input
+					v-model="nameInput"
+					type="text"
+					name="name"
+					maxlength="32"
+					:placeholder="text.namePlaceholder"
+					autocomplete="nickname"
+					autocapitalize="words"
+					class="field-input"
+					:disabled="joining"
+				/>
+			</label>
+			<label style="display: block">
+				<span class="field-label">{{ text.emailLabel }}</span>
+				<input
+					v-model="emailInput"
+					type="email"
+					name="email"
+					inputmode="email"
+					maxlength="254"
+					placeholder="you@example.com"
+					autocomplete="email"
+					autocapitalize="off"
+					autocorrect="off"
+					spellcheck="false"
+					class="field-input"
+					:disabled="joining"
+				/>
+				<span style="margin-top: 8px; display: block; font-size: 12.5px; color: var(--tx-3)">
+					{{ text.emailHelp }}
+				</span>
+			</label>
+			<button
+				type="submit"
+				class="btn btn--primary btn--full btn--lg"
+				:disabled="joining || !nameInput.trim() || !emailInput.trim()"
+			>
+				{{ joining ? text.saving : text.continue }}
+			</button>
+			<p v-if="joinError" style="font-size: 14px; color: #ff8499">{{ joinError }}</p>
+			<p style="font-size: 12.5px; line-height: 1.5; color: var(--tx-3)">
+				{{ text.identityNote }}
+			</p>
+		</form>
+	</div>
 
 	<!-- Upload + grid. Shown once the guest has a stored identity. -->
-	<div v-else class="space-y-6">
-		<div class="flex items-center justify-between">
-			<p class="text-sm text-zinc-400">
-				{{ text.sharingAs }} <span class="font-medium text-zinc-100">{{ identity!.name }}</span>
-			</p>
+	<div v-else>
+		<!-- Giant tap-to-capture target -->
+		<label :style="captureStyle">
+			<input
+				type="file"
+				:accept="props.allowVideo ? 'image/*,video/*' : 'image/*'"
+				multiple
+				style="display: none"
+				@change="onFileChange"
+			/>
+			<span
+				:style="{
+					width: '78px',
+					height: '78px',
+					borderRadius: '999px',
+					background: iconBg,
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center',
+				}"
+			>
+				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+					<circle cx="12" cy="13" r="4" />
+				</svg>
+			</span>
+			<span style="font-size: 21px; font-weight: 800">{{ labelText(status) }}</span>
+			<span v-if="status === 'idle'" style="font-size: 13.5px; font-weight: 600; opacity: 0.72">
+				{{ text.camera }}
+			</span>
+			<span v-if="status === 'error'" style="font-size: 13px; margin-top: 2px">{{ errorMsg }}</span>
+			<span v-if="status === 'full' || status === 'not_open'" style="font-size: 13px; margin-top: 2px">{{ errorMsg }}</span>
+		</label>
+
+		<!-- Sharing as -->
+		<div style="padding: 18px 0 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14.5px; flex-wrap: wrap">
+			<span style="color: var(--tx-3)">{{ text.sharingAs }}</span>
+			<span style="font-family: var(--hand); font-size: 22px; color: var(--orange); font-weight: 700">{{ identity!.name }}</span>
 			<button
 				type="button"
-				class="text-xs text-zinc-500 underline hover:text-zinc-300"
+				style="color: var(--tx-2); font-size: 13.5px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px"
 				@click="clearIdentity"
 			>
 				{{ text.differentName }}
 			</button>
 		</div>
 
-		<label
-			class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-700 bg-zinc-900/50 p-10 text-center transition active:bg-zinc-900"
-			:class="{
-				'pointer-events-none opacity-60':
-					busy(status) || status === 'full' || status === 'not_open',
-				'border-green-600 bg-green-950/30': status === 'success',
-				'border-red-600 bg-red-950/30': status === 'error',
-				'border-zinc-700 bg-zinc-900/30': status === 'full' || status === 'not_open',
-			}"
-		>
-			<input
-				type="file"
-				:accept="props.allowVideo ? 'image/*,video/*' : 'image/*'"
-				multiple
-				class="hidden"
-				@change="onFileChange"
-			/>
-			<svg
-				class="mb-3 h-12 w-14 text-orange-500"
-				viewBox="0 0 84 69"
-				fill="currentColor"
-				xmlns="http://www.w3.org/2000/svg"
-				aria-hidden="true"
-			>
-				<path
-					d="M24.9375 39.375C24.9375 43.9003 26.7352 48.2402 29.935 51.44C33.1348 54.6398 37.4747 56.4375 42 56.4375C46.5253 56.4375 50.8652 54.6398 54.065 51.44C57.2648 48.2402 59.0625 43.9003 59.0625 39.375C59.0625 34.8497 57.2648 30.5098 54.065 27.31C50.8652 24.1102 46.5253 22.3125 42 22.3125C37.4747 22.3125 33.1348 24.1102 29.935 27.31C26.7352 30.5098 24.9375 34.8497 24.9375 39.375ZM78.75 10.5H60.375C59.0625 5.25 57.75 0 52.5 0H31.5C26.25 0 24.9375 5.25 23.625 10.5H5.25C2.3625 10.5 0 12.8625 0 15.75V63C0 65.8875 2.3625 68.25 5.25 68.25H78.75C81.6375 68.25 84 65.8875 84 63V15.75C84 12.8625 81.6375 10.5 78.75 10.5ZM42 62.6719C29.1322 62.6719 18.7031 52.2427 18.7031 39.375C18.7031 26.5072 29.1322 16.0781 42 16.0781C54.8677 16.0781 65.2969 26.5072 65.2969 39.375C65.2969 52.2427 54.8677 62.6719 42 62.6719ZM78.75 26.25H68.25V21H78.75V26.25Z"
-				/>
-			</svg>
-			<span class="text-lg font-medium">{{ labelText(status) }}</span>
-			<span v-if="status === 'idle'" class="mt-1 text-sm text-zinc-500">
-				{{ text.camera }}
-			</span>
-			<span v-if="status === 'error'" class="mt-1 text-sm text-red-400">{{ errorMsg }}</span>
-			<span v-if="status === 'full'" class="mt-1 text-sm text-zinc-400">{{ errorMsg }}</span>
-			<span v-if="status === 'not_open'" class="mt-1 text-sm text-zinc-400">{{ errorMsg }}</span>
-		</label>
-
-		<section>
-			<h2 class="mb-3 text-sm font-medium text-zinc-300">
-				{{ text.photos }}
-				<span v-if="myPhotos.length > 0" class="ml-1 text-zinc-500">({{ myPhotos.length }})</span>
-			</h2>
-			<div v-if="myPhotos.length === 0 && !loadingPhotos" class="text-sm text-zinc-500">
+		<!-- Your uploads -->
+		<section style="padding: 26px 0 8px">
+			<div style="font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx-3); margin-bottom: 14px">
+				{{ text.photos }}<span v-if="myPhotos.length > 0"> ({{ myPhotos.length }})</span>
+			</div>
+			<div v-if="myPhotos.length === 0 && !loadingPhotos" style="font-size: 14px; color: var(--tx-3)">
 				{{ text.empty }}
 			</div>
-			<div v-else class="grid grid-cols-3 gap-2">
+			<div v-else style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px">
 				<div
-					v-for="photo in myPhotos"
+					v-for="(photo, idx) in myPhotos"
 					:key="photo.id"
-					class="group relative aspect-square overflow-hidden rounded-md bg-zinc-900"
+					class="guest-tile"
+					style="position: relative; aspect-ratio: 1; border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--line)"
 				>
 					<a
 						:href="photo.mediaType === 'video' && photo.cfStreamUid ? `https://iframe.videodelivery.net/${photo.cfStreamUid}` : photoUrl(photo.cfImagesId)"
 						target="_blank"
 						rel="noopener"
-						class="block h-full w-full"
+						style="display: block; height: 100%; width: 100%"
 					>
 						<img
 							v-if="mediaPreviewUrl(photo)"
 							:src="mediaPreviewUrl(photo)"
 							alt=""
 							loading="lazy"
-							class="h-full w-full object-cover transition group-hover:scale-105"
-							:class="{ 'opacity-45': isDeleting(photo.id) }"
+							style="height: 100%; width: 100%; object-fit: cover; display: block"
+							:style="{ opacity: isDeleting(photo.id) ? 0.45 : 1 }"
 						/>
 						<span
 							v-if="photo.mediaType === 'video'"
-							class="absolute bottom-1 left-1 rounded bg-zinc-950/80 px-1.5 py-0.5 text-[10px] font-medium text-white"
+							style="position: absolute; bottom: 6px; left: 6px; border-radius: 6px; background: rgba(0,0,0,.6); color: #fff; padding: 2px 6px; font-size: 10.5px; font-weight: 700"
 						>
 							{{ photo.durationSeconds ? `${photo.durationSeconds}s` : 'Video' }}
 						</span>
 					</a>
+					<span
+						v-if="idx === 0"
+						style="position: absolute; left: 6px; top: 6px; padding: 2px 7px; border-radius: 6px; background: var(--accent); color: #2C1700; font-size: 10.5px; font-weight: 800"
+					>
+						{{ props.locale === 'da' ? 'ny' : 'new' }}
+					</span>
 					<button
 						type="button"
-						class="absolute right-1 top-1 grid h-8 w-8 place-items-center rounded-full bg-zinc-950/80 text-white shadow-sm ring-1 ring-white/20 transition hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:cursor-wait disabled:opacity-60"
+						class="guest-del"
 						:disabled="isDeleting(photo.id)"
 						:aria-label="text.deletePhoto"
 						:title="text.deletePhoto"
 						@click="deletePhoto(photo)"
 					>
-						<svg
-							class="h-4 w-4"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							aria-hidden="true"
-						>
+						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 							<path d="M3 6h18" />
 							<path d="M8 6V4h8v2" />
 							<path d="M19 6l-1 14H6L5 6" />
@@ -681,7 +709,42 @@ onMounted(() => {
 					</button>
 				</div>
 			</div>
-			<p v-if="deleteError" class="mt-3 text-sm text-red-400">{{ deleteError }}</p>
+			<p v-if="deleteError" style="margin-top: 14px; font-size: 14px; color: #ff8499">{{ deleteError }}</p>
+			<p style="font-size: 12.5px; color: var(--tx-4); text-align: center; margin-top: 22px; line-height: 1.5">
+				{{ props.locale === 'da'
+					? 'Billederne gemmes hos værten og slettes efter eventet.'
+					: 'Photos are stored by the host and deleted after the event.' }}
+			</p>
 		</section>
 	</div>
 </template>
+
+<style scoped>
+.guest-del {
+	position: absolute;
+	right: 6px;
+	top: 6px;
+	width: 28px;
+	height: 28px;
+	border-radius: 999px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(4, 10, 30, 0.62);
+	color: #fff;
+	opacity: 0;
+	transition: opacity 0.15s, background 0.15s;
+	cursor: pointer;
+}
+.guest-tile:hover .guest-del,
+.guest-del:focus {
+	opacity: 1;
+}
+.guest-del:hover {
+	background: rgba(244, 63, 94, 0.92);
+}
+.guest-del:disabled {
+	cursor: wait;
+	opacity: 0.6;
+}
+</style>

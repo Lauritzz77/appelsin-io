@@ -1,0 +1,54 @@
+---
+import Icon from './Icon.astro'
+
+interface Props {
+	variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger'
+	size?: 'sm' | 'md' | 'lg'
+	full?: boolean
+	href?: string | null
+	type?: 'button' | 'submit'
+	icon?: string
+	iconRight?: string
+	id?: string
+	class?: string
+	disabled?: boolean
+}
+const {
+	variant = 'primary',
+	size = 'md',
+	full = false,
+	href = null,
+	type = 'button',
+	icon,
+	iconRight,
+	id,
+	class: className = '',
+	disabled = false,
+} = Astro.props
+const sizeIcon = size === 'sm' ? 16 : size === 'lg' ? 20 : 18
+const cls = [
+	'btn',
+	`btn--${variant}`,
+	size !== 'md' ? `btn--${size}` : '',
+	full ? 'btn--full' : '',
+	className,
+]
+	.filter(Boolean)
+	.join(' ')
+---
+
+{
+	href ? (
+		<a href={href} id={id} class={cls}>
+			{icon && <Icon name={icon} size={sizeIcon} stroke={2.2} />}
+			<slot />
+			{iconRight && <Icon name={iconRight} size={sizeIcon} stroke={2.2} />}
+		</a>
+	) : (
+		<button type={type} id={id} class={cls} disabled={disabled}>
+			{icon && <Icon name={icon} size={sizeIcon} stroke={2.2} />}
+			<slot />
+			{iconRight && <Icon name={iconRight} size={sizeIcon} stroke={2.2} />}
+		</button>
+	)
+}

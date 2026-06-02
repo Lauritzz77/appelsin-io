@@ -729,6 +729,11 @@ onMounted(() => {
 .guest-del:focus {
 	opacity: 1;
 }
+@media (hover: none), (pointer: coarse) {
+	.guest-del {
+		opacity: 1;
+	}
+}
 .guest-del:hover {
 	background: rgba(244, 63, 94, 0.92);
 }

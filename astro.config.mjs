@@ -8,6 +8,9 @@ import tailwindcss from '@tailwindcss/vite';
 // https://astro.build/config
 export default defineConfig({
   adapter: cloudflare(),
+  devToolbar: {
+    enabled: false
+  },
   integrations: [vue()],
   i18n: {
     locales: ['da', 'en'],

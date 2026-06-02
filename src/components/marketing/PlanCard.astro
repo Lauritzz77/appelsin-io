@@ -18,9 +18,9 @@ const { name, price, priceNote, tagline, features, cta, href, featured = false, 
 
 <div class={featured ? 'plan-card plan-card--featured' : 'plan-card'}>
 	{featured && <div class="absolute right-6 top-5"><span class="badge">{popularLabel}</span></div>}
-	<div class:list={['text-[21px] font-bold', featured ? 'text-white' : 'text-ink']}>{name}</div>
+	<div class:list={['text-3xl font-bold font-hand', featured ? 'text-white' : 'text-ink']}>{name}</div>
 	<div class="mt-[14px] flex items-baseline gap-2">
-		<span class:list={['text-[46px] font-extrabold tracking-[-0.03em]', featured ? 'text-accent' : 'text-ink']}>{price}</span>
+		<span class:list={['text-3xl lg:text-5xl font-extrabold tracking-[-0.03em]', featured ? 'text-accent' : 'text-ink']}>{price}</span>
 		<span class:list={['text-[15px]', featured ? 'text-tx-3' : 'text-warm-muted']}>{priceNote}</span>
 	</div>
 	<div class:list={['mt-2 min-h-[46px] text-[15.5px] leading-[1.5]', featured ? 'text-tx-2' : 'text-warm-body']}>{tagline}</div>

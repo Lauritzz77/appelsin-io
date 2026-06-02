@@ -12,7 +12,7 @@ const requested = Astro.url.searchParams.get('tier')
 const selectedTier: Tier = isTier(requested) ? requested : 'free'
 const createError = Astro.url.searchParams.get('error')
 
-const tierLabel = (tier: Tier) => (tier === 'free' ? 'Gratis' : TIERS[tier].label)
+const tierLabel = (tier: Tier) => TIERS[tier].label
 const tierPrice = (tier: Tier) => formatPrice(tier, 'da')
 const tierDescription = (tier: Tier) => {
 	const t = TIERS[tier]
@@ -41,7 +41,9 @@ const tierDescription = (tier: Tier) => {
 					Billederne kan vises live på en storskærm, iPad eller computer under arrangementet, så alle kan følge med i
 					øjeblikkene, mens de sker. Efter eventet kan du downloade hele billedsamlingen og gemme minderne for altid.
 				</p>
-				<p class="m-0 text-tx-3">Perfekt til bryllupper, fødselsdage, firmafester og andre særlige begivenheder.</p>
+				<p class="m-0 font-hand text-2xl font-bold leading-tight text-accent">
+					Perfekt til bryllupper, fødselsdage, firmafester og andre særlige begivenheder.
+				</p>
 			</div>
 
 			{
@@ -104,17 +106,16 @@ const tierDescription = (tier: Tier) => {
 								return (
 									<label class="radio-card">
 										<input type="radio" name="tier" value={id} checked={id === selectedTier} />
-										<span class="radio-dot" />
-										<span class="flex-1">
-											<span class="flex items-center gap-[10px]">
-												<span class="text-[18px] font-bold text-tx">{tierLabel(id)}</span>
+										<span class="rc-main">
+											<span class="rc-heading">
+												<span class="rc-title">{tierLabel(id)}</span>
 												{id === 'basic' && <span class="badge badge--soft">Populær</span>}
 											</span>
-											<span class="mt-1 block text-[14.5px] text-tx-3">{tierDescription(id)}</span>
+											<span class="rc-desc">{tierDescription(id)}</span>
 										</span>
 										<span class="rc-price">
 											{tierPrice(id)}
-											{t.priceCents > 0 && <span class="text-tx-3"> / event</span>}
+											{t.priceCents > 0 && <span class="rc-price-note"> / event</span>}
 										</span>
 									</label>
 								)
@@ -137,17 +138,22 @@ const tierDescription = (tier: Tier) => {
 
 <style>
 	.radio-card {
-		display: flex;
-		align-items: center;
-		gap: 16px;
+		box-sizing: border-box;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		align-items: start;
+		gap: 10px;
 		width: 100%;
 		text-align: left;
-		padding: 18px 20px;
+		padding: 16px;
 		border-radius: var(--r-lg);
 		cursor: pointer;
 		background: var(--s1);
 		border: 1.5px solid var(--line-2);
-		transition: all 0.18s;
+		transition:
+			background 0.18s,
+			border-color 0.18s,
+			box-shadow 0.18s;
 		position: relative;
 	}
 	.radio-card:hover {
@@ -165,42 +171,89 @@ const tierDescription = (tier: Tier) => {
 		border-color: var(--accent);
 		box-shadow: 0 0 0 4px var(--orange-soft);
 	}
-	.radio-dot {
-		width: 22px;
-		height: 22px;
-		border-radius: 999px;
-		flex-shrink: 0;
-		border: 2px solid var(--tx-3);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		transition: border-color 0.15s;
-	}
-	.radio-card:has(input:checked) .radio-dot {
-		border-color: var(--accent);
-	}
-	.radio-dot::after {
-		content: '';
-		width: 11px;
-		height: 11px;
-		border-radius: 999px;
-		background: var(--accent);
-		transform: scale(0);
-		transition: transform 0.15s;
-	}
-	.radio-card:has(input:checked) .radio-dot::after {
-		transform: scale(1);
-	}
 	.radio-card:focus-within {
 		border-color: var(--accent);
 	}
-	.rc-price {
+	.rc-main {
+		min-width: 0;
+	}
+	.rc-heading {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+	}
+	.rc-title {
 		font-size: 17px;
-		font-weight: 700;
+		font-weight: 800;
+		line-height: 1.2;
+		color: var(--tx);
+	}
+	.rc-desc {
+		display: block;
+		margin-top: 5px;
+		font-size: 14px;
+		line-height: 1.45;
+		color: var(--tx-3);
+	}
+	.rc-price {
+		grid-column: 1;
+		justify-self: end;
+		display: inline-flex;
+		align-items: baseline;
+		gap: 3px;
+		padding: 5px 9px;
+		border-radius: 999px;
+		border: 1px solid var(--line-2);
+		background: rgba(255, 255, 255, 0.05);
+		font-size: 14.5px;
+		font-weight: 800;
+		line-height: 1;
 		color: var(--tx-2);
 		white-space: nowrap;
 	}
+	.rc-price-note {
+		font-size: 13px;
+		font-weight: 700;
+		color: var(--tx-3);
+	}
 	.radio-card:has(input:checked) .rc-price {
 		color: var(--accent);
+		border-color: rgba(255, 162, 41, 0.34);
+		background: rgba(255, 162, 41, 0.12);
+	}
+	@container (min-width: 640px) {
+		.radio-card {
+			grid-template-columns: minmax(0, 1fr) auto;
+			align-items: center;
+			gap: 16px;
+			padding: 18px 20px;
+		}
+		.rc-title {
+			font-size: 18px;
+		}
+		.rc-desc {
+			margin-top: 4px;
+			font-size: 14.5px;
+			line-height: normal;
+		}
+		.rc-price {
+			grid-column: auto;
+			justify-self: end;
+			padding: 0;
+			border: 0;
+			background: transparent;
+			font-size: 17px;
+			font-weight: 700;
+			line-height: normal;
+		}
+		.rc-price-note {
+			font-size: inherit;
+			font-weight: inherit;
+		}
+		.radio-card:has(input:checked) .rc-price {
+			background: transparent;
+			border-color: transparent;
+		}
 	}
 </style>

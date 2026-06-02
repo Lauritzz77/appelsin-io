@@ -2,11 +2,11 @@ import { drizzle } from 'drizzle-orm/d1'
 import { eq, and, lt, sql, isNull, isNotNull } from 'drizzle-orm'
 import * as schema from '../db/schema'
 import { sendTransactionalEmail } from './email'
-import { eventDownloadUrl } from './event-download'
+import { eventGalleryUrl } from './event-download'
 
 export type CleanupResult = {
 	flipped: number // live → ended
-	notified: number // ended events with download email sent this tick
+	notified: number // ended events with gallery email sent this tick
 	eventsDeleted: number
 	photosDeleted: number
 	errors: number
@@ -44,7 +44,7 @@ export async function runRetentionCleanup(env: Cloudflare.Env): Promise<CleanupR
 		.run()
 	result.flipped = flipRes.meta.changes ?? 0
 
-	// 1b. Send the post-event download email for ended events that haven't been
+	// 1b. Send the post-event gallery email for ended events that haven't been
 	//     notified yet. Capped per tick — backlog drains over subsequent ticks.
 	const pending = await db
 		.select({
@@ -86,7 +86,7 @@ export async function runRetentionCleanup(env: Cloudflare.Env): Promise<CleanupR
 			})
 
 			if (recipients.size > 0) {
-				const downloadUrl = await eventDownloadUrl(
+				const galleryUrl = await eventGalleryUrl(
 					env.PUBLIC_APP_URL,
 					ev.id,
 					env.BETTER_AUTH_SECRET
@@ -98,7 +98,7 @@ export async function runRetentionCleanup(env: Cloudflare.Env): Promise<CleanupR
 								from: env.RESEND_FROM_EMAIL ?? 'onboarding@resend.dev',
 								to,
 								subject: `Billeder fra ${ev.name}`,
-								html: eventEndedEmailHtml(ev.name, downloadUrl),
+								html: eventEndedEmailHtml(ev.name, galleryUrl),
 							},
 							env.RESEND_API_KEY
 						)
@@ -213,7 +213,7 @@ function eventEndedEmailHtml(eventName: string, url: string): string {
 		c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '&' ? '&amp;' : '&quot;'
 	)
 	return `<p>Tak fordi du var med til <strong>${safeName}</strong>.</p>
-<p>Alle billeder fra eventet kan downloades som zip-fil her:</p>
+<p>Din billedsamling er klar. Åbn linket for at se billederne, dele galleriet eller downloade dem som zip på computer:</p>
 <p><a href="${url}">${url}</a></p>
 <p>Linket virker så længe billederne er gemt på appelsin.io.</p>`
 }

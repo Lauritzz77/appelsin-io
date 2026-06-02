@@ -28,14 +28,20 @@ export const PATCH: APIRoute = async ({ request, params, locals }) => {
 	if (!id) return new Response('Missing event id', { status: 400 })
 
 	const body = (await request.json().catch(() => null)) as
-		| { name?: unknown; hasBigScreen?: unknown }
+		| { name?: unknown; eventDate?: unknown; hasBigScreen?: unknown }
 		| null
 
-	const updates: { name?: string; hasBigScreen?: boolean } = {}
+	const updates: { name?: string; eventDate?: Date; hasBigScreen?: boolean } = {}
 	if (body && 'name' in body) {
 		const name = normaliseEventName(body.name)
 		if (!name) return new Response('Missing event name', { status: 400 })
 		updates.name = name
+	}
+	if (body && 'eventDate' in body) {
+		if (typeof body.eventDate !== 'string') return new Response('Invalid event date', { status: 400 })
+		const eventDate = new Date(body.eventDate)
+		if (isNaN(eventDate.getTime())) return new Response('Invalid event date', { status: 400 })
+		updates.eventDate = eventDate
 	}
 	if (body && 'hasBigScreen' in body) {
 		if (typeof body.hasBigScreen !== 'boolean') {
@@ -49,12 +55,15 @@ export const PATCH: APIRoute = async ({ request, params, locals }) => {
 
 	const db = drizzle(env.DB, { schema })
 	const [event] = await db
-		.select({ id: schema.events.id })
+		.select({ id: schema.events.id, status: schema.events.status })
 		.from(schema.events)
 		.where(and(eq(schema.events.id, id), eq(schema.events.hostId, host.id)))
 		.limit(1)
 
 	if (!event) return new Response('Event not found', { status: 404 })
+	if (updates.eventDate && event.status === 'live') {
+		return new Response('Event date cannot be changed while the event is live', { status: 409 })
+	}
 
 	await db.update(schema.events).set(updates).where(eq(schema.events.id, event.id))
 

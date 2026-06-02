@@ -20,6 +20,17 @@ const events = await db
 	.where(eq(schema.events.hostId, host.id))
 	.orderBy(desc(schema.events.createdAt))
 
+const fromLogin = Astro.url.searchParams.get('fromLogin') === '1'
+const requestedCreateNext = Astro.url.searchParams.get('createNext')
+if (fromLogin && events.length === 0) {
+	const parsedCreateNext = requestedCreateNext ? new URL(requestedCreateNext, Astro.url.origin) : null
+	const createNext =
+		parsedCreateNext?.pathname === '/app/events/new'
+			? parsedCreateNext.pathname + parsedCreateNext.search
+			: '/app/events/new'
+	return Astro.redirect(createNext, 302)
+}
+
 const tierLabel = (tier: unknown) => TIERS[isTier(tier) ? tier : 'free'].label
 ---
 
@@ -39,33 +50,35 @@ const tierLabel = (tier: unknown) => TIERS[isTier(tier) ? tier : 'free'].label
 				events.length === 0 ? (
 					<p class="text-tx-3">Ingen events endnu. Opret dit første.</p>
 				) : (
-					<div class="flex flex-col gap-[14px]">
+					<div class="flex flex-col gap-5">
 						{events.map((e) => (
-							<div class="event-row flex items-center gap-[18px] rounded-xl border border-line-2 bg-s1 px-6 py-[22px] transition-all duration-200 hover:-translate-y-0.5 hover:border-line hover:bg-s2 hover:shadow-app">
-								<a href={`/app/events/${e.id}`} class="flex min-w-0 flex-1 items-center gap-[18px]">
-									<span class="relative flex h-[58px] w-[58px] shrink-0 -rotate-[5deg] items-center justify-center rounded-md border border-line bg-[linear-gradient(135deg,var(--s3),var(--s2))] text-tx-3">
+							<div class="event-row relative flex flex-col gap-4 rounded-xl border border-line-2 bg-s1 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-line hover:bg-s2 hover:shadow-app sm:flex-row sm:items-center sm:gap-[18px] sm:px-6 sm:py-[22px]">
+								<span class="absolute -top-2 -right-2 z-10">
+									<StatusPill status={e.status} locale="da" />
+								</span>
+								<a href={`/app/events/${e.id}`} class="flex min-w-0 flex-1 items-start gap-4 sm:items-center sm:gap-[18px]">
+									<span class="relative hidden h-[58px] w-[58px] shrink-0 -rotate-[5deg] items-center justify-center rounded-md border border-line bg-[linear-gradient(135deg,var(--s3),var(--s2))] text-tx-3 sm:flex">
 										<Icon name="image" size={24} />
 									</span>
 									<span class="min-w-0 flex-1">
-										<span class="flex flex-wrap items-center gap-3">
-											<span class="event-name text-[20px] font-bold text-tx">{e.name}</span>
-											<StatusPill status={e.status} locale="da" />
+										<span class="flex min-w-0 flex-col items-start gap-2 pr-16 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 sm:pr-20">
+											<span class="event-name max-w-full break-words text-[20px] font-bold leading-tight text-tx">{e.name}</span>
 										</span>
-										<span class="mt-[7px] flex flex-wrap items-center gap-[14px] text-sm text-tx-3">
-											<span class="font-mono font-bold tracking-[0.08em] text-tx-2">{e.shortCode}</span>
-											<span class="opacity-50">·</span>
-											<span>
+										<span class="mt-3 flex flex-wrap items-center gap-2 text-sm text-tx-3 sm:mt-[7px] sm:gap-[14px]">
+											<span class="inline-flex items-center rounded-full border border-line-2 bg-white/[0.04] px-2.5 py-1 font-mono text-[13px] font-bold tracking-[0.08em] text-tx-2 sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm">{e.shortCode}</span>
+											<span class="hidden opacity-50 sm:inline">·</span>
+											<span class="inline-flex items-center gap-1 rounded-full border border-line-2 bg-white/[0.04] px-2.5 py-1 sm:border-0 sm:bg-transparent sm:p-0">
 												plan <strong class="text-accent">{tierLabel(e.tier)}</strong>
 											</span>
-											<span class="opacity-50">·</span>
-											<span>{new Date(e.eventDate).toLocaleDateString('da-DK')}</span>
+											<span class="hidden opacity-50 sm:inline">·</span>
+											<span class="inline-flex items-center rounded-full border border-line-2 bg-white/[0.04] px-2.5 py-1 sm:border-0 sm:bg-transparent sm:p-0">{new Date(e.eventDate).toLocaleDateString('da-DK')}</span>
 										</span>
 									</span>
 								</a>
-								<div class="flex items-center gap-1">
+								<div class="flex items-center justify-end gap-1 border-t border-line-2 pt-3 sm:border-t-0 sm:pt-0">
 									<button
 										type="button"
-										class="event-rename flex h-[38px] w-[38px] items-center justify-center rounded-sm text-tx-3 transition hover:bg-white/8 hover:text-tx"
+										class="event-rename flex h-10 w-10 items-center justify-center rounded-sm text-tx-3 transition hover:bg-white/8 hover:text-tx sm:h-[38px] sm:w-[38px]"
 										data-event-id={e.id}
 										data-event-name={e.name}
 										aria-label={`Omdøb ${e.name}`}
@@ -75,7 +88,7 @@ const tierLabel = (tier: unknown) => TIERS[isTier(tier) ? tier : 'free'].label
 									</button>
 									<button
 										type="button"
-										class="event-delete flex h-[38px] w-[38px] items-center justify-center rounded-sm text-tx-3 transition hover:bg-[rgba(244,63,94,.14)] hover:text-danger"
+										class="event-delete flex h-10 w-10 items-center justify-center rounded-sm text-tx-3 transition hover:bg-[rgba(244,63,94,.14)] hover:text-danger sm:h-[38px] sm:w-[38px]"
 										data-event-id={e.id}
 										data-event-name={e.name}
 										aria-label={`Slet ${e.name}`}
@@ -83,7 +96,6 @@ const tierLabel = (tier: unknown) => TIERS[isTier(tier) ? tier : 'free'].label
 									>
 										<Icon name="trash" size={18} />
 									</button>
-									<Icon name="chevron-right" size={20} class="text-tx-4" />
 								</div>
 							</div>
 						))}

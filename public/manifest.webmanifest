@@ -1,0 +1,28 @@
+{
+	"name": "appelsin.io",
+	"short_name": "appelsin",
+	"description": "Guests scan a QR code, upload photos from their phone, and the photos appear live on the big screen.",
+	"start_url": "/app",
+	"scope": "/",
+	"display": "standalone",
+	"theme_color": "#071952",
+	"background_color": "#040E30",
+	"icons": [
+		{
+			"src": "/icons/icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "/icons/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		},
+		{
+			"src": "/icons/maskable-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
+		}
+	]
+}

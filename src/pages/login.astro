@@ -7,41 +7,48 @@ import Icon from '../components/brand/Icon.astro'
 import Button from '../components/brand/Button.astro'
 
 const requested = Astro.url.searchParams.get('next')
-const next = requested && requested.startsWith('/') ? requested : '/app/events/new'
+const requestedNext =
+	requested && requested.startsWith('/') && !requested.startsWith('//') ? requested : '/app/events/new'
+const createEventNext = new URL('/app/events/new', Astro.url.origin)
+const parsedNext = new URL(requestedNext, Astro.url.origin)
+const next =
+	parsedNext.pathname === createEventNext.pathname
+		? `/app?fromLogin=1&createNext=${encodeURIComponent(parsedNext.pathname + parsedNext.search)}`
+		: requestedNext
 ---
 
-<Layout title="Log ind — appelsin" locale="da" surface="cream">
-	<div class="mkt screen-root flex flex-col">
+<Layout title="Log ind — appelsin" locale="da">
+	<div class="app screen-root flex min-h-screen flex-col">
 		<div class="mx-auto w-full max-w-[1180px] px-10 pt-[26px]">
-			<a href="/" class="inline-flex items-center gap-2 text-[15.5px] font-semibold text-ink-2">
+			<a href="/" class="inline-flex items-center gap-2 text-[15.5px] font-semibold text-tx-2">
 				<Icon name="arrow-left" size={18} />Forside
 			</a>
 		</div>
 		<div class="flex flex-1 items-center justify-center px-6 pt-12 pb-[100px]">
 			<div class="fu w-full max-w-[440px]">
 				<div class="mb-[30px] flex justify-center">
-					<Logo surface="cream" class="w-20 h-20 block" />
+					<Logo surface="dark" class="w-20 h-20 block" />
 				</div>
 
 				<div
 					id="login-form-card"
-					class="rounded-2xl border border-cream-line bg-white p-[38px_34px] shadow-cream-lg"
+					class="rounded-2xl border border-line-2 bg-s1 p-5 lg:p-9 shadow-app-lg"
 				>
-					<h1 class="m-0 text-center text-[30px] font-extrabold tracking-[-0.02em] text-ink">Log ind</h1>
-					<p class="mt-3 mb-7 text-center text-[16.5px] leading-[1.55] text-warm-body">
+					<h1 class="m-0 text-center text-[30px] font-extrabold tracking-[-0.02em] text-tx">Log ind</h1>
+					<p class="mt-3 mb-7 text-center text-[16.5px] leading-[1.55] text-tx-3">
 						Skriv din email — vi sender dig et sikkert login-link.
 					</p>
 
 					<form id="magic-link-form" data-next={next}>
 						<div class="field-input field-input--big flex items-center gap-[10px]">
-							<Icon name="mail" size={18} class="text-warm-muted" />
+							<Icon name="mail" size={18} class="text-tx-3" />
 							<input
 								type="email"
 								name="email"
 								required
 								autocomplete="email"
 								placeholder="dig@example.com"
-								class="flex-1 border-none bg-transparent text-[18px] text-ink outline-none"
+								class="flex-1 border-none bg-transparent text-[18px] text-tx outline-none placeholder:text-tx-4"
 							/>
 						</div>
 						<div class="mt-4">
@@ -49,26 +56,26 @@ const next = requested && requested.startsWith('/') ? requested : '/app/events/n
 						</div>
 					</form>
 
-					<div class="mt-[22px] flex items-center justify-center gap-2 text-sm text-warm-muted">
+					<div class="mt-[22px] flex items-center justify-center gap-2 text-sm text-tx-3">
 						<Icon name="lock" size={15} />Intet kodeord. Linket gælder i 15 minutter.
 					</div>
-					<p id="status" class="mt-[14px] min-h-[1.25rem] text-center text-sm text-warm-body"></p>
+					<p id="status" class="mt-[14px] min-h-[1.25rem] text-center text-sm text-tx-2"></p>
 				</div>
 
 				<div
 					id="login-success-card"
-					class="hidden rounded-2xl border border-cream-line bg-white p-[44px_34px] text-center shadow-cream-lg [animation:popIn_.3s_both]"
+					class="hidden rounded-2xl border border-line-2 bg-s1 p-[44px_34px] text-center shadow-app-lg [animation:popIn_.3s_both]"
 				>
 					<div
 						class="mx-auto mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-full bg-peach text-orange-deep"
 					>
 						<Icon name="mail" size={34} stroke={1.8} />
 					</div>
-					<h1 class="m-0 text-[27px] font-extrabold text-ink">Tjek din indbakke</h1>
-					<p class="mt-3 mb-[26px] text-[16.5px] leading-[1.6] text-warm-body">
-						Vi har sendt et login-link til<br /><strong id="login-email" class="text-ink">dig@example.com</strong>
+					<h1 class="m-0 text-[27px] font-extrabold text-tx">Tjek din indbakke</h1>
+					<p class="mt-3 mb-[26px] text-[16.5px] leading-[1.6] text-tx-3">
+						Der er sendt en mail til <strong id="login-email" class="text-tx">dig@example.com</strong>. Tjek din indbakke.
 					</p>
-					<a id="login-retry" href="#" class="cursor-pointer text-[14.5px] font-semibold text-orange-deep">Brug en anden email</a>
+					<a id="login-retry" href="#" class="cursor-pointer text-[14.5px] font-semibold text-accent">Brug en anden email</a>
 				</div>
 			</div>
 		</div>

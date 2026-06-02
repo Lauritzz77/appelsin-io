@@ -63,8 +63,6 @@ function ctaHref(tier: TierId): string {
 	if (isSignedIn) return dest
 	return `/en/login?next=${encodeURIComponent(dest)}`
 }
-const startHref = ctaHref('basic')
-const loginHref = isSignedIn ? '/en/app' : '/en/login'
 
 const steps = [
 	{ ic: 'qr', n: '01', t: 'Scan the code', d: 'Guests scan the QR code with their phone camera. No app, no login.' },
@@ -83,7 +81,7 @@ const faq = [
 	},
 	{
 		q: 'What happens to the photos after the event?',
-		a: 'The event automatically marks as ended 2 days after the event date. You and your guests (with email) get a download link by email. Photos are then kept for 7-30 days depending on plan, after which everything is deleted automatically.',
+		a: 'The event automatically marks as ended 2 days after the event date. You and your guests (with email) get a link to the photo collection by email. Photos are then kept for 7-30 days depending on plan, after which everything is deleted automatically.',
 	},
 	{
 		q: 'Can I show the photo wall on an iPad or laptop?',
@@ -91,7 +89,7 @@ const faq = [
 	},
 	{
 		q: "Can I delete a photo that shouldn't be shown?",
-		a: "Yes. You can delete individual photos from the event dashboard — they disappear from the photo wall instantly and aren't included in the final download.",
+		a: "Yes. You can delete individual photos from the event dashboard — they disappear from the photo wall instantly and aren't included in the final photo collection.",
 	},
 	{
 		q: 'When can guests start uploading?',
@@ -128,9 +126,8 @@ const faq = [
 							Guests scan a QR code and upload photos straight from their phone — no app. Everything shows live on the
 							big screen, and you download the whole party afterwards.
 						</p>
-						<div class="flex flex-wrap gap-[14px]">
-							<Button href={startHref} size="lg">Create your event</Button>
-							<a href={loginHref} class="btn btn--lg btn--blue">Log in</a>
+						<div class="hero-cta flex flex-wrap gap-[14px]">
+							<Button href="#pricing" size="lg">See plans</Button>
 						</div>
 						<div class="mt-[30px] flex flex-wrap items-center gap-[10px] text-[14.5px] font-semibold text-tx-3">
 							{

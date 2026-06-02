@@ -60,3 +60,12 @@ export async function eventDownloadUrl(
 	const key = await signEventDownload(eventId, secret)
 	return `${baseUrl}/api/events/${eventId}/download?key=${key}`
 }
+
+export async function eventGalleryUrl(
+	baseUrl: string,
+	eventId: string,
+	secret: string
+): Promise<string> {
+	const key = await signEventDownload(eventId, secret)
+	return `${baseUrl}/events/${eventId}/gallery?key=${key}`
+}

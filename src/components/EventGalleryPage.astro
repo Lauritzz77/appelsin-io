@@ -1,0 +1,792 @@
+---
+import Layout from '../layouts/Layout.astro'
+import Icon from './brand/Icon.astro'
+
+type Locale = 'da' | 'en'
+
+type GalleryEvent = {
+	id: string
+	name: string
+	eventDate: Date
+	expiresAt: Date | null
+	retentionDays: number
+}
+
+type GalleryPhoto = {
+	id: string
+	cfImagesId: string | null
+	cfStreamUid: string | null
+	mediaType: 'photo' | 'video'
+	durationSeconds: number | null
+	createdAt: Date
+}
+
+interface Props {
+	locale: Locale
+	event: GalleryEvent
+	photos: GalleryPhoto[]
+	accessKey: string
+	downloadUrl: string
+	galleryUrl: string
+	cfImagesHash: string
+	streamDomain: string
+}
+
+const {
+	locale,
+	event,
+	photos,
+	accessKey,
+	downloadUrl,
+	galleryUrl,
+	cfImagesHash,
+} = Astro.props
+
+const text = {
+	da: {
+		title: 'Din billedsamling',
+		kicker: 'billederne er klar',
+		lead: 'Se billederne fra eventet, og gem dem på den måde der passer bedst til din enhed.',
+		empty: 'Der er ingen billeder at vise endnu.',
+		downloadZip: 'Download ZIP',
+		downloadZipCount: (n: number) => `Download ${n} valgte som ZIP`,
+		selectFirst: 'Vælg 20',
+		selectAll: 'Vælg alle',
+		deselectAll: 'Fravælg alle',
+		saveSelected: 'Gem på enhed',
+		saveSelectedCount: (n: number) => `Gem de ${n} valgte billeder`,
+		count: (n: number) => `${n.toLocaleString('da-DK')} uploads`,
+		photoLimit: 'Du kan gemme op til 20 billeder ad gangen på din enhed.',
+		maxSelected: 'Du kan vælge op til 20 billeder ad gangen.',
+		desktopHint: 'ZIP-download er bedst på computer.',
+		mobileHint: 'Vælg billeder og gem dem via enhedens dele-menu.',
+		desktopFlowHint: 'Download hele billedsamlingen som ZIP.',
+		zipNoteLink: 'Download ZIP',
+		iosZipNote:
+			'henter hele samlingen. På iPhone gemmes filen i Arkiver, typisk under Overførsler. Du kan også vælge op til 20 billeder ad gangen og gemme dem direkte på enheden.',
+		androidZipNote:
+			'henter hele samlingen. På Android gemmes filen typisk i Downloads. Du kan også vælge op til 20 billeder ad gangen og gemme dem direkte på enheden.',
+		expiry: (date: string) => `Denne side er aktiv indtil ${date}.`,
+		shareTitle: (name: string) => `Billeder fra ${name}`,
+		shareText: (name: string) => `Se billederne fra ${name}`,
+		copyOk: 'Galleri-link kopieret',
+		sharePreparing: 'Henter valgte billeder...',
+		shareFallback: 'Din browser kan ikke dele filer her. Galleri-linket er kopieret i stedet.',
+		shareError: 'Kunne ikke dele billederne. Prøv med færre billeder eller klik på Download ZIP.',
+		savedPromptTitle: 'Fik du gemt billederne?',
+		savedPromptMessage: 'Hvis du valgte “Gem billeder” i dele-menuen, kan vi markere dem som gemt på denne enhed.',
+		savedPromptConfirm: 'Ja, markér som gemt',
+		savedPromptCancel: 'Nej, ikke endnu',
+		savedStatus: (n: number) => `${n} billeder markeret som gemt på denne enhed.`,
+		savedBadge: 'Gemt',
+	},
+	en: {
+		title: 'Your photo collection',
+		kicker: 'photos are ready',
+		lead: 'View the event photos, and save them in the way that works best for your device.',
+		empty: 'There are no photos to show yet.',
+		downloadZip: 'Download ZIP',
+		downloadZipCount: (n: number) => `Download ${n} items as ZIP`,
+		selectFirst: 'Select 20',
+		selectAll: 'Select all',
+		deselectAll: 'Deselect all',
+		saveSelected: 'Save on device',
+		saveSelectedCount: (n: number) => `Save ${n} selected photos`,
+		count: (n: number) => `${n.toLocaleString('en-IE')} uploads`,
+		photoLimit: 'You can save up to 20 photos at a time on your device.',
+		maxSelected: 'You can select up to 20 photos at a time.',
+		desktopHint: 'ZIP download is best on a computer.',
+		mobileHint: "Select photos and save them through your device's share menu.",
+		desktopFlowHint: 'Download the full photo collection as a ZIP.',
+		zipNoteLink: 'Download ZIP',
+		iosZipNote:
+			'downloads the full collection. On iPhone the file is saved in Files, usually under Downloads. You can also select up to 20 photos at a time and save them directly on your device.',
+		androidZipNote:
+			'downloads the full collection. On Android the file is usually saved in Downloads. You can also select up to 20 photos at a time and save them directly on your device.',
+		expiry: (date: string) => `This page is active until ${date}.`,
+		shareTitle: (name: string) => `Photos from ${name}`,
+		shareText: (name: string) => `See the photos from ${name}`,
+		copyOk: 'Gallery link copied',
+		sharePreparing: 'Fetching selected photos...',
+		shareFallback: 'Your browser cannot share files here. The gallery link was copied instead.',
+		shareError: 'Could not share the photos. Try fewer photos or click Download ZIP.',
+		savedPromptTitle: 'Did you save the photos?',
+		savedPromptMessage: 'If you chose “Save images” in the share menu, we can mark them as saved on this device.',
+		savedPromptConfirm: 'Yes, mark as saved',
+		savedPromptCancel: 'Not yet',
+		savedStatus: (n: number) => `${n} photos marked as saved on this device.`,
+		savedBadge: 'Saved',
+	},
+}[locale]
+
+const dateLocale = locale === 'da' ? 'da-DK' : 'en-IE'
+const POST_EVENT_GRACE_DAYS = 2
+const calculatedExpiresAt = new Date(event.eventDate)
+calculatedExpiresAt.setDate(calculatedExpiresAt.getDate() + POST_EVENT_GRACE_DAYS + event.retentionDays)
+const displayExpiresAt = event.expiresAt ?? calculatedExpiresAt
+const expiresText = displayExpiresAt.toLocaleDateString(dateLocale, { dateStyle: 'long' })
+const imageUrl = (id: string) => `https://imagedelivery.net/${cfImagesHash}/${id}/public`
+const fileUrl = (photoId: string) =>
+	`/api/events/${event.id}/photos/${photoId}/file?key=${encodeURIComponent(accessKey)}`
+const filenameFor = (index: number) => `appelsin-event-${String(index + 1).padStart(3, '0')}.jpg`
+const galleryPhotos = photos.filter((p) => p.mediaType === 'photo' && p.cfImagesId)
+const shareablePhotos = galleryPhotos
+const pageTitle = `${event.name} — ${text.title}`
+---
+
+<Layout title={pageTitle} locale={locale} showLanguageSwitch={false}>
+	<main class="after-gallery app screen-root" data-gallery-flow="desktop">
+		<div class="fu mx-auto max-w-[1120px] px-5 py-6 sm:px-7 sm:py-8">
+			<header class="after-gallery-hero">
+				<div class="min-w-0">
+					<a href={locale === 'da' ? '/' : '/en'} class="inline-flex items-center">
+						<img src="/logo.svg" alt="appelsin.io" class="h-20 w-20" />
+					</a>
+					<p class="mt-8 font-hand text-[28px] font-bold leading-none text-accent sm:text-[34px]">{text.kicker}</p>
+					<h1 class="mt-2 max-w-[760px] break-words text-[clamp(34px,6cqw,62px)] font-extrabold leading-[1.02] tracking-[-0.02em] text-tx">
+						{event.name}
+					</h1>
+					<p class="mt-4 max-w-[620px] text-[16px] leading-[1.65] text-tx-2 sm:text-[17px]">{text.lead}</p>
+					<p class="mt-3 text-sm text-tx-3">{text.expiry(expiresText)}</p>
+				</div>
+
+				<div class="after-gallery-actions">
+					<a
+						id="gallery-download-zip"
+						href={downloadUrl}
+						class="btn btn--primary after-gallery-zip"
+						data-base-download-url={downloadUrl}
+						data-all-label={text.downloadZipCount(photos.length)}
+						data-selected-template={text.downloadZipCount(123).replace('123', '{count}')}
+					>
+						<Icon name="download" size={18} stroke={2.2} />
+						<span data-download-zip-label>{text.downloadZipCount(photos.length)}</span>
+					</a>
+				</div>
+			</header>
+
+			<section class="after-gallery-toolbar">
+				<div class="after-gallery-summary">
+					<h2 class="m-0 text-[19px] font-extrabold text-tx">{text.count(photos.length)}</h2>
+				</div>
+				<div class="after-gallery-tools">
+					<button id="gallery-select-first" type="button" class="btn btn--ghost btn--sm" disabled={shareablePhotos.length === 0}>
+						<span class="after-select-first-mobile">{text.selectFirst}</span>
+						<span class="after-select-first-desktop" data-select-all-label data-select-all-text={text.selectAll} data-deselect-all-text={text.deselectAll}>{text.selectAll}</span>
+					</button>
+					<button id="gallery-share-selected" type="button" class="btn btn--primary btn--sm" disabled data-default-text={text.saveSelected}>
+						<Icon name="share" size={16} stroke={2.2} /><span data-share-selected-label>{text.saveSelected}</span>
+					</button>
+					<div class="after-view-toggle" role="group" aria-label="Vis billeder">
+						<button type="button" class="after-view-toggle-btn is-active" data-gallery-view="grid" aria-pressed="true" title="Vis som grid">
+							<Icon name="grid" size={16} />
+						</button>
+						<button type="button" class="after-view-toggle-btn" data-gallery-view="column" aria-pressed="false" title="Vis i kolonne">
+							<Icon name="list" size={17} />
+						</button>
+					</div>
+				</div>
+			</section>
+
+				<p class="after-device-note after-device-note--ios">
+					<a href={downloadUrl}>{text.zipNoteLink}</a> {text.iosZipNote}
+				</p>
+				<p class="after-device-note after-device-note--android">
+					<a href={downloadUrl}>{text.zipNoteLink}</a> {text.androidZipNote}
+				</p>
+				<p id="gallery-status" class="after-gallery-status" aria-live="polite"></p>
+				<div id="gallery-loading-overlay" class="after-loading-overlay" hidden aria-hidden="true">
+					<span class="after-loading-spinner"></span>
+				</div>
+
+				{
+				galleryPhotos.length === 0 ? (
+					<section class="after-gallery-empty">
+						<Icon name="image" size={32} />
+						<p>{text.empty}</p>
+					</section>
+				) : (
+					<section
+						id="after-gallery-grid"
+						class="after-gallery-grid"
+						data-max-share="20"
+						data-event-name={event.name}
+						data-share-url={galleryUrl}
+						data-copy-ok={text.copyOk}
+						data-share-title={text.shareTitle(event.name)}
+							data-share-text={text.shareText(event.name)}
+							data-share-preparing={text.sharePreparing}
+							data-share-fallback={text.shareFallback}
+						data-share-error={text.shareError}
+						data-selected-template={text.saveSelectedCount(123).replace('123', '{count}')}
+						data-max-selected={text.maxSelected}
+						data-saved-key={`appelsin:saved-photos:${event.id}`}
+						data-saved-prompt-title={text.savedPromptTitle}
+						data-saved-prompt-message={text.savedPromptMessage}
+						data-saved-prompt-confirm={text.savedPromptConfirm}
+						data-saved-prompt-cancel={text.savedPromptCancel}
+						data-saved-status-template={text.savedStatus(123).replace('123', '{count}')}
+					>
+						{galleryPhotos.map((photo, index) => (
+							<article class="after-photo-tile" data-photo-id={photo.id}>
+								<img src={imageUrl(photo.cfImagesId!)} alt="" loading="lazy" class="h-full w-full object-cover" />
+								<label class="after-photo-select">
+									<input
+										type="checkbox"
+										data-photo-id={photo.id}
+										data-media-type={photo.mediaType}
+										data-file-url={fileUrl(photo.id)}
+										data-filename={filenameFor(index)}
+									/>
+									<span><Icon name="check" size={16} stroke={3} /></span>
+								</label>
+								<span class="after-photo-saved"><Icon name="check" size={14} stroke={3} />{text.savedBadge}</span>
+							</article>
+						))}
+					</section>
+				)
+			}
+		</div>
+	</main>
+</Layout>
+
+<script>
+	const galleryRoot = document.querySelector<HTMLElement>('.after-gallery')
+	const grid = document.getElementById('after-gallery-grid')
+	const status = document.getElementById('gallery-status')
+	const downloadZip = document.getElementById('gallery-download-zip') as HTMLAnchorElement | null
+	const downloadZipLabel = document.querySelector<HTMLElement>('[data-download-zip-label]')
+	const selectFirst = document.getElementById('gallery-select-first') as HTMLButtonElement | null
+	const selectAllLabel = document.querySelector<HTMLElement>('[data-select-all-label]')
+	const shareSelected = document.getElementById('gallery-share-selected') as HTMLButtonElement | null
+	const shareSelectedLabel = document.querySelector<HTMLElement>('[data-share-selected-label]')
+	const loadingOverlay = document.getElementById('gallery-loading-overlay')
+	const checkboxes = Array.from(document.querySelectorAll<HTMLInputElement>('.after-photo-select input'))
+	const viewButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-gallery-view]'))
+	const maxShare = Number(grid?.dataset.maxShare || 20)
+	const savedStorageKey = grid?.dataset.savedKey || ''
+	const savedIds = new Set<string>()
+	let galleryFlow = 'desktop'
+
+	function detectGalleryFlow() {
+		const narrowViewport = window.matchMedia('(max-width: 499px)').matches
+		const coarsePointer = window.matchMedia('(pointer: coarse)').matches
+		const nativeShare = typeof navigator.share === 'function'
+		return narrowViewport || (coarsePointer && nativeShare) ? 'mobile' : 'desktop'
+	}
+
+	function detectMobileDevice() {
+		if (window.matchMedia('(max-width: 499px)').matches) return 'ios'
+		const ua = navigator.userAgent || ''
+		const platform = navigator.platform || ''
+		const isTouchMac = platform === 'MacIntel' && navigator.maxTouchPoints > 1
+		if (/iPad|iPhone|iPod/.test(ua) || isTouchMac) return 'ios'
+		if (/Android/i.test(ua)) return 'android'
+		return 'other'
+	}
+
+	galleryFlow = detectGalleryFlow()
+	galleryRoot?.setAttribute('data-gallery-flow', galleryFlow)
+	galleryRoot?.setAttribute('data-mobile-device', galleryFlow === 'mobile' ? detectMobileDevice() : 'desktop')
+	if (galleryFlow === 'desktop') {
+		checkboxes.forEach((input) => {
+			input.checked = true
+		})
+	}
+
+	function readSavedIds() {
+		if (!savedStorageKey) return
+		try {
+			const parsed = JSON.parse(localStorage.getItem(savedStorageKey) || '[]') as string[]
+			parsed.forEach((id) => savedIds.add(id))
+		} catch {
+			/* ignore invalid local storage */
+		}
+	}
+
+	function writeSavedIds() {
+		if (!savedStorageKey) return
+		localStorage.setItem(savedStorageKey, JSON.stringify(Array.from(savedIds)))
+	}
+
+	function applySavedState() {
+		document.querySelectorAll<HTMLElement>('.after-photo-tile[data-photo-id]').forEach((node) => {
+			const id = node.dataset.photoId
+			if (!id) return
+			node.classList.toggle('is-saved', savedIds.has(id))
+		})
+	}
+
+	function markSaved(inputs: HTMLInputElement[]) {
+		inputs.forEach((input) => {
+			if (input.dataset.photoId) savedIds.add(input.dataset.photoId)
+			input.checked = false
+		})
+		writeSavedIds()
+		applySavedState()
+		updateSelection()
+		const template = grid?.dataset.savedStatusTemplate || '{count} saved'
+		setStatus(template.replace('{count}', String(inputs.length)))
+	}
+
+	async function confirmSaved(inputs: HTMLInputElement[]) {
+		if (inputs.length === 0) return
+		const confirmed = await window.AppDialog.confirm({
+			title: grid?.dataset.savedPromptTitle || 'Saved?',
+			message: grid?.dataset.savedPromptMessage || '',
+			confirmText: grid?.dataset.savedPromptConfirm || 'Yes',
+			cancelText: grid?.dataset.savedPromptCancel || 'No',
+		})
+		if (confirmed) markSaved(inputs)
+	}
+
+	function selectedInputs() {
+		const selectable = galleryFlow === 'mobile'
+			? checkboxes.filter((input) => input.dataset.mediaType !== 'video')
+			: checkboxes
+		return selectable.filter((input) => input.checked)
+	}
+
+	function setStatus(message: string) {
+		if (status) status.textContent = message
+	}
+
+	async function copyShareUrl(message: string) {
+		const url = grid?.dataset.shareUrl || window.location.href
+		await navigator.clipboard.writeText(url)
+		setStatus(message)
+	}
+
+	function updateSelection() {
+		const selected = selectedInputs()
+		const count = selected.length
+		const selectable = galleryFlow === 'mobile'
+			? checkboxes.filter((input) => input.dataset.mediaType !== 'video')
+			: checkboxes
+		const allSelected = selectable.length > 0 && count === selectable.length
+		if (selectAllLabel) {
+			selectAllLabel.textContent = allSelected
+				? selectAllLabel.dataset.deselectAllText || 'Deselect all'
+				: selectAllLabel.dataset.selectAllText || 'Select all'
+		}
+		if (downloadZip) {
+			const baseUrl = downloadZip.dataset.baseDownloadUrl || downloadZip.href
+			const nextUrl = new URL(baseUrl, window.location.origin)
+			if (count > 0 && !allSelected) {
+				const ids = selected.map((input) => input.dataset.photoId).filter(Boolean)
+				nextUrl.searchParams.set('ids', ids.join(','))
+			} else {
+				nextUrl.searchParams.delete('ids')
+			}
+			downloadZip.href = nextUrl.toString()
+			if (downloadZipLabel) {
+				const template = downloadZip.dataset.selectedTemplate || 'Download {count} items as ZIP'
+				downloadZipLabel.textContent = allSelected || count === 0
+					? downloadZip.dataset.allLabel || downloadZipLabel.textContent
+					: template.replace('{count}', String(count))
+			}
+		}
+		if (shareSelected) {
+			const template = grid?.dataset.selectedTemplate || '{count} selected'
+			const label = count > 0
+				? template.replace('{count}', String(count))
+				: shareSelected.dataset.defaultText || shareSelected.textContent || ''
+			shareSelected.disabled = count === 0
+			if (shareSelectedLabel) shareSelectedLabel.textContent = label
+		}
+	}
+
+	function setGalleryView(view: string) {
+		grid?.classList.toggle('after-gallery-grid--column', view === 'column')
+		viewButtons.forEach((btn) => {
+			const active = btn.dataset.galleryView === view
+			btn.classList.toggle('is-active', active)
+			btn.setAttribute('aria-pressed', String(active))
+		})
+	}
+
+	selectFirst?.addEventListener('click', () => {
+		const selectable = galleryFlow === 'mobile'
+			? checkboxes.filter((input) => input.dataset.mediaType !== 'video')
+			: checkboxes
+		const allSelected = selectable.length > 0 && selectedInputs().length === selectable.length
+		checkboxes.forEach((input) => {
+			if (galleryFlow === 'mobile' && input.dataset.mediaType === 'video') {
+				input.checked = false
+			}
+		})
+		selectable.forEach((input, index) => {
+			input.checked = galleryFlow === 'mobile' ? index < maxShare : !allSelected
+		})
+		updateSelection()
+	})
+
+	viewButtons.forEach((btn) => {
+		btn.addEventListener('click', () => setGalleryView(btn.dataset.galleryView || 'grid'))
+	})
+
+	checkboxes.forEach((input) => {
+		input.addEventListener('change', () => {
+			if (galleryFlow === 'mobile' && selectedInputs().length > maxShare) {
+				input.checked = false
+				setStatus(grid?.dataset.maxSelected || '')
+			}
+			updateSelection()
+		})
+	})
+
+	shareSelected?.addEventListener('click', async (event) => {
+		const button = event.currentTarget as HTMLButtonElement
+		const selected = selectedInputs().slice(0, maxShare)
+		if (selected.length === 0) return
+		const setLoading = (loading: boolean) => {
+			button.disabled = loading
+			button.toggleAttribute('aria-busy', loading)
+			if (loadingOverlay) {
+				loadingOverlay.hidden = !loading
+				loadingOverlay.setAttribute('aria-hidden', String(!loading))
+			}
+		}
+		setLoading(true)
+		setStatus(grid?.dataset.sharePreparing || '')
+		try {
+			const files: File[] = []
+			for (const [index, input] of selected.entries()) {
+				const url = input.dataset.fileUrl
+				if (!url) continue
+				const response = await fetch(url)
+				if (!response.ok) throw new Error(`Could not fetch image ${index + 1}`)
+				const blob = await response.blob()
+				files.push(new File([blob], input.dataset.filename || `appelsin-event-${index + 1}.jpg`, {
+					type: blob.type || 'image/jpeg',
+				}))
+			}
+
+			if (files.length > 0 && navigator.canShare?.({ files })) {
+				setLoading(false)
+				setStatus('')
+				await navigator.share({ files, title: grid?.dataset.shareTitle || document.title })
+				await confirmSaved(selected)
+			} else if (navigator.share) {
+				setLoading(false)
+				setStatus('')
+				await navigator.share({
+					title: grid?.dataset.shareTitle || document.title,
+					text: grid?.dataset.shareText || document.title,
+					url: grid?.dataset.shareUrl || window.location.href,
+				})
+				setStatus(grid?.dataset.shareFallback || '')
+			} else {
+				await copyShareUrl(grid?.dataset.shareFallback || '')
+			}
+		} catch (error) {
+			if ((error as Error).name !== 'AbortError') setStatus(grid?.dataset.shareError || '')
+		} finally {
+			setLoading(false)
+			updateSelection()
+		}
+	})
+
+	readSavedIds()
+	applySavedState()
+	updateSelection()
+</script>
+
+<style>
+	.after-gallery {
+		min-height: 100vh;
+		background: radial-gradient(120% 90% at 50% -10%, var(--app-bg-2), var(--app-deep) 72%);
+	}
+	.after-gallery-hero {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 32px;
+		align-items: end;
+		padding: 18px 0 26px;
+	}
+	.after-gallery-actions {
+		position: fixed;
+		left: 50%;
+		bottom: 22px;
+		z-index: 30;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 12px;
+		transform: translateX(-50%);
+	}
+		.after-gallery-toolbar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 18px;
+			margin-top: 24px;
+			padding-top: 18px;
+			border-top: 1px solid var(--line-2);
+		}
+		.after-gallery-summary {
+			min-width: 0;
+			flex: 1;
+		}
+	.after-gallery-tools {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		gap: 10px;
+	}
+		.after-gallery[data-gallery-flow='mobile'] .after-gallery-zip,
+		.after-gallery[data-gallery-flow='desktop'] #gallery-share-selected {
+			display: none;
+		}
+		.after-gallery[data-gallery-flow='mobile'] #gallery-select-first {
+			display: none;
+		}
+		.after-gallery[data-gallery-flow='mobile'] {
+			padding-bottom: 92px;
+		}
+		.after-gallery[data-gallery-flow='mobile'] #gallery-share-selected {
+			position: fixed;
+			right: 20px;
+			bottom: max(18px, env(safe-area-inset-bottom));
+			left: 20px;
+			z-index: 35;
+			justify-content: center;
+			min-height: 54px;
+			box-shadow: 0 18px 40px rgba(255, 162, 41, 0.24);
+		}
+		.after-loading-overlay {
+			position: fixed;
+			inset: 0;
+			z-index: 80;
+			display: grid;
+			place-items: center;
+			background: rgba(4, 14, 48, 0.64);
+			backdrop-filter: blur(10px);
+		}
+		.after-loading-overlay[hidden] {
+			display: none;
+		}
+		.after-loading-spinner {
+			width: 46px;
+			height: 46px;
+			border: 4px solid rgba(255, 255, 255, 0.28);
+			border-top-color: #fff;
+			border-radius: 999px;
+			animation: after-loading-spin 0.75s linear infinite;
+		}
+		@keyframes after-loading-spin {
+			to {
+				transform: rotate(360deg);
+			}
+		}
+		.after-device-note {
+			display: none;
+			max-width: 680px;
+			margin: 8px 0 4px;
+			color: var(--tx-3);
+			font-size: 14px;
+			line-height: 1.55;
+		}
+		.after-device-note a {
+			color: var(--accent);
+			font-weight: 800;
+			text-decoration: none;
+		}
+		.after-gallery[data-gallery-flow='mobile'][data-mobile-device='ios'] .after-device-note--ios,
+		.after-gallery[data-gallery-flow='mobile'][data-mobile-device='android'] .after-device-note--android {
+			display: block;
+		}
+	.after-select-first-desktop {
+		display: none;
+	}
+	.after-gallery[data-gallery-flow='desktop'] .after-select-first-mobile {
+		display: none;
+	}
+	.after-gallery[data-gallery-flow='desktop'] .after-select-first-desktop {
+		display: inline;
+	}
+	.after-view-toggle {
+		display: inline-flex;
+		gap: 2px;
+		padding: 3px;
+		border: 1px solid var(--line-2);
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.05);
+	}
+	.after-view-toggle-btn {
+		display: inline-flex;
+		width: 32px;
+		height: 32px;
+		align-items: center;
+		justify-content: center;
+		border: 0;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--tx-3);
+		cursor: pointer;
+	}
+	.after-view-toggle-btn.is-active {
+		background: var(--accent);
+		color: #2c1700;
+	}
+		.after-gallery-status {
+			min-height: 12px;
+			margin: 3px 0 4px;
+			padding-top: 10px;
+			padding-bottom: 20px;
+			color: #ff8fa3;
+			font-size: 14px;
+			font-weight: 600;
+		}
+	.after-gallery-grid {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 12px;
+	}
+	.after-gallery-grid.after-gallery-grid--column {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.after-gallery-grid--column .after-photo-tile {
+		aspect-ratio: 16 / 9;
+	}
+	.after-photo-tile {
+		position: relative;
+		aspect-ratio: 1;
+		overflow: hidden;
+		border-radius: var(--r-md);
+		background: rgba(255, 255, 255, 0.06);
+		box-shadow: 0 0 0 1px var(--line-2);
+	}
+	.after-photo-select {
+		position: absolute;
+		inset: 10px auto auto 10px;
+		opacity: 1;
+		transform: scale(1);
+		transition:
+			opacity 0.16s,
+			transform 0.16s;
+	}
+	.after-photo-select input {
+		position: absolute;
+		opacity: 0;
+	}
+	.after-photo-select span {
+		display: flex;
+		width: 34px;
+		height: 34px;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid rgba(255, 255, 255, 0.28);
+		border-radius: 999px;
+		background: rgba(4, 14, 48, 0.72);
+		color: transparent;
+		backdrop-filter: blur(10px);
+	}
+	.after-photo-select input:checked + span {
+		border-color: var(--accent);
+		background: var(--accent);
+		color: #2c1700;
+	}
+		.after-photo-saved {
+		position: absolute;
+		inset: auto 10px 10px auto;
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		border-radius: 999px;
+		background: var(--live-bg);
+		padding: 6px 9px;
+		color: var(--live);
+		font-size: 12px;
+		font-weight: 800;
+		opacity: 0;
+		transform: translateY(4px);
+		transition:
+			opacity 0.16s,
+			transform 0.16s;
+		backdrop-filter: blur(10px);
+	}
+	.after-photo-tile.is-saved .after-photo-saved {
+		opacity: 1;
+		transform: translateY(0);
+	}
+	.after-photo-tile.is-saved {
+		box-shadow:
+			0 0 0 1px rgba(52, 211, 153, 0.36),
+			0 12px 30px rgba(0, 0, 0, 0.18);
+	}
+		.after-gallery-empty {
+		display: grid;
+		min-height: 220px;
+		place-items: center;
+		gap: 10px;
+		border: 1px dashed var(--line-2);
+		border-radius: var(--r-xl);
+		color: var(--tx-3);
+		}
+		@media (max-width: 760px) {
+			.after-gallery-hero {
+				grid-template-columns: 1fr;
+				gap: 18px;
+				padding: 10px 0 16px;
+			}
+			.after-gallery-hero p.mt-8 {
+				margin-top: 18px;
+			}
+			.after-gallery-tools,
+			.after-gallery-summary,
+			.after-gallery-toolbar {
+				width: 100%;
+			}
+			.after-gallery-toolbar {
+				display: grid;
+				grid-template-columns: minmax(0, 1fr) auto;
+				align-items: center;
+				gap: 10px;
+				margin-top: 18px;
+				padding-top: 14px;
+			}
+			.after-gallery-summary {
+				width: auto;
+				grid-column: 1;
+				grid-row: 1;
+			}
+			.after-gallery-tools {
+				display: contents;
+			}
+			.after-gallery-tools > * {
+				min-width: 0;
+			}
+			.after-gallery-tools #gallery-select-first,
+			.after-gallery-tools #gallery-share-selected {
+				grid-row: 1;
+			}
+			.after-gallery-tools #gallery-select-first {
+				grid-column: 2;
+			}
+			.after-gallery-tools #gallery-share-selected {
+				grid-column: 2;
+			}
+			.after-view-toggle {
+				grid-column: 2;
+				grid-row: 1;
+				justify-self: end;
+				width: auto;
+			}
+			.after-gallery-grid {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 10px;
+			}
+			.after-gallery-grid.after-gallery-grid--column {
+				grid-template-columns: minmax(0, 1fr);
+			}
+			.after-gallery-grid--column .after-photo-tile {
+				aspect-ratio: 4 / 3;
+			}
+		}
+	@media (min-width: 1080px) {
+		.after-gallery-grid {
+			grid-template-columns: repeat(5, minmax(0, 1fr));
+		}
+	}
+</style>

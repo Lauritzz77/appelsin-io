@@ -15,7 +15,75 @@ function safeFilename(name: string): string {
 	return cleaned.slice(0, 60) || 'event'
 }
 
-export const GET: APIRoute = async ({ params, locals, url }) => {
+type DownloadablePhoto = {
+	id: string
+	cfImagesId: string | null
+	cfStreamUid: string | null
+	mediaType: 'photo' | 'video'
+	createdAt: Date
+}
+
+type ZipFile = {
+	name: string
+	lastModified: Date
+	input: ReadableStream<Uint8Array>
+}
+
+function zipPrefix(photo: DownloadablePhoto, index: number): string {
+	const seq = String(index + 1).padStart(4, '0')
+	const ts = photo.createdAt ? new Date(photo.createdAt).toISOString().slice(0, 10) : ''
+	return `${seq}${ts ? '-' + ts : ''}`
+}
+
+function parseRequestedIds(value: string | null): Set<string> | null {
+	if (!value) return null
+	const ids = value
+		.split(',')
+		.map((id) => id.trim())
+		.filter((id) => /^[a-z0-9-]{20,}$/i.test(id))
+	return ids.length > 0 ? new Set(ids) : null
+}
+
+async function fetchZipFile(
+	photo: DownloadablePhoto,
+	index: number,
+	env: Cloudflare.Env,
+	signal: AbortSignal
+): Promise<ZipFile | null> {
+	const prefix = zipPrefix(photo, index)
+
+	if (photo.mediaType === 'video' && photo.cfStreamUid) {
+		const res = await fetch(
+			`https://${env.CF_STREAM_CUSTOMER_DOMAIN}/${photo.cfStreamUid}/downloads/default.mp4`,
+			{ signal }
+		).catch(() => null)
+		if (!res?.ok || !res.body) return null
+		return {
+			name: `${prefix}.mp4`,
+			lastModified: photo.createdAt ?? new Date(),
+			input: res.body,
+		}
+	}
+
+	if (photo.cfImagesId) {
+		const res = await fetch(
+			`https://imagedelivery.net/${env.CF_IMAGES_HASH}/${photo.cfImagesId}/download`,
+			{ signal }
+		).catch(() => null)
+		if (!res?.ok || !res.body) return null
+		const contentType = res.headers.get('content-type') || ''
+		const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg'
+		return {
+			name: `${prefix}.${ext}`,
+			lastModified: photo.createdAt ?? new Date(),
+			input: res.body,
+		}
+	}
+
+	return null
+}
+
+export const GET: APIRoute = async ({ params, locals, url, request }) => {
 	const id = params.id
 	if (!id) return new Response('Missing event id', { status: 400 })
 
@@ -38,6 +106,7 @@ export const GET: APIRoute = async ({ params, locals, url }) => {
 	const validKey = await verifyEventDownload(event.id, key, env.BETTER_AUTH_SECRET)
 	if (!isHost && !validKey) return new Response('Unauthorized', { status: 401 })
 
+	const requestedIds = parseRequestedIds(url.searchParams.get('ids'))
 	const photos = await db
 		.select({
 			id: schema.photos.id,
@@ -50,60 +119,39 @@ export const GET: APIRoute = async ({ params, locals, url }) => {
 		.where(and(eq(schema.photos.eventId, event.id), ne(schema.photos.status, 'rejected')))
 		.orderBy(asc(schema.photos.createdAt))
 
-	const downloadable = photos.filter((p) => p.cfImagesId || p.cfStreamUid)
+	const selectedPhotos = requestedIds ? photos.filter((p) => requestedIds.has(p.id)) : photos
+	const downloadable = selectedPhotos.filter((p) => p.cfImagesId || p.cfStreamUid)
 	if (downloadable.length === 0) {
 		return new Response('Nothing to download', { status: 404 })
 	}
 
-	// Fetch each asset in parallel — photos from CF Images, videos as MP4
-	// from CF Stream. Returns null for assets that aren't fetchable (e.g.
-	// MP4 still processing on Stream — we skip those rather than block).
-	const files = await Promise.all(
-		downloadable.map(async (p, i) => {
-			const seq = String(i + 1).padStart(4, '0')
-			const ts = p.createdAt ? new Date(p.createdAt).toISOString().slice(0, 10) : ''
-			const prefix = `${seq}${ts ? '-' + ts : ''}`
+	let firstFile: ZipFile | null = null
+	let nextIndex = 0
+	while (!firstFile && nextIndex < downloadable.length) {
+		firstFile = await fetchZipFile(downloadable[nextIndex], nextIndex, env, request.signal)
+		nextIndex++
+	}
 
-			if (p.mediaType === 'video' && p.cfStreamUid) {
-				const r = await fetch(
-					`https://${env.CF_STREAM_CUSTOMER_DOMAIN}/${p.cfStreamUid}/downloads/default.mp4`
-				)
-				if (!r.ok || !r.body) return null
-				return {
-					name: `${prefix}.mp4`,
-					lastModified: p.createdAt ?? new Date(),
-					input: r.body,
-				}
-			}
-
-			if (p.cfImagesId) {
-				const r = await fetch(
-					`https://imagedelivery.net/${env.CF_IMAGES_HASH}/${p.cfImagesId}/download`
-				)
-				if (!r.ok || !r.body) return null
-				const ext = (r.headers.get('content-type') || '').includes('png') ? 'png' : 'jpg'
-				return {
-					name: `${prefix}.${ext}`,
-					lastModified: p.createdAt ?? new Date(),
-					input: r.body,
-				}
-			}
-
-			return null
-		})
-	)
-
-	const validFiles = files.filter((f): f is NonNullable<typeof f> => f !== null)
-	if (validFiles.length === 0) {
+	if (!firstFile) {
 		return new Response('Could not fetch any assets', { status: 502 })
+	}
+	const first = firstFile
+
+	async function* zipFiles(): AsyncGenerator<ZipFile> {
+		yield first
+		for (let i = nextIndex; i < downloadable.length; i++) {
+			const file = await fetchZipFile(downloadable[i], i, env, request.signal)
+			if (file) yield file
+		}
 	}
 
 	const datePart = event.eventDate ? new Date(event.eventDate).toISOString().slice(0, 10) : ''
 	const filename = `${safeFilename(event.name)}${datePart ? '-' + datePart : ''}.zip`
 
-	const res = downloadZip(validFiles)
+	const res = downloadZip(zipFiles())
 	const headers = new Headers(res.headers)
 	headers.set('Content-Disposition', `attachment; filename="${filename}"`)
 	headers.set('Cache-Control', 'private, no-store')
+	headers.set('X-Archive-Asset-Count', String(downloadable.length))
 	return new Response(res.body, { status: 200, headers })
 }

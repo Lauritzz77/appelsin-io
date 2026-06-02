@@ -1,0 +1,62 @@
+---
+import { env } from 'cloudflare:workers'
+import { drizzle } from 'drizzle-orm/d1'
+import { and, desc, eq, ne } from 'drizzle-orm'
+import * as schema from '../../../../db/schema'
+import EventGalleryPage from '../../../../components/EventGalleryPage.astro'
+import { eventDownloadUrl, eventGalleryUrl, signEventDownload, verifyEventDownload } from '../../../../lib/event-download'
+
+export const prerender = false
+
+const id = Astro.params.id
+if (!id) return new Response('Missing event id', { status: 400 })
+
+const db = drizzle(env.DB, { schema })
+const [event] = await db
+	.select({
+		id: schema.events.id,
+		name: schema.events.name,
+		hostId: schema.events.hostId,
+		eventDate: schema.events.eventDate,
+		expiresAt: schema.events.expiresAt,
+		retentionDays: schema.events.retentionDays,
+	})
+	.from(schema.events)
+	.where(eq(schema.events.id, id))
+	.limit(1)
+
+if (!event) return new Response('Event not found', { status: 404 })
+
+const key = Astro.url.searchParams.get('key')
+const isHost = !!Astro.locals.host && Astro.locals.host.id === event.hostId
+const validKey = await verifyEventDownload(event.id, key, env.BETTER_AUTH_SECRET)
+if (!isHost && !validKey) return new Response('This link is not valid', { status: 401 })
+
+const accessKey = validKey && key ? key : await signEventDownload(event.id, env.BETTER_AUTH_SECRET)
+const downloadUrl = await eventDownloadUrl(Astro.url.origin, event.id, env.BETTER_AUTH_SECRET)
+const galleryUrl = await eventGalleryUrl(Astro.url.origin, event.id, env.BETTER_AUTH_SECRET)
+
+const photos = await db
+	.select({
+		id: schema.photos.id,
+		cfImagesId: schema.photos.cfImagesId,
+		cfStreamUid: schema.photos.cfStreamUid,
+		mediaType: schema.photos.mediaType,
+		durationSeconds: schema.photos.durationSeconds,
+		createdAt: schema.photos.createdAt,
+	})
+	.from(schema.photos)
+	.where(and(eq(schema.photos.eventId, event.id), ne(schema.photos.status, 'rejected')))
+	.orderBy(desc(schema.photos.createdAt))
+---
+
+<EventGalleryPage
+	locale="en"
+	event={event}
+	photos={photos}
+	accessKey={accessKey}
+	downloadUrl={downloadUrl}
+	galleryUrl={galleryUrl}
+	cfImagesHash={env.CF_IMAGES_HASH}
+	streamDomain={env.CF_STREAM_CUSTOMER_DOMAIN}
+/>

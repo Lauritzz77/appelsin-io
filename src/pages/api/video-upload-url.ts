@@ -1,10 +1,11 @@
 import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/d1'
-import { eq, ne, and, sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import * as schema from '../../db/schema'
 import { TIERS, isTier } from '../../lib/tiers'
 import { verifyGuest } from '../../lib/guest-auth'
+import { countActiveMedia } from '../../lib/event-media'
 
 export const prerender = false
 
@@ -55,10 +56,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 	const tier = isTier(event.tier) ? event.tier : 'free'
 	const photoCap = TIERS[tier].photoCap
-	const [{ count }] = await db
-		.select({ count: sql<number>`count(*)` })
-		.from(schema.photos)
-		.where(and(eq(schema.photos.eventId, event.id), ne(schema.photos.status, 'rejected')))
+	const count = await countActiveMedia(db, event.id)
 
 	if (count >= photoCap) {
 		return Response.json(

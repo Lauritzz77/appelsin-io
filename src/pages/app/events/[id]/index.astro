@@ -1,7 +1,7 @@
 ---
 import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/d1'
-import { eq, and, ne, desc, sql } from 'drizzle-orm'
+import { eq, and, desc } from 'drizzle-orm'
 import * as schema from '../../../../db/schema'
 import Layout from '../../../../layouts/Layout.astro'
 import Icon from '../../../../components/brand/Icon.astro'
@@ -15,6 +15,7 @@ import { streamThumbnailUrl } from '../../../../lib/media'
 import { createStripe } from '../../../../lib/stripe'
 import { activateEventFromPaidCheckoutSession } from '../../../../lib/event-purchases'
 import { eventDownloadUrl, eventGalleryUrl } from '../../../../lib/event-download'
+import { countActiveMedia } from '../../../../lib/event-media'
 
 export const prerender = false
 
@@ -59,10 +60,7 @@ const recentPhotos = await db
 	.orderBy(desc(schema.photos.createdAt))
 	.limit(12)
 
-const [{ photoCount }] = await db
-	.select({ photoCount: sql<number>`count(*)` })
-	.from(schema.photos)
-	.where(and(eq(schema.photos.eventId, event.id), ne(schema.photos.status, 'rejected')))
+const photoCount = await countActiveMedia(db, event.id)
 
 // Photos awaiting host approval — only ever non-empty when moderation is on.
 const pendingPhotos = await db

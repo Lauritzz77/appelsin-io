@@ -3,6 +3,7 @@ import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/d1'
 import { eq } from 'drizzle-orm'
 import * as schema from '../../../db/schema'
+import { notifyEventChannel } from '../../../lib/event-media'
 import type { NewPhotoMessage } from '../../../worker-entry'
 
 export const prerender = false
@@ -38,8 +39,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
 	})
 
 	if (status === 'approved') {
-		const stubId = env.EVENT_CHANNEL.idFromName(event.id)
-		const stub = env.EVENT_CHANNEL.get(stubId)
 		const payload: NewPhotoMessage = {
 			type: 'new-photo',
 			photoId,
@@ -52,13 +51,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 			mediaWidth: null,
 			mediaHeight: null,
 		}
-		await stub.fetch(
-			new Request('https://do.local/notify', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(payload),
-			})
-		)
+		await notifyEventChannel(env, event.id, payload)
 	}
 
 	return Response.json({ ok: true, photoId })

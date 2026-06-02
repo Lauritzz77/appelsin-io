@@ -5,6 +5,7 @@ import { and, desc, eq, ne } from 'drizzle-orm'
 import * as schema from '../../../db/schema'
 import { deletePhotoAssets } from '../../../lib/cleanup'
 import { verifyGuest } from '../../../lib/guest-auth'
+import { notifyEventChannel } from '../../../lib/event-media'
 import type { DeletePhotoMessage } from '../../../worker-entry'
 
 export const prerender = false
@@ -112,16 +113,8 @@ export const DELETE: APIRoute = async ({ request }) => {
 	})
 	await db.delete(schema.photos).where(eq(schema.photos.id, photo.id))
 
-	const stubId = env.EVENT_CHANNEL.idFromName(event.id)
-	const stub = env.EVENT_CHANNEL.get(stubId)
 	const payload: DeletePhotoMessage = { type: 'delete-photo', photoId: photo.id }
-	await stub.fetch(
-		new Request('https://do.local/notify', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(payload),
-		})
-	)
+	await notifyEventChannel(env, event.id, payload)
 
 	return Response.json({ ok: true, assetErrors: errs })
 }

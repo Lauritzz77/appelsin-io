@@ -1,10 +1,11 @@
 import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/d1'
-import { eq, ne, and, sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import * as schema from '../../db/schema'
 import { TIERS, isTier } from '../../lib/tiers'
 import { verifyGuest } from '../../lib/guest-auth'
+import { countActiveMedia, notifyEventChannel } from '../../lib/event-media'
 import type { NewPhotoMessage } from '../../worker-entry'
 
 export const prerender = false
@@ -115,10 +116,7 @@ export const POST: APIRoute = async ({ request }) => {
 	// Re-check the tier cap on the authoritative write path.
 	const tier = isTier(event.tier) ? event.tier : 'free'
 	const photoCap = TIERS[tier].photoCap
-	const [{ count }] = await db
-		.select({ count: sql<number>`count(*)` })
-		.from(schema.photos)
-		.where(and(eq(schema.photos.eventId, event.id), ne(schema.photos.status, 'rejected')))
+	const count = await countActiveMedia(db, event.id)
 	if (count >= photoCap) {
 		return Response.json(
 			{
@@ -152,8 +150,6 @@ export const POST: APIRoute = async ({ request }) => {
 	})
 
 	if (status === 'approved') {
-		const stubId = env.EVENT_CHANNEL.idFromName(event.id)
-		const stub = env.EVENT_CHANNEL.get(stubId)
 		const payload: NewPhotoMessage = {
 			type: 'new-photo',
 			photoId,
@@ -167,13 +163,7 @@ export const POST: APIRoute = async ({ request }) => {
 			mediaWidth,
 			mediaHeight,
 		}
-		await stub.fetch(
-			new Request('https://do.local/notify', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(payload),
-			})
-		)
+		await notifyEventChannel(env, event.id, payload)
 	}
 
 	return Response.json({ ok: true, photoId, status })

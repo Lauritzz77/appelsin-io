@@ -7,22 +7,22 @@ interface Props {
 const { locale = 'da' } = Astro.props
 const cards = [
 	{
-		src: '/marketing/p01.jpg',
+		src: '/marketing/hero-2.png',
 		cap: 'Anna & Jonas ♥',
 		ar: '4 / 5',
-		style: 'width:47%;left:1%;top:0;transform:rotate(-5deg);z-index:2',
+		style: 'width:47%;left:1%;top:0;--r:-5deg;z-index:2',
 	},
 	{
-		src: '/marketing/p02.jpg',
+		src: '/marketing/hero-1.png',
 		cap: locale === 'en' ? 'The crew' : 'Hele banden',
 		ar: '5 / 4',
-		style: 'width:45%;right:0;top:10%;transform:rotate(6deg);z-index:1',
+		style: 'width:45%;right:0;top:10%;--r:6deg;z-index:1',
 	},
 	{
-		src: '/marketing/p03.jpg',
+		src: '/marketing/hero-3.png',
 		cap: locale === 'en' ? 'Last dance' : 'Sidste dans',
 		ar: '4 / 5',
-		style: 'width:46%;left:22%;bottom:0;transform:rotate(-2deg);z-index:3',
+		style: 'width:46%;left:22%;bottom:0;--r:-2deg;z-index:3',
 	},
 ]
 ---

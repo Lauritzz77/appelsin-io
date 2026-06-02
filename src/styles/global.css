@@ -190,10 +190,10 @@ body {
 @keyframes floaty {
 	0%,
 	100% {
-		transform: translateY(0) rotate(0);
+		transform: translateY(0) rotate(var(--r, 0deg));
 	}
 	50% {
-		transform: translateY(-9px) rotate(-2deg);
+		transform: translateY(-12px) rotate(calc(var(--r, 0deg) - 1.5deg));
 	}
 }
 @keyframes pulseDot {
@@ -222,6 +222,7 @@ body.ready .fu {
 	transition:
 		opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
 		transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+	
 }
 @media (prefers-reduced-motion: reduce) {
 	.fu {
@@ -232,6 +233,7 @@ body.ready .fu {
 		transition: none;
 	}
 	.floaty,
+	.pol,
 	[style*="floaty"] {
 		animation: none !important;
 	}
@@ -442,7 +444,7 @@ body.ready .fu {
 .mkt-wrap {
 	max-width: 1440px;
 	margin: 0 auto;
-	padding: 0 calc(40px * var(--d));
+	padding: 0 calc(20px * var(--d));
 }
 .mkt-nav {
 	display: flex;
@@ -470,10 +472,9 @@ body.ready .fu {
 	grid-template-columns: 1.02fr 0.98fr;
 	gap: 56px;
 	align-items: center;
-	padding: calc(40px * var(--d)) 0 calc(72px * var(--d));
 }
 .hero-h1 {
-	font-size: clamp(40px, 5.6cqw, 72px);
+	font-size: clamp(40px, 4.6cqw, 64px);
 	line-height: 1.02;
 	font-weight: 800;
 	letter-spacing: -0.025em;
@@ -517,9 +518,6 @@ body.ready .fu {
 	.mkt-nav-links a:not(.mkt-cta) {
 		display: none;
 	}
-	.hero-h1 {
-		font-size: clamp(36px, 9cqw, 52px);
-	}
 	.hero-kicker {
 		font-size: 23px;
 	}
@@ -552,6 +550,7 @@ body.ready .fu {
 .pol-cluster {
 	position: relative;
 	height: clamp(380px, 44cqw, 560px);
+	
 }
 .pol {
 	position: absolute;
@@ -561,6 +560,23 @@ body.ready .fu {
 	box-shadow:
 		0 22px 55px rgba(0, 0, 0, 0.5),
 		0 4px 12px rgba(0, 0, 0, 0.3);
+	/* resting tilt comes from each card's --r; the float composes on top of it */
+	transform: rotate(var(--r, 0deg));
+	animation: floaty 6s ease-in-out infinite;
+	will-change: transform;
+}
+/* mismatched durations + negative delays so the three never bob in unison */
+.pol:nth-child(1) {
+	animation-duration: 6s;
+	animation-delay: -0.5s;
+}
+.pol:nth-child(2) {
+	animation-duration: 7.5s;
+	animation-delay: -3s;
+}
+.pol:nth-child(3) {
+	animation-duration: 6.8s;
+	animation-delay: -1.6s;
 }
 .pol-photo {
 	overflow: hidden;

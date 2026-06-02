@@ -5,14 +5,18 @@ interface Props {
 	items: { q: string; a: string }[]
 	tone?: 'cream' | 'dark'
 	openFirst?: boolean
+	single?: boolean // keep only one panel open at a time (native exclusive accordion)
 }
-const { items, tone = 'cream', openFirst = true } = Astro.props
+const { items, tone = 'cream', openFirst = true, single = true } = Astro.props
+// A shared, instance-unique `name` makes the browser auto-close the open panel
+// when another opens. Unique per render so two accordions on one page don't merge.
+const group = single ? `accordion-${crypto.randomUUID().slice(0, 8)}` : undefined
 ---
 
 <div class={tone === 'dark' ? 'accordion accordion--dark' : 'accordion'}>
 	{
 		items.map((it, i) => (
-			<details open={openFirst && i === 0}>
+			<details name={group} open={openFirst && i === 0}>
 				<summary>
 					<span>{it.q}</span>
 					<span class="chev"><Icon name="chevron-down" size={18} stroke={2.4} /></span>

@@ -25,7 +25,7 @@ const primaryLabel = isSignedIn ? t.app : t.login
 		onDark ? 'mt-0 border-line' : 'mt-10 border-cream-line',
 	]}
 >
-	<Logo surface={onDark ? 'dark' : 'cream'} size={42} />
+	<Logo surface={onDark ? 'dark' : 'cream'} class="w-20 h-20 block" />
 	<div class:list={['flex flex-wrap gap-[26px] text-[15.5px] font-semibold', onDark ? 'text-tx-2' : 'text-ink-2']}>
 		<a href={primaryHref} class="cursor-pointer">{primaryLabel}</a>
 		<a href={`${p}/terms`} class="cursor-pointer">{t.terms}</a>

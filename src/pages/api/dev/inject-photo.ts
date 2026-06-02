@@ -28,35 +28,38 @@ export const POST: APIRoute = async ({ request, locals }) => {
 	if (!event) return new Response('Event not found', { status: 404 })
 	if (event.hostId !== host.id) return new Response('Not your event', { status: 403 })
 
+	const status = event.moderationMode === 'queue' ? 'pending' : 'approved'
 	const photoId = crypto.randomUUID()
 	await db.insert(schema.photos).values({
 		id: photoId,
 		eventId: event.id,
 		cfImagesId: null,
-		status: 'approved',
+		status,
 	})
 
-	const stubId = env.EVENT_CHANNEL.idFromName(event.id)
-	const stub = env.EVENT_CHANNEL.get(stubId)
-	const payload: NewPhotoMessage = {
-		type: 'new-photo',
-		photoId,
-		mediaType: 'photo',
-		cfImagesId: null,
-		cfStreamUid: null,
-		durationSeconds: null,
-		createdAt: Date.now(),
-		uploaderName: null,
-		mediaWidth: null,
-		mediaHeight: null,
+	if (status === 'approved') {
+		const stubId = env.EVENT_CHANNEL.idFromName(event.id)
+		const stub = env.EVENT_CHANNEL.get(stubId)
+		const payload: NewPhotoMessage = {
+			type: 'new-photo',
+			photoId,
+			mediaType: 'photo',
+			cfImagesId: null,
+			cfStreamUid: null,
+			durationSeconds: null,
+			createdAt: Date.now(),
+			uploaderName: null,
+			mediaWidth: null,
+			mediaHeight: null,
+		}
+		await stub.fetch(
+			new Request('https://do.local/notify', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload),
+			})
+		)
 	}
-	await stub.fetch(
-		new Request('https://do.local/notify', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(payload),
-		})
-	)
 
 	return Response.json({ ok: true, photoId })
 }

@@ -28,10 +28,15 @@ export const PATCH: APIRoute = async ({ request, params, locals }) => {
 	if (!id) return new Response('Missing event id', { status: 400 })
 
 	const body = (await request.json().catch(() => null)) as
-		| { name?: unknown; eventDate?: unknown; hasBigScreen?: unknown }
+		| { name?: unknown; eventDate?: unknown; hasBigScreen?: unknown; moderationMode?: unknown }
 		| null
 
-	const updates: { name?: string; eventDate?: Date; hasBigScreen?: boolean } = {}
+	const updates: {
+		name?: string
+		eventDate?: Date
+		hasBigScreen?: boolean
+		moderationMode?: 'open' | 'queue'
+	} = {}
 	if (body && 'name' in body) {
 		const name = normaliseEventName(body.name)
 		if (!name) return new Response('Missing event name', { status: 400 })
@@ -48,6 +53,12 @@ export const PATCH: APIRoute = async ({ request, params, locals }) => {
 			return new Response('hasBigScreen must be boolean', { status: 400 })
 		}
 		updates.hasBigScreen = body.hasBigScreen
+	}
+	if (body && 'moderationMode' in body) {
+		if (body.moderationMode !== 'open' && body.moderationMode !== 'queue') {
+			return new Response('moderationMode must be open or queue', { status: 400 })
+		}
+		updates.moderationMode = body.moderationMode
 	}
 	if (Object.keys(updates).length === 0) {
 		return new Response('No fields to update', { status: 400 })

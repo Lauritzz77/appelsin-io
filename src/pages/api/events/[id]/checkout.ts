@@ -9,22 +9,11 @@ import { getOrCreateStripeCustomer } from '../../../../lib/billing'
 
 export const prerender = false
 
-function checkoutLocale(request: Request): TierPriceLocale {
-	const referer = request.headers.get('referer')
-	if (!referer) return 'da'
-
-	try {
-		return new URL(referer).pathname.startsWith('/en/') ? 'en' : 'da'
-	} catch {
-		return 'da'
-	}
-}
-
 function returnPathPrefix(locale: TierPriceLocale): string {
 	return locale === 'en' ? '/en/app/events' : '/app/events'
 }
 
-export const POST: APIRoute = async ({ params, locals, redirect, request }) => {
+export const POST: APIRoute = async ({ params, locals, redirect }) => {
 	const host = locals.host
 	if (!host) return new Response('Unauthorized', { status: 401 })
 
@@ -47,7 +36,9 @@ export const POST: APIRoute = async ({ params, locals, redirect, request }) => {
 	}
 
 	const tierConfig = TIERS[event.tier]
-	const locale = checkoutLocale(request)
+	// Currency is frozen on the event at creation time — never taken from a
+	// client-controlled header — so a host can't shop for the cheaper currency.
+	const locale = event.priceLocale
 	const tierPrice = getTierPrice(event.tier, locale)
 	if (tierPrice.priceCents <= 0) {
 		return new Response('Free tier does not require checkout', { status: 400 })

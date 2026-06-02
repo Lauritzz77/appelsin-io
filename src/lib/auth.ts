@@ -34,15 +34,24 @@ function localeFromMagicLinkRequest(
 }
 
 function authBaseURL(env: Cloudflare.Env, requestUrl?: string | URL): string {
-	if (requestUrl) return new URL(requestUrl).origin
+	// Only honour the request origin when it's in the known allow-list; otherwise
+	// pin to PUBLIC_APP_URL. Echoing an arbitrary request origin would make the
+	// CSRF/origin check self-referential and let a spoofed Host be auto-trusted.
+	const allowed = new Set([env.PUBLIC_APP_URL, 'http://localhost:4321', 'http://localhost:4322'])
+	if (requestUrl) {
+		const origin = new URL(requestUrl).origin
+		if (allowed.has(origin)) return origin
+	}
 	return env.PUBLIC_APP_URL
 }
 
 export function createAuth(env: Cloudflare.Env, requestUrl?: string | URL) {
 	const db = drizzle(env.DB, { schema })
 	const baseURL = authBaseURL(env, requestUrl)
+	// Build trusted origins from the fixed allow-list (not the request origin),
+	// so the origin check can't be satisfied by a spoofed Host header.
 	const trustedOrigins = Array.from(
-		new Set([baseURL, env.PUBLIC_APP_URL, 'http://localhost:4321', 'http://localhost:4322'])
+		new Set([env.PUBLIC_APP_URL, 'http://localhost:4321', 'http://localhost:4322'])
 	)
 
 	return betterAuth({

@@ -21,6 +21,10 @@ declare namespace Cloudflare {
 		CF_STREAM_ACCOUNT_ID: string
 		CF_STREAM_API_TOKEN: string
 		CF_STREAM_CUSTOMER_DOMAIN: string
+		/** Comma-separated admin emails allowed to call admin-only endpoints. */
+		ADMIN_EMAILS?: string
+		/** Cloudflare Workers rate-limit binding (see wrangler.jsonc → unsafe). */
+		GUEST_RATE_LIMITER: { limit(options: { key: string }): Promise<{ success: boolean }> }
 	}
 }
 

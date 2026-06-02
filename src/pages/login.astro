@@ -5,10 +5,9 @@ import Layout from '../layouts/Layout.astro'
 import Logo from '../components/brand/Logo.astro'
 import Icon from '../components/brand/Icon.astro'
 import Button from '../components/brand/Button.astro'
+import { safeNext } from '../lib/safe-next'
 
-const requested = Astro.url.searchParams.get('next')
-const requestedNext =
-	requested && requested.startsWith('/') && !requested.startsWith('//') ? requested : '/app/events/new'
+const requestedNext = safeNext(Astro.url.searchParams.get('next'), '/app/events/new')
 const createEventNext = new URL('/app/events/new', Astro.url.origin)
 const parsedNext = new URL(requestedNext, Astro.url.origin)
 const next =

@@ -42,6 +42,9 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
 			? returnToPrefixInput
 			: '/app/events'
 	const newRoutePrefix = returnToPrefix.replace(/\/events$/, '/events/new')
+	// Freeze the pricing currency to the locale of the create form the host used,
+	// so the checkout amount can't later be steered to a cheaper currency.
+	const priceLocale: 'da' | 'en' = returnToPrefix.startsWith('/en') ? 'en' : 'da'
 
 	const db = drizzle(env.DB, { schema })
 
@@ -77,8 +80,12 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
 		eventDate,
 		shortCode: generateShortCode(),
 		tier,
+		priceLocale,
 		retentionDays,
 		status,
+		// Default to instant display; the host can switch on the approval queue
+		// from the event page.
+		moderationMode: 'open',
 	})
 
 	return redirect(`${returnToPrefix}/${id}`, 303)

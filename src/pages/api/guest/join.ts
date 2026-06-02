@@ -1,11 +1,16 @@
 import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/d1'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import * as schema from '../../../db/schema'
 import { MAX_NAME_LENGTH, normaliseDisplayName, normaliseEmail } from '../../../lib/guest-auth'
 
 export const prerender = false
+
+// Hard ceiling on guest identities per event. Real events sit far below this;
+// it just stops unbounded guest-row creation (cheap abuse / storage growth)
+// since there's no edge rate-limiting yet.
+const MAX_GUESTS_PER_EVENT = 1000
 
 // A guest claims a display name on an event. Names are per-event and case-
 // insensitive (`Lau` and `lau` collide). On success the browser stores the
@@ -53,6 +58,17 @@ export const POST: APIRoute = async ({ request }) => {
 
 	if (!event) return new Response('Event not found', { status: 404 })
 	if (event.status !== 'live') return new Response('Event not live', { status: 403 })
+
+	const [{ count: guestCount }] = await db
+		.select({ count: sql<number>`count(*)` })
+		.from(schema.eventUsers)
+		.where(eq(schema.eventUsers.eventId, event.id))
+	if (guestCount >= MAX_GUESTS_PER_EVENT) {
+		return Response.json(
+			{ error: 'event_full', message: 'This event has reached its guest limit.' },
+			{ status: 429 }
+		)
+	}
 
 	const nameLower = name.toLowerCase()
 

@@ -1,11 +1,30 @@
 import { defineMiddleware } from 'astro:middleware'
 import { env } from 'cloudflare:workers'
 import { createAuth } from './lib/auth'
+import { safeNext } from './lib/safe-next'
+
+// Abuse-prone guest/upload endpoints that get edge rate-limiting.
+const RATE_LIMITED_PREFIXES = [
+	'/api/guest/',
+	'/api/upload-url',
+	'/api/video-upload-url',
+	'/api/photo-uploaded',
+	'/api/video-uploaded',
+	'/api/display-socket',
+]
 
 export const onRequest = defineMiddleware(async (context, next) => {
 	const path = context.url.pathname
 
 	if (path.startsWith('/api/auth/')) return next()
+
+	// Edge rate-limiting for the abuse-prone guest/upload endpoints. Guarded so
+	// local dev (where the binding may be absent) still works.
+	if (env.GUEST_RATE_LIMITER && RATE_LIMITED_PREFIXES.some((p) => path.startsWith(p))) {
+		const ip = context.request.headers.get('cf-connecting-ip') ?? 'unknown'
+		const { success } = await env.GUEST_RATE_LIMITER.limit({ key: `${ip}:${path}` })
+		if (!success) return new Response('Too many requests', { status: 429 })
+	}
 
 	try {
 		const auth = createAuth(env, context.url)
@@ -27,9 +46,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
 		return context.redirect(`${loginPath}?next=${encodeURIComponent(next)}`, 302)
 	}
 	if ((path === '/login' || path === '/signup' || path === '/en/login') && context.locals.host) {
-		const requested = context.url.searchParams.get('next')
 		const defaultDest = path.startsWith('/en/') ? '/en/app' : '/app'
-		const dest = requested && requested.startsWith('/') ? requested : defaultDest
+		const dest = safeNext(context.url.searchParams.get('next'), defaultDest)
 		return context.redirect(dest, 302)
 	}
 

@@ -116,7 +116,14 @@ export const GET: APIRoute = async ({ params, locals, url, request }) => {
 			createdAt: schema.photos.createdAt,
 		})
 		.from(schema.photos)
-		.where(and(eq(schema.photos.eventId, event.id), ne(schema.photos.status, 'rejected')))
+		.where(
+			and(
+				eq(schema.photos.eventId, event.id),
+				// Key holders (guests) only download approved media; the host gets
+				// everything not explicitly rejected.
+				isHost ? ne(schema.photos.status, 'rejected') : eq(schema.photos.status, 'approved')
+			)
+		)
 		.orderBy(asc(schema.photos.createdAt))
 
 	const selectedPhotos = requestedIds ? photos.filter((p) => requestedIds.has(p.id)) : photos

@@ -55,7 +55,7 @@ const recentPhotos = await db
 		createdAt: schema.photos.createdAt,
 	})
 	.from(schema.photos)
-	.where(eq(schema.photos.eventId, event.id))
+	.where(and(eq(schema.photos.eventId, event.id), eq(schema.photos.status, 'approved')))
 	.orderBy(desc(schema.photos.createdAt))
 	.limit(12)
 
@@ -63,6 +63,22 @@ const [{ photoCount }] = await db
 	.select({ photoCount: sql<number>`count(*)` })
 	.from(schema.photos)
 	.where(and(eq(schema.photos.eventId, event.id), ne(schema.photos.status, 'rejected')))
+
+// Photos awaiting host approval — only ever non-empty when moderation is on.
+const pendingPhotos = await db
+	.select({
+		id: schema.photos.id,
+		cfImagesId: schema.photos.cfImagesId,
+		cfStreamUid: schema.photos.cfStreamUid,
+		mediaType: schema.photos.mediaType,
+		durationSeconds: schema.photos.durationSeconds,
+		uploaderName: schema.eventUsers.name,
+	})
+	.from(schema.photos)
+	.leftJoin(schema.eventUsers, eq(schema.eventUsers.id, schema.photos.eventUserId))
+	.where(and(eq(schema.photos.eventId, event.id), eq(schema.photos.status, 'pending')))
+	.orderBy(desc(schema.photos.createdAt))
+	.limit(60)
 
 const guestUrl = `${env.PUBLIC_APP_URL}/e/${event.shortCode}`
 const displayUrl = `${env.PUBLIC_APP_URL}/display/${event.shortCode}`
@@ -245,6 +261,22 @@ const timelineRows: [string, string, string][] = [
 				<p id="has-big-screen-status" class="col-span-3 min-h-[1rem] text-xs text-zinc-500 sm:col-span-2 sm:col-start-2" aria-live="polite"></p>
 			</Card>
 
+			{/* moderation toggle */}
+			<Card pad={20} class="mt-4 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 sm:gap-x-[18px]">
+				<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-white/[.06] text-accent sm:h-[46px] sm:w-[46px]">
+					<Icon name="check" size={22} />
+				</span>
+				<div class="min-w-0 text-[16px] font-bold leading-tight sm:text-[16.5px]">Godkend billeder før visning</div>
+				<label class="toggle justify-self-end">
+					<input id="moderation-toggle" type="checkbox" checked={event.moderationMode === 'queue'} data-event-id={event.id} />
+					<span class="knob"></span>
+				</label>
+				<div class="col-span-3 mt-1 text-sm leading-[1.45] text-tx-3 sm:col-span-2 sm:col-start-2 sm:mt-0 sm:leading-normal">
+					Når den er slået til, skal du godkende hvert billede, før det vises på fotovæggen og i samlingen.
+				</div>
+				<p id="moderation-status" class="col-span-3 min-h-[1rem] text-xs text-zinc-500 sm:col-span-2 sm:col-start-2" aria-live="polite"></p>
+			</Card>
+
 			{/* action grid */}
 			<div class="app-sec-label mt-8">Værktøjer</div>
 			<div class="evt-actions">
@@ -356,6 +388,38 @@ const timelineRows: [string, string, string][] = [
 					}
 				</div>
 			</Card>
+
+			{/* pending approval queue — only rendered when moderation holds photos */}
+			{
+				pendingPhotos.length > 0 && (
+					<section id="pending-section" class="mt-8">
+						<div class="app-sec-label" style="margin:0 0 14px">
+							Afventer godkendelse <span id="pending-count">({pendingPhotos.length})</span>
+						</div>
+						<div id="pending-grid" class="up-grid">
+							{pendingPhotos.map((p) => (
+								<div class="photo-tile group relative aspect-square overflow-hidden rounded bg-zinc-900 ring-2 ring-accent" data-photo-id={p.id}>
+									{p.mediaType === 'video' && p.cfStreamUid ? (
+										<img src={streamThumbnailUrl(p.cfStreamUid, env.CF_STREAM_CUSTOMER_DOMAIN)} alt="" class="h-full w-full object-cover" />
+									) : p.cfImagesId ? (
+										<img src={`https://imagedelivery.net/${env.CF_IMAGES_HASH}/${p.cfImagesId}/public`} alt="" class="h-full w-full object-cover" />
+									) : (
+										<div class="flex h-full w-full items-center justify-center text-xs text-zinc-600">intet billede</div>
+									)}
+									<div class="absolute inset-x-1 bottom-1 flex gap-1">
+										<button type="button" class="photo-approve flex h-8 flex-1 items-center justify-center gap-1 rounded bg-live text-[12px] font-bold text-[#04220f] transition hover:brightness-110" data-photo-id={p.id}>
+											<Icon name="check" size={14} stroke={3} />Godkend
+										</button>
+										<button type="button" class="photo-reject flex h-8 w-8 shrink-0 items-center justify-center rounded bg-zinc-950/70 text-zinc-100 transition hover:bg-red-600" data-photo-id={p.id} aria-label="Afvis billede" title="Afvis billede">
+											<Icon name="trash" size={15} stroke={2.2} />
+										</button>
+									</div>
+								</div>
+							))}
+						</div>
+					</section>
+				)
+			}
 
 			{/* recent uploads — markup preserved for the WS/buildTile script */}
 			<div class="mt-8 mb-[14px] flex flex-wrap items-center justify-between gap-3">
@@ -790,4 +854,79 @@ const timelineRows: [string, string, string][] = [
 			socket?.close()
 		})
 	}
+</script>
+
+<script>
+	// Moderation toggle — switch the event between instant display and an approval queue.
+	document.getElementById('moderation-toggle')?.addEventListener('change', async (event) => {
+		const input = event.currentTarget as HTMLInputElement
+		const status = document.getElementById('moderation-status')
+		const id = input.dataset.eventId
+		if (!id) return
+		const desired = input.checked
+		const statusBase = 'col-span-3 min-h-[1rem] text-xs sm:col-span-2 sm:col-start-2'
+		input.disabled = true
+		if (status) {
+			status.textContent = 'Gemmer...'
+			status.className = `${statusBase} text-zinc-500`
+		}
+		try {
+			const res = await fetch(`/api/events/${id}`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ moderationMode: desired ? 'queue' : 'open' }),
+			})
+			if (!res.ok) throw new Error(`Kunne ikke gemme (${res.status})`)
+			if (status) {
+				status.textContent = desired ? 'Godkendelse slået til' : 'Godkendelse slået fra'
+				status.className = `${statusBase} text-green-400`
+			}
+		} catch (e) {
+			input.checked = !desired
+			if (status) {
+				status.textContent = (e as Error).message
+				status.className = `${statusBase} text-red-400`
+			}
+		} finally {
+			input.disabled = false
+		}
+	})
+
+	// Approve / reject photos held in the moderation queue.
+	const pendingGrid = document.getElementById('pending-grid')
+	const pendingCountEl = document.getElementById('pending-count')
+	function refreshPendingCount() {
+		if (!pendingGrid || !pendingCountEl) return
+		const n = pendingGrid.children.length
+		pendingCountEl.textContent = `(${n})`
+		if (n === 0) document.getElementById('pending-section')?.remove()
+	}
+	pendingGrid?.addEventListener('click', async (e) => {
+		const target = e.target as HTMLElement
+		const approveBtn = target.closest<HTMLButtonElement>('.photo-approve')
+		const rejectBtn = target.closest<HTMLButtonElement>('.photo-reject')
+		const btn = approveBtn ?? rejectBtn
+		if (!btn) return
+		const id = btn.dataset.photoId
+		if (!id) return
+		const nextStatus = approveBtn ? 'approved' : 'rejected'
+		const tile = btn.closest<HTMLElement>('.photo-tile')
+		tile?.classList.add('opacity-50', 'pointer-events-none')
+		try {
+			const res = await fetch(`/api/photos/${id}`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ status: nextStatus }),
+			})
+			if (!res.ok) throw new Error(`Handling mislykkedes (${res.status})`)
+			tile?.remove()
+			refreshPendingCount()
+		} catch (err) {
+			tile?.classList.remove('opacity-50', 'pointer-events-none')
+			await window.AppDialog.alert({
+				title: 'Kunne ikke opdatere billede',
+				message: (err as Error).message,
+			})
+		}
+	})
 </script>

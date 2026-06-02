@@ -73,9 +73,13 @@ export const events = sqliteTable(
 		eventDate: integer('event_date', { mode: 'timestamp' }).notNull(),
 		shortCode: text('short_code').notNull(),
 		tier: text('tier', { enum: ['free', 'basic', 'gold'] }).notNull().default('free'),
+		// Currency/locale chosen when the event was created (server-derived from
+		// the localized create form), frozen so checkout can't be steered to a
+		// cheaper currency via a client header.
+		priceLocale: text('price_locale', { enum: ['da', 'en'] }).notNull().default('da'),
 		retentionDays: integer('retention_days').notNull().default(7),
 		status: text('status', { enum: ['draft', 'live', 'ended'] }).notNull().default('draft'),
-		moderationMode: text('moderation_mode', { enum: ['open', 'queue'] }).notNull().default('queue'),
+		moderationMode: text('moderation_mode', { enum: ['open', 'queue'] }).notNull().default('open'),
 		hasBigScreen: integer('has_big_screen', { mode: 'boolean' }).notNull().default(true),
 		brandingJson: text('branding_json'),
 		createdAt: integer('created_at', { mode: 'timestamp' })

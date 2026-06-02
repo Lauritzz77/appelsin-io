@@ -46,7 +46,14 @@ const photos = await db
 		createdAt: schema.photos.createdAt,
 	})
 	.from(schema.photos)
-	.where(and(eq(schema.photos.eventId, event.id), ne(schema.photos.status, 'rejected')))
+	.where(
+		and(
+			eq(schema.photos.eventId, event.id),
+			// Guests (key holders) only see approved media; the host sees everything
+			// not explicitly rejected.
+			isHost ? ne(schema.photos.status, 'rejected') : eq(schema.photos.status, 'approved')
+		)
+	)
 	.orderBy(desc(schema.photos.createdAt))
 ---
 

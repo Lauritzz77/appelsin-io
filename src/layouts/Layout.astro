@@ -9,6 +9,8 @@ interface Props {
 	showLanguageSwitch?: boolean;
 	/** Visual surface. 'cream' = warm marketing pages, 'dark' = navy app/guest/wall. */
 	surface?: 'cream' | 'dark';
+	/** Emit <meta robots=noindex>. Defaults to true on private surfaces only. */
+	noindex?: boolean;
 }
 
 const path = Astro.url.pathname
@@ -19,6 +21,12 @@ const {
 	surface = 'dark',
 	// Hide the switcher on app dashboard and on the photo wall (display).
 	showLanguageSwitch = !path.startsWith('/app') && !path.startsWith('/en/app') && !path.startsWith('/display') && !path.startsWith('/en/display'),
+	// Keep private surfaces (dashboard, guest upload, wall, gallery) out of search;
+	// public marketing + legal pages stay indexable.
+	noindex = path.startsWith('/app') || path.startsWith('/en/app')
+		|| path.startsWith('/display') || path.startsWith('/en/display')
+		|| path.startsWith('/e/') || path.startsWith('/en/e/')
+		|| path.includes('/events/'),
 } = Astro.props;
 const otherLocale = locale === 'da' ? 'en' : 'da'
 const languageHref = localisePath(path, otherLocale)
@@ -49,7 +57,7 @@ const langPillClass = isCream
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 		<meta name="generator" content={Astro.generator} />
 		<meta name="description" content={description} />
-		<meta name="robots" content="noindex" />
+		{noindex && <meta name="robots" content="noindex" />}
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link

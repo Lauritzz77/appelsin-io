@@ -49,7 +49,8 @@ export const GET: APIRoute = async ({ params, locals, url }) => {
 			and(
 				eq(schema.photos.id, photoId),
 				eq(schema.photos.eventId, event.id),
-				ne(schema.photos.status, 'rejected')
+				// Key holders (guests) can only fetch approved media.
+				isHost ? ne(schema.photos.status, 'rejected') : eq(schema.photos.status, 'approved')
 			)
 		)
 		.limit(1)

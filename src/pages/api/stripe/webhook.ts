@@ -56,7 +56,12 @@ export const POST: APIRoute = async ({ request }) => {
 		case 'customer.subscription.created':
 		case 'customer.subscription.updated':
 		case 'customer.subscription.deleted': {
-			await syncSubscriptionFromStripe(db, event.data.object)
+			// Re-retrieve the authoritative subscription rather than trusting the
+			// webhook payload. Stripe doesn't guarantee delivery order, so a stale
+			// `updated(active)` arriving after `deleted(canceled)` would otherwise
+			// resurrect a cancelled plan (syncSubscriptionFromStripe is last-writer-wins).
+			const sub = await stripe.subscriptions.retrieve(event.data.object.id)
+			await syncSubscriptionFromStripe(db, sub)
 			break
 		}
 

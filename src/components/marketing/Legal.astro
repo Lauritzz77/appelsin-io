@@ -1,5 +1,6 @@
 ---
 import type { Locale } from '../../lib/i18n'
+import { localisePath } from '../../lib/i18n'
 import Icon from '../brand/Icon.astro'
 
 interface Props {
@@ -13,7 +14,7 @@ interface Props {
 	backLabel: string
 }
 const { locale = 'da', kind, badge, title, paras, contactPrefix, contactSuffix, backLabel } = Astro.props
-const home = locale === 'en' ? '/en' : '/'
+const home = localisePath('/', locale)
 ---
 
 <div class="mkt screen-root">

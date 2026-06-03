@@ -1,5 +1,7 @@
 ---
 import type { Locale } from '../../lib/i18n'
+import { localisePath } from '../../lib/i18n'
+import { getContent } from '../../lib/content'
 import Logo from '../brand/Logo.astro'
 import Button from '../brand/Button.astro'
 
@@ -9,29 +11,25 @@ interface Props {
 	onDark?: boolean
 }
 const { locale = 'da', isSignedIn = false, onDark = false } = Astro.props
-const p = locale === 'en' ? '/en' : ''
-const t =
-	locale === 'en'
-		? { app: 'Your events', login: 'Log in', logout: 'Log out', terms: 'Terms', privacy: 'Privacy' }
-		: { app: 'Dine events', login: 'Login', logout: 'Log ud', terms: 'Vilkår', privacy: 'Privatliv' }
-const home = p || '/'
+const nav = getContent(locale, 'common').nav
+const home = localisePath('/', locale)
 ---
 
 <nav class="mkt-nav">
 	<Logo href={home} surface={onDark ? 'dark' : 'cream'} class="w-20 h-20 @max-[920px]:w-15 @max-[920px]:h-15 block" />
 	<div class="mkt-nav-links gap-7 @max-[920px]:gap-5">
-		{isSignedIn && <a href={`${p}/app`}>{t.app}</a>}
-		<a href={`${p}/terms`} class="mkt-nav-sub">{t.terms}</a>
-		<a href={`${p}/privacy`} class="mkt-nav-sub">{t.privacy}</a>
+		{isSignedIn && <a href={localisePath('/app', locale)}>{nav.events}</a>}
+		<a href={localisePath('/terms', locale)} class="mkt-nav-sub">{nav.terms}</a>
+		<a href={localisePath('/privacy', locale)} class="mkt-nav-sub">{nav.privacy}</a>
 		{
 			isSignedIn ? (
 				<a id="mkt-signout" href={home} data-home={home}>
-					{t.logout}
+					{nav.logout}
 				</a>
 			) : (
 				<span class="mkt-cta">
-					<Button href={`${p}/login`} size="sm">
-						{t.login}
+					<Button href={localisePath('/login', locale)} size="sm">
+						{nav.login}
 					</Button>
 				</span>
 			)

@@ -1,0 +1,27 @@
+{
+	"nav": {
+		"events": "Your events",
+		"login": "Log in",
+		"logout": "Log out",
+		"terms": "Terms",
+		"privacy": "Privacy"
+	},
+	"status": {
+		"live": "live",
+		"ended": "ended",
+		"draft": "draft"
+	},
+	"copy": {
+		"action": "Copy"
+	},
+	"language": {
+		"name": "English",
+		"switchAria": "Switch language to {language}"
+	},
+	"errors": {
+		"notFound": "Event not found",
+		"notLiveYet": "The event is not live yet",
+		"linkInvalid": "This link does not work",
+		"missingId": "Missing event ID"
+	}
+}

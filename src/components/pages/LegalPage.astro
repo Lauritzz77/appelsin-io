@@ -1,0 +1,26 @@
+---
+import type { Locale } from '../../lib/i18n'
+import { getContent } from '../../lib/content'
+import Layout from '../../layouts/Layout.astro'
+import Legal from '../marketing/Legal.astro'
+
+interface Props {
+	locale: Locale
+	kind: 'terms' | 'privacy'
+}
+const { locale, kind } = Astro.props
+const t = getContent(locale, 'legal')[kind]
+---
+
+<Layout title={t.meta.title} locale={locale} surface="cream">
+	<Legal
+		locale={locale}
+		kind={kind}
+		backLabel={t.backLabel}
+		badge={t.badge}
+		title={t.title}
+		paras={t.paras}
+		contactPrefix={t.contactPrefix}
+		contactSuffix={t.contactSuffix}
+	/>
+</Layout>

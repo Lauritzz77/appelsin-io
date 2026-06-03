@@ -1,0 +1,29 @@
+{
+	"pageTitle": "Stil — {name}",
+	"heading": "Fotovæg-stil",
+	"subhead": "Tilpas den live fotovæg, der vises på stedet.",
+	"upsell": {
+		"heading": "Tilpasset stil er en betalt funktion",
+		"body": "Opgrader dette event til {basic} ({basicPrice}) eller {gold} ({goldPrice}) for at vælge tema, fliseopdeling og tilføje en titel-overlay. Gratis events bruger appelsin-fotokollagen med QR i hjørnet.",
+		"cta": "Opret et betalt event"
+	},
+	"editor": {
+		"colors": "Farver",
+		"background": "Baggrund",
+		"textColor": "Tekst",
+		"font": "Skrifttype",
+		"density": "Fliseopdeling",
+		"titleOverlay": "Titel-overlay",
+		"headline": "Overskrift",
+		"headlinePlaceholder": "Anna & Jonas",
+		"subline": "Underlinje",
+		"sublinePlaceholder": "20. maj 2026",
+		"saving": "Gemmer…",
+		"save": "Gem ændringer",
+		"cancel": "Annullér",
+		"saved": "Gemt.",
+		"previewLabel": "Forhåndsvisning · live spejling af fotovæggen",
+		"openWall": "Åbn fuld væg ↗",
+		"saveFailed": "Lagring mislykkedes ({status})"
+	}
+}

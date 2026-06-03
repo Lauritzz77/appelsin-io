@@ -18,13 +18,10 @@ export function localisePath(pathname: string, locale: Locale): string {
 	return locale === 'da' ? suffix : `/en${suffix === '/' ? '' : suffix}`
 }
 
-export const commonText = {
-	en: {
-		languageName: 'English',
-		switchLanguage: 'Dansk',
-	},
-	da: {
-		languageName: 'Dansk',
-		switchLanguage: 'English',
-	},
-} satisfies Record<Locale, Record<string, string>>
+/** Intl locale tag for number/date formatting in each app locale. */
+export function numberLocale(locale: Locale): string {
+	return locale === 'da' ? 'da-DK' : 'en-IE'
+}
+
+/** Dates use the same regional formatting as numbers. */
+export const dateLocale = numberLocale

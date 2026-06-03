@@ -1,21 +1,5 @@
 ---
-import Layout from '../../layouts/Layout.astro'
-import Legal from '../../components/marketing/Legal.astro'
+import LegalPage from '../../components/pages/LegalPage.astro'
 ---
 
-<Layout title="Privacy — appelsin" locale="en" surface="cream">
-	<Legal
-		locale="en"
-		kind="privacy"
-		backLabel="Home"
-		badge="How we look after your data"
-		title="Privacy"
-		paras={[
-			'appelsin.io processes the data needed to create events, let guests upload photos, and send access or download links.',
-			'For guests we may store a display name, email and the photos uploaded to the event. Email is used to send photos or links after the event and is not shared for any other purpose.',
-			'Photos are deleted after the event’s retention period, unless the host deletes the event earlier. Payment and accounting records are retained as required by law.',
-		]}
-		contactPrefix="Contact us at "
-		contactSuffix=" for data questions or deletion requests."
-	/>
-</Layout>
+<LegalPage locale="en" kind="privacy" />

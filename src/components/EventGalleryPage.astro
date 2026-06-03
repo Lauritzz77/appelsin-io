@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import Icon from './brand/Icon.astro'
+import { getContent, fill } from '../lib/content'
 
 type Locale = 'da' | 'en'
 
@@ -42,84 +43,21 @@ const {
 	cfImagesHash,
 } = Astro.props
 
-const text = {
-	da: {
-		title: 'Din billedsamling',
-		kicker: 'billederne er klar',
-		lead: 'Se billederne fra eventet, og gem dem på den måde der passer bedst til din enhed.',
-		empty: 'Der er ingen billeder at vise endnu.',
-		downloadZip: 'Download ZIP',
-		downloadZipCount: (n: number) => `Download ${n} valgte som ZIP`,
-		selectFirst: 'Vælg 20',
-		selectAll: 'Vælg alle',
-		deselectAll: 'Fravælg alle',
-		saveSelected: 'Gem på enhed',
-		saveSelectedCount: (n: number) => `Gem de ${n} valgte billeder`,
-		count: (n: number) => `${n.toLocaleString('da-DK')} uploads`,
-		photoLimit: 'Du kan gemme op til 20 billeder ad gangen på din enhed.',
-		maxSelected: 'Du kan vælge op til 20 billeder ad gangen.',
-		desktopHint: 'ZIP-download er bedst på computer.',
-		mobileHint: 'Vælg billeder og gem dem via enhedens dele-menu.',
-		desktopFlowHint: 'Download hele billedsamlingen som ZIP.',
-		zipNoteLink: 'Download ZIP',
-		iosZipNote:
-			'henter hele samlingen. På iPhone gemmes filen i Arkiver, typisk under Overførsler. Du kan også vælge op til 20 billeder ad gangen og gemme dem direkte på enheden.',
-		androidZipNote:
-			'henter hele samlingen. På Android gemmes filen typisk i Downloads. Du kan også vælge op til 20 billeder ad gangen og gemme dem direkte på enheden.',
-		expiry: (date: string) => `Denne side er aktiv indtil ${date}.`,
-		shareTitle: (name: string) => `Billeder fra ${name}`,
-		shareText: (name: string) => `Se billederne fra ${name}`,
-		copyOk: 'Galleri-link kopieret',
-		sharePreparing: 'Henter valgte billeder...',
-		shareFallback: 'Din browser kan ikke dele filer her. Galleri-linket er kopieret i stedet.',
-		shareError: 'Kunne ikke dele billederne. Prøv med færre billeder eller klik på Download ZIP.',
-		savedPromptTitle: 'Fik du gemt billederne?',
-		savedPromptMessage: 'Hvis du valgte “Gem billeder” i dele-menuen, kan vi markere dem som gemt på denne enhed.',
-		savedPromptConfirm: 'Ja, markér som gemt',
-		savedPromptCancel: 'Nej, ikke endnu',
-		savedStatus: (n: number) => `${n} billeder markeret som gemt på denne enhed.`,
-		savedBadge: 'Gemt',
-	},
-	en: {
-		title: 'Your photo collection',
-		kicker: 'photos are ready',
-		lead: 'View the event photos, and save them in the way that works best for your device.',
-		empty: 'There are no photos to show yet.',
-		downloadZip: 'Download ZIP',
-		downloadZipCount: (n: number) => `Download ${n} items as ZIP`,
-		selectFirst: 'Select 20',
-		selectAll: 'Select all',
-		deselectAll: 'Deselect all',
-		saveSelected: 'Save on device',
-		saveSelectedCount: (n: number) => `Save ${n} selected photos`,
-		count: (n: number) => `${n.toLocaleString('en-IE')} uploads`,
-		photoLimit: 'You can save up to 20 photos at a time on your device.',
-		maxSelected: 'You can select up to 20 photos at a time.',
-		desktopHint: 'ZIP download is best on a computer.',
-		mobileHint: "Select photos and save them through your device's share menu.",
-		desktopFlowHint: 'Download the full photo collection as a ZIP.',
-		zipNoteLink: 'Download ZIP',
-		iosZipNote:
-			'downloads the full collection. On iPhone the file is saved in Files, usually under Downloads. You can also select up to 20 photos at a time and save them directly on your device.',
-		androidZipNote:
-			'downloads the full collection. On Android the file is usually saved in Downloads. You can also select up to 20 photos at a time and save them directly on your device.',
-		expiry: (date: string) => `This page is active until ${date}.`,
-		shareTitle: (name: string) => `Photos from ${name}`,
-		shareText: (name: string) => `See the photos from ${name}`,
-		copyOk: 'Gallery link copied',
-		sharePreparing: 'Fetching selected photos...',
-		shareFallback: 'Your browser cannot share files here. The gallery link was copied instead.',
-		shareError: 'Could not share the photos. Try fewer photos or click Download ZIP.',
-		savedPromptTitle: 'Did you save the photos?',
-		savedPromptMessage: 'If you chose “Save images” in the share menu, we can mark them as saved on this device.',
-		savedPromptConfirm: 'Yes, mark as saved',
-		savedPromptCancel: 'Not yet',
-		savedStatus: (n: number) => `${n} photos marked as saved on this device.`,
-		savedBadge: 'Saved',
-	},
-}[locale]
+const t = getContent(locale, 'gallery')
 
 const dateLocale = locale === 'da' ? 'da-DK' : 'en-IE'
+// Static strings come straight from the catalogue; the count/name/date variants
+// are templates the markup already calls as functions, filled at each call site.
+const text = {
+	...t,
+	downloadZipCount: (n: number) => fill(t.downloadZipCount, { count: n }),
+	saveSelectedCount: (n: number) => fill(t.saveSelectedCount, { count: n }),
+	count: (n: number) => fill(t.count, { count: n.toLocaleString(dateLocale) }),
+	expiry: (date: string) => fill(t.expiry, { date }),
+	shareTitle: (name: string) => fill(t.shareTitle, { name }),
+	shareText: (name: string) => fill(t.shareText, { name }),
+	savedStatus: (n: number) => fill(t.savedStatus, { count: n }),
+}
 const POST_EVENT_GRACE_DAYS = 2
 const calculatedExpiresAt = new Date(event.eventDate)
 calculatedExpiresAt.setDate(calculatedExpiresAt.getDate() + POST_EVENT_GRACE_DAYS + event.retentionDays)
@@ -157,7 +95,7 @@ const pageTitle = `${event.name} — ${text.title}`
 						class="btn btn--primary after-gallery-zip"
 						data-base-download-url={downloadUrl}
 						data-all-label={text.downloadZipCount(photos.length)}
-						data-selected-template={text.downloadZipCount(123).replace('123', '{count}')}
+						data-selected-template={t.downloadZipCount}
 					>
 						<Icon name="download" size={18} stroke={2.2} />
 						<span data-download-zip-label>{text.downloadZipCount(photos.length)}</span>
@@ -177,11 +115,11 @@ const pageTitle = `${event.name} — ${text.title}`
 					<button id="gallery-share-selected" type="button" class="btn btn--primary btn--sm" disabled data-default-text={text.saveSelected}>
 						<Icon name="share" size={16} stroke={2.2} /><span data-share-selected-label>{text.saveSelected}</span>
 					</button>
-					<div class="after-view-toggle" role="group" aria-label="Vis billeder">
-						<button type="button" class="after-view-toggle-btn is-active" data-gallery-view="grid" aria-pressed="true" title="Vis som grid">
+					<div class="after-view-toggle" role="group" aria-label={text.viewAria}>
+						<button type="button" class="after-view-toggle-btn is-active" data-gallery-view="grid" aria-pressed="true" title={text.viewGrid}>
 							<Icon name="grid" size={16} />
 						</button>
-						<button type="button" class="after-view-toggle-btn" data-gallery-view="column" aria-pressed="false" title="Vis i kolonne">
+						<button type="button" class="after-view-toggle-btn" data-gallery-view="column" aria-pressed="false" title={text.viewColumn}>
 							<Icon name="list" size={17} />
 						</button>
 					</div>
@@ -218,14 +156,14 @@ const pageTitle = `${event.name} — ${text.title}`
 							data-share-preparing={text.sharePreparing}
 							data-share-fallback={text.shareFallback}
 						data-share-error={text.shareError}
-						data-selected-template={text.saveSelectedCount(123).replace('123', '{count}')}
+						data-selected-template={t.saveSelectedCount}
 						data-max-selected={text.maxSelected}
 						data-saved-key={`appelsin:saved-photos:${event.id}`}
 						data-saved-prompt-title={text.savedPromptTitle}
 						data-saved-prompt-message={text.savedPromptMessage}
 						data-saved-prompt-confirm={text.savedPromptConfirm}
 						data-saved-prompt-cancel={text.savedPromptCancel}
-						data-saved-status-template={text.savedStatus(123).replace('123', '{count}')}
+						data-saved-status-template={t.savedStatus}
 					>
 						{galleryPhotos.map((photo, index) => (
 							<article class="after-photo-tile" data-photo-id={photo.id}>

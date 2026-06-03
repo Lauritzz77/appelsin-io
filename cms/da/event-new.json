@@ -1,0 +1,39 @@
+{
+	"meta": { "title": "Nyt event — appelsin" },
+	"back": "Tilbage",
+	"heading": "Nyt event",
+	"intro": {
+		"p1": "Saml alle minderne fra dit arrangement ét sted. Når du opretter et event, får du en unik kode og QR-kode, som dine gæster nemt kan scanne for at uploade billeder direkte fra festen.",
+		"p2": "Billederne kan vises live på en storskærm, iPad eller computer under arrangementet, så alle kan følge med i øjeblikkene, mens de sker. Efter eventet kan du downloade hele billedsamlingen og gemme minderne for altid.",
+		"tagline": "Perfekt til bryllupper, fødselsdage, firmafester og andre særlige begivenheder."
+	},
+	"freeExistsError": "Du har allerede et gratis event. Slet det eksisterende først, eller vælg Basic eller Gold til dette event.",
+	"nameLabel": "Eventnavn",
+	"namePlaceholder": "Anna & Jonas bryllup",
+	"dateLabel": "Eventdato",
+	"timeline": {
+		"heading": "Datoen styrer tidslinjen",
+		"bullets": [
+			"Gæster kan uploade fra <strong>24 timer før</strong> — så folk der scanner QR'en aftenen før kan komme i gang.",
+			"Eventet er <strong>live i 2 dage efter</strong> — så seneste billeder fra natten og dagen efter også kommer med.",
+			"Derefter markeres eventet som <strong>afsluttet</strong>, og billederne gemmes i <strong>7-90 dage</strong> afhængigt af planen, hvorefter alt slettes automatisk."
+		]
+	},
+	"choosePlan": "Vælg plan",
+	"tier": {
+		"capLine": "Op til {cap} billeder",
+		"retentionLine": "{days} dages opbevaring",
+		"watermark": "appelsin-vandmærke",
+		"popularBadge": "Populær",
+		"perEvent": " / event"
+	},
+	"submit": "Opret event",
+	"footer": {
+		"createdAsPrefix": "Oprettes som ",
+		"draftIntro": ". Status starter som ",
+		"draftWord": "kladde",
+		"liveIntro": "; betalte planer bliver ",
+		"liveWord": "live",
+		"liveSuffix": " efter betaling."
+	}
+}

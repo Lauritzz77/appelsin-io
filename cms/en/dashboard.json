@@ -1,0 +1,26 @@
+{
+	"meta": { "title": "Dashboard — appelsin" },
+	"heading": "Your events",
+	"subhead": "Pick an event to see its code, photo wall and photos.",
+	"newEvent": "New event",
+	"empty": "No events yet. Create your first one.",
+	"planLabel": "plan",
+	"signedInPrefix": "Signed in as ",
+	"billing": "Billing",
+	"signOut": "Sign out",
+	"js": {
+		"renameTitle": "Rename event",
+		"renameConfirm": "Save name",
+		"renameInputLabel": "Event name",
+		"renameAria": "Rename {name}",
+		"renameFailed": "Renaming failed ({status})",
+		"renameErrorTitle": "Could not rename event",
+		"deleteAction": "Delete event",
+		"deleteAria": "Delete {name}",
+		"deleteConfirmTitle": "Delete \"{name}\"?",
+		"deleteMessage": "This deletes the event and all uploaded photos. This cannot be undone.",
+		"deleteFallbackName": "this event",
+		"deleteFailed": "Deletion failed ({status})",
+		"deleteErrorTitle": "Could not delete event"
+	}
+}

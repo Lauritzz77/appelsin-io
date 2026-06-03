@@ -21,6 +21,26 @@ type Photo = {
   mediaHeight: number | null;
 };
 
+type StyleMessages = {
+  colors: string;
+  background: string;
+  textColor: string;
+  font: string;
+  density: string;
+  titleOverlay: string;
+  headline: string;
+  headlinePlaceholder: string;
+  subline: string;
+  sublinePlaceholder: string;
+  saving: string;
+  save: string;
+  cancel: string;
+  saved: string;
+  previewLabel: string;
+  openWall: string;
+  saveFailed: string;
+};
+
 const props = defineProps<{
   eventId: string;
   eventCode: string;
@@ -28,6 +48,7 @@ const props = defineProps<{
   previewPhotos: Photo[];
   cfImagesHash: string;
   qrDataUrl: string;
+  messages: StyleMessages;
 }>();
 
 const branding = reactive<EventBranding>({
@@ -68,7 +89,7 @@ async function save() {
       const payload = (await res.json().catch(() => null)) as {
         message?: string;
       } | null;
-      throw new Error(payload?.message || `Lagring mislykkedes (${res.status})`);
+      throw new Error(payload?.message || props.messages.saveFailed.replace("{status}", String(res.status)));
     }
     lastSavedSnapshot.value = JSON.stringify(branding);
     flash.value = "saved";
@@ -115,17 +136,17 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
   <div class="style-cols">
     <aside class="flex flex-col gap-4">
       <section class="card card--dark">
-        <h2 class="m-0 mb-4 text-[15px] font-bold">Farver</h2>
+        <h2 class="m-0 mb-4 text-[15px] font-bold">{{ messages.colors }}</h2>
         <div class="flex flex-col gap-3.5">
           <label class="flex items-center justify-between gap-3">
-            <span class="text-[13.5px] text-tx-3">Baggrund</span>
+            <span class="text-[13.5px] text-tx-3">{{ messages.background }}</span>
             <span class="flex items-center gap-2.5">
               <span class="font-mono text-[12px] text-tx-4">{{ branding.background }}</span>
               <input v-model="branding.background" type="color" class="color-input" />
             </span>
           </label>
           <label class="flex items-center justify-between gap-3">
-            <span class="text-[13.5px] text-tx-3">Tekst</span>
+            <span class="text-[13.5px] text-tx-3">{{ messages.textColor }}</span>
             <span class="flex items-center gap-2.5">
               <span class="font-mono text-[12px] text-tx-4">{{ branding.text }}</span>
               <input v-model="branding.text" type="color" class="color-input" />
@@ -135,7 +156,7 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
       </section>
 
       <section class="card card--dark">
-        <h2 class="m-0 mb-3.5 text-[15px] font-bold">Skrifttype</h2>
+        <h2 class="m-0 mb-3.5 text-[15px] font-bold">{{ messages.font }}</h2>
         <div class="grid grid-cols-3 gap-2.25">
           <button
             v-for="id in FONT_IDS"
@@ -162,7 +183,7 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
       </section>
 
       <section class="card card--dark">
-        <h2 class="m-0 mb-3.5 text-[15px] font-bold">Fliseopdeling</h2>
+        <h2 class="m-0 mb-3.5 text-[15px] font-bold">{{ messages.density }}</h2>
         <div class="grid grid-cols-3 gap-2.25">
           <button
             v-for="id in DENSITY_IDS"
@@ -179,7 +200,7 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
 
       <section class="card card--dark">
         <div class="flex items-center justify-between">
-          <span class="text-[15px] font-bold">Titel-overlay</span>
+          <span class="text-[15px] font-bold">{{ messages.titleOverlay }}</span>
           <label class="toggle">
             <input type="checkbox" v-model="branding.titleOverlay.enabled" />
             <span class="knob"></span>
@@ -187,34 +208,34 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
         </div>
         <div v-if="branding.titleOverlay.enabled" class="mt-4 flex flex-col gap-3.5">
           <label class="block">
-            <span class="field-label">Overskrift</span>
-            <input v-model="branding.titleOverlay.line1" type="text" maxlength="80" placeholder="Anna & Jonas" class="field-input" />
+            <span class="field-label">{{ messages.headline }}</span>
+            <input v-model="branding.titleOverlay.line1" type="text" maxlength="80" :placeholder="messages.headlinePlaceholder" class="field-input" />
           </label>
           <label class="block">
-            <span class="field-label">Underlinje</span>
-            <input v-model="branding.titleOverlay.line2" type="text" maxlength="80" placeholder="20. maj 2026" class="field-input" />
+            <span class="field-label">{{ messages.subline }}</span>
+            <input v-model="branding.titleOverlay.line2" type="text" maxlength="80" :placeholder="messages.sublinePlaceholder" class="field-input" />
           </label>
         </div>
       </section>
 
       <div class="flex flex-wrap items-center gap-3">
         <button type="button" class="btn btn--primary btn--sm" :disabled="!dirty || saving" @click="save">
-          {{ saving ? "Gemmer…" : "Gem ændringer" }}
+          {{ saving ? messages.saving : messages.save }}
         </button>
-        <button type="button" class="btn btn--ghost btn--sm" :disabled="!dirty || saving" @click="reset">Annullér</button>
-        <span v-if="flash === 'saved'" class="text-[13px] text-live">Gemt.</span>
+        <button type="button" class="btn btn--ghost btn--sm" :disabled="!dirty || saving" @click="reset">{{ messages.cancel }}</button>
+        <span v-if="flash === 'saved'" class="text-[13px] text-live">{{ messages.saved }}</span>
         <span v-if="flash === 'error'" class="text-[13px] text-danger">{{ errorMessage }}</span>
       </div>
     </aside>
 
     <div>
       <div class="mb-3 flex items-center justify-between">
-        <span class="text-[13.5px] text-tx-3">Forhåndsvisning · live spejling af fotovæggen</span>
+        <span class="text-[13.5px] text-tx-3">{{ messages.previewLabel }}</span>
         <a
           :href="`/display/${eventCode}`"
           target="_blank"
           class="inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-accent"
-          >Åbn fuld væg ↗</a
+          >{{ messages.openWall }}</a
         >
       </div>
       <div class="preview-card">

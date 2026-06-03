@@ -1,0 +1,252 @@
+---
+import type { Locale } from '../../lib/i18n'
+import { localisePath, numberLocale } from '../../lib/i18n'
+import { getContent, fill } from '../../lib/content'
+import Layout from '../../layouts/Layout.astro'
+import Icon from '../brand/Icon.astro'
+import Button from '../brand/Button.astro'
+import { TIERS, TIER_IDS, isTier, formatPrice, type Tier } from '../../lib/tiers'
+
+interface Props {
+	locale: Locale
+}
+const { locale } = Astro.props
+const t = getContent(locale, 'event-new')
+const numLocale = numberLocale(locale)
+
+const host = Astro.locals.host!
+
+const requested = Astro.url.searchParams.get('tier')
+const selectedTier: Tier = isTier(requested) ? requested : 'free'
+const createError = Astro.url.searchParams.get('error')
+
+const tierDescription = (id: Tier) => {
+	const tier = TIERS[id]
+	const parts = [
+		fill(t.tier.capLine, { cap: tier.photoCap.toLocaleString(numLocale) }),
+		fill(t.tier.retentionLine, { days: tier.retentionDays }),
+	]
+	if (tier.watermark) parts.push(t.tier.watermark)
+	return parts.join(' · ')
+}
+---
+
+<Layout title={t.meta.title} locale={locale}>
+	<div class="app screen-root">
+		<div class="fu mx-auto max-w-160 px-7 pt-7.5 pb-20">
+			<a href={localisePath('/app', locale)} class="inline-flex items-center gap-2 text-[15.5px] font-semibold text-tx-3">
+				<Icon name="arrow-left" size={18} />{t.back}
+			</a>
+			<h1 class="mt-6 mb-3 text-[clamp(30px,5cqw,40px)] font-extrabold tracking-[-0.02em]">{t.heading}</h1>
+			<div class="m-0 flex max-w-130 flex-col gap-3 text-[17px] leading-[1.6] text-tx-2">
+				<p class="m-0">{t.intro.p1}</p>
+				<p class="m-0">{t.intro.p2}</p>
+				<p class="m-0 font-hand text-2xl font-bold leading-tight text-accent">{t.intro.tagline}</p>
+			</div>
+
+			{
+				createError === 'free_exists' && (
+					<div class="mt-6 rounded-md border border-[rgba(244,63,94,.3)] bg-[rgba(244,63,94,.1)] px-4.5 py-3.5 text-sm text-danger">
+						{t.freeExistsError}
+					</div>
+				)
+			}
+
+			<form method="post" action="/api/events/new" class="mt-8.5 flex flex-col gap-6.5">
+				<input type="hidden" name="returnToPrefix" value={localisePath('/app/events', locale)} />
+
+				<label class="block">
+					<span class="field-label">{t.nameLabel}</span>
+					<input
+						id="name"
+						name="name"
+						type="text"
+						required
+						maxlength="80"
+						placeholder={t.namePlaceholder}
+						class="field-input field-input--big"
+					/>
+				</label>
+
+				<div>
+					<label class="block">
+						<span class="field-label">{t.dateLabel}</span>
+						<input id="eventDate" name="eventDate" type="date" required class="field-input field-input--big" />
+					</label>
+					{/* timeline helper */}
+					<div class="mt-4 rounded-lg border border-[rgba(255,162,41,.28)] bg-orange-soft px-5.5 py-5">
+						<div class="mb-3.5 flex items-center gap-2.25 text-[13.5px] font-bold uppercase tracking-[0.04em] text-accent">
+							<Icon name="clock" size={16} />{t.timeline.heading}
+						</div>
+						<div class="flex flex-col gap-2.75 text-[15px] leading-[1.5] text-tx-2">
+							{
+								t.timeline.bullets.map((html) => (
+									<div class="flex gap-3">
+										<span class="font-extrabold text-accent">·</span>
+										<span set:html={html} />
+									</div>
+								))
+							}
+						</div>
+					</div>
+				</div>
+
+				<fieldset class="m-0 border-none p-0">
+					<legend class="app-sec-label">{t.choosePlan}</legend>
+					<div class="flex flex-col gap-3">
+						{
+							TIER_IDS.map((id) => {
+								const tier = TIERS[id]
+								return (
+									<label class="radio-card">
+										<input type="radio" name="tier" value={id} checked={id === selectedTier} />
+										<span class="rc-main">
+											<span class="rc-heading">
+												<span class="rc-title">{tier.label}</span>
+												{id === 'basic' && <span class="badge badge--soft">{t.tier.popularBadge}</span>}
+											</span>
+											<span class="rc-desc">{tierDescription(id)}</span>
+										</span>
+										<span class="rc-price">
+											{formatPrice(id, locale)}
+											{tier.priceCents > 0 && <span class="rc-price-note">{t.tier.perEvent}</span>}
+										</span>
+									</label>
+								)
+							})
+						}
+					</div>
+				</fieldset>
+
+				<div>
+					<Button type="submit" full size="lg" iconRight="arrow-right">{t.submit}</Button>
+					<p class="mt-3.5 text-center text-[13.5px] leading-[1.5] text-tx-3">
+						{t.footer.createdAsPrefix}{host.email}{t.footer.draftIntro}<span class="font-mono">{t.footer.draftWord}</span>{t.footer.liveIntro}<span class="font-mono">{t.footer.liveWord}</span>{t.footer.liveSuffix}
+					</p>
+				</div>
+			</form>
+		</div>
+	</div>
+</Layout>
+
+<style>
+	.radio-card {
+		box-sizing: border-box;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		align-items: start;
+		gap: 10px;
+		width: 100%;
+		text-align: left;
+		padding: 16px;
+		border-radius: var(--r-lg);
+		cursor: pointer;
+		background: var(--s1);
+		border: 1.5px solid var(--line-2);
+		transition:
+			background 0.18s,
+			border-color 0.18s,
+			box-shadow 0.18s;
+		position: relative;
+	}
+	.radio-card:hover {
+		border-color: var(--line);
+	}
+	.radio-card input {
+		position: absolute;
+		opacity: 0;
+		width: 1px;
+		height: 1px;
+		pointer-events: none;
+	}
+	.radio-card:has(input:checked) {
+		background: var(--orange-soft);
+		border-color: var(--accent);
+		box-shadow: 0 0 0 4px var(--orange-soft);
+	}
+	.radio-card:focus-within {
+		border-color: var(--accent);
+	}
+	.rc-main {
+		min-width: 0;
+	}
+	.rc-heading {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+	}
+	.rc-title {
+		font-size: 17px;
+		font-weight: 800;
+		line-height: 1.2;
+		color: var(--tx);
+	}
+	.rc-desc {
+		display: block;
+		margin-top: 5px;
+		font-size: 14px;
+		line-height: 1.45;
+		color: var(--tx-3);
+	}
+	.rc-price {
+		grid-column: 1;
+		justify-self: end;
+		display: inline-flex;
+		align-items: baseline;
+		gap: 3px;
+		padding: 5px 9px;
+		border-radius: 999px;
+		border: 1px solid var(--line-2);
+		background: rgba(255, 255, 255, 0.05);
+		font-size: 14.5px;
+		font-weight: 800;
+		line-height: 1;
+		color: var(--tx-2);
+		white-space: nowrap;
+	}
+	.rc-price-note {
+		font-size: 13px;
+		font-weight: 700;
+		color: var(--tx-3);
+	}
+	.radio-card:has(input:checked) .rc-price {
+		color: var(--accent);
+		border-color: rgba(255, 162, 41, 0.34);
+		background: rgba(255, 162, 41, 0.12);
+	}
+	@container (min-width: 640px) {
+		.radio-card {
+			grid-template-columns: minmax(0, 1fr) auto;
+			align-items: center;
+			gap: 16px;
+			padding: 18px 20px;
+		}
+		.rc-title {
+			font-size: 18px;
+		}
+		.rc-desc {
+			margin-top: 4px;
+			font-size: 14.5px;
+			line-height: normal;
+		}
+		.rc-price {
+			grid-column: auto;
+			justify-self: end;
+			padding: 0;
+			border: 0;
+			background: transparent;
+			font-size: 17px;
+			font-weight: 700;
+			line-height: normal;
+		}
+		.rc-price-note {
+			font-size: inherit;
+			font-weight: inherit;
+		}
+		.radio-card:has(input:checked) .rc-price {
+			background: transparent;
+			border-color: transparent;
+		}
+	}
+</style>

@@ -1,5 +1,7 @@
 ---
 import type { Locale } from '../../lib/i18n'
+import { localisePath } from '../../lib/i18n'
+import { getContent } from '../../lib/content'
 import Logo from '../brand/Logo.astro'
 
 interface Props {
@@ -8,13 +10,9 @@ interface Props {
 	onDark?: boolean
 }
 const { locale = 'da', isSignedIn = false, onDark = false } = Astro.props
-const p = locale === 'en' ? '/en' : ''
-const t =
-	locale === 'en'
-		? { app: 'Your events', login: 'Log in', terms: 'Terms', privacy: 'Privacy' }
-		: { app: 'Dine events', login: 'Login', terms: 'Vilkår', privacy: 'Privatliv' }
-const primaryHref = isSignedIn ? `${p}/app` : `${p}/login`
-const primaryLabel = isSignedIn ? t.app : t.login
+const nav = getContent(locale, 'common').nav
+const primaryHref = isSignedIn ? localisePath('/app', locale) : localisePath('/login', locale)
+const primaryLabel = isSignedIn ? nav.events : nav.login
 // On the navy band the footer butts up against the FAQ band, so no top margin
 // (which would otherwise escape the band and reveal the cream body behind).
 ---
@@ -28,8 +26,8 @@ const primaryLabel = isSignedIn ? t.app : t.login
 	<Logo surface={onDark ? 'dark' : 'cream'} class="w-20 h-20 block" />
 	<div class:list={['flex flex-wrap gap-6.5 text-[15.5px] font-semibold', onDark ? 'text-tx-2' : 'text-ink-2']}>
 		<a href={primaryHref} class="cursor-pointer">{primaryLabel}</a>
-		<a href={`${p}/terms`} class="cursor-pointer">{t.terms}</a>
-		<a href={`${p}/privacy`} class="cursor-pointer">{t.privacy}</a>
+		<a href={localisePath('/terms', locale)} class="cursor-pointer">{nav.terms}</a>
+		<a href={localisePath('/privacy', locale)} class="cursor-pointer">{nav.privacy}</a>
 		<a href="mailto:hello@appelsin.io">hello@appelsin.io</a>
 	</div>
 </footer>

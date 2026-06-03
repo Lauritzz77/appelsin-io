@@ -1,0 +1,39 @@
+---
+import type { Locale } from '../../lib/i18n'
+import { getContent, fill } from '../../lib/content'
+import Layout from '../../layouts/Layout.astro'
+import GuestUpload from '../GuestUpload.vue'
+import { env } from 'cloudflare:workers'
+import { events as eventsTable } from '../../db/schema'
+
+type EventRow = typeof eventsTable.$inferSelect
+
+interface Props {
+	locale: Locale
+	event: EventRow
+}
+const { locale, event } = Astro.props
+const t = getContent(locale, 'guest-upload')
+---
+
+<Layout title={fill(t.pageTitle, { name: event.name })} locale={locale}>
+	<div class="min-h-screen bg-[radial-gradient(130%_80%_at_50%_-10%,#0c2a6e,#061541_65%)]">
+		<div class="mx-auto max-w-120 px-6 pb-12">
+			<div class="pt-14 pb-6 text-center">
+				<img src="/logo.svg" alt="appelsin.io" class="mx-auto mb-3.5 block h-20 w-20" />
+				<div class="font-hand text-[24px] font-semibold leading-none text-accent">{t.partOf}</div>
+				<h1 class="mt-1.5 text-[26px] font-extrabold tracking-[-0.02em] text-tx">{event.name}</h1>
+				<p class="mt-2 text-[14.5px] text-tx-3">
+					{t.takePhoto}
+				</p>
+			</div>
+			<GuestUpload
+				client:only="vue"
+				code={event.shortCode}
+				cfImagesHash={env.CF_IMAGES_HASH}
+				streamDomain={env.CF_STREAM_CUSTOMER_DOMAIN}
+				messages={t.app}
+			/>
+		</div>
+	</div>
+</Layout>

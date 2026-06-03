@@ -1,0 +1,9 @@
+{
+	"meta": { "title": "Deltag i event — appelsin" },
+	"heading": "Indtast eventkode",
+	"subhead": "Skriv koden fra eventskærmen eller invitationen for at dele billeder.",
+	"codeLabel": "Eventkode",
+	"codePlaceholder": "EC4KJL",
+	"submit": "Deltag i event",
+	"error": "Indtast en eventkode."
+}

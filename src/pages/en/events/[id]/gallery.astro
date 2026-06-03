@@ -5,11 +5,13 @@ import { and, desc, eq, ne } from 'drizzle-orm'
 import * as schema from '../../../../db/schema'
 import EventGalleryPage from '../../../../components/EventGalleryPage.astro'
 import { eventDownloadUrl, eventGalleryUrl, signEventDownload, verifyEventDownload } from '../../../../lib/event-download'
+import { getContent } from '../../../../lib/content'
 
 export const prerender = false
 
+const errors = getContent('en', 'common').errors
 const id = Astro.params.id
-if (!id) return new Response('Missing event id', { status: 400 })
+if (!id) return new Response(errors.missingId, { status: 400 })
 
 const db = drizzle(env.DB, { schema })
 const [event] = await db
@@ -25,12 +27,12 @@ const [event] = await db
 	.where(eq(schema.events.id, id))
 	.limit(1)
 
-if (!event) return new Response('Event not found', { status: 404 })
+if (!event) return new Response(errors.notFound, { status: 404 })
 
 const key = Astro.url.searchParams.get('key')
 const isHost = !!Astro.locals.host && Astro.locals.host.id === event.hostId
 const validKey = await verifyEventDownload(event.id, key, env.BETTER_AUTH_SECRET)
-if (!isHost && !validKey) return new Response('This link is not valid', { status: 401 })
+if (!isHost && !validKey) return new Response(errors.linkInvalid, { status: 401 })
 
 const accessKey = validKey && key ? key : await signEventDownload(event.id, env.BETTER_AUTH_SECRET)
 const downloadUrl = await eventDownloadUrl(Astro.url.origin, event.id, env.BETTER_AUTH_SECRET)

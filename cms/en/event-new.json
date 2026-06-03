@@ -1,0 +1,39 @@
+{
+	"meta": { "title": "New event — appelsin" },
+	"back": "Back",
+	"heading": "New event",
+	"intro": {
+		"p1": "Gather all the memories from your event in one place. When you create an event, you get a unique code and QR code that your guests can easily scan to upload photos straight from the party.",
+		"p2": "The photos can be shown live on a big screen, iPad or computer during the event, so everyone can follow the moments as they happen. After the event, you can download the whole photo collection and keep the memories forever.",
+		"tagline": "Perfect for weddings, birthdays, company parties and other special occasions."
+	},
+	"freeExistsError": "You already have a free event. Delete the existing one first, or pick Basic or Gold for this event.",
+	"nameLabel": "Event name",
+	"namePlaceholder": "Anna & Jonas — wedding",
+	"dateLabel": "Event date",
+	"timeline": {
+		"heading": "The date drives the timeline",
+		"bullets": [
+			"Guests can upload from <strong>24 hours before</strong> — so anyone scanning the QR the night before can get going.",
+			"The event is <strong>live for 2 days after</strong> — so the latest photos from the night and the day after are included too.",
+			"After that, the event is marked as <strong>ended</strong>, and photos are stored for <strong>7-90 days</strong> depending on the plan, after which everything is deleted automatically."
+		]
+	},
+	"choosePlan": "Choose plan",
+	"tier": {
+		"capLine": "Up to {cap} photos",
+		"retentionLine": "{days} days of storage",
+		"watermark": "appelsin watermark",
+		"popularBadge": "Popular",
+		"perEvent": " / event"
+	},
+	"submit": "Create event",
+	"footer": {
+		"createdAsPrefix": "Created as ",
+		"draftIntro": ". Status starts as ",
+		"draftWord": "draft",
+		"liveIntro": "; paid plans become ",
+		"liveWord": "live",
+		"liveSuffix": " after payment."
+	}
+}

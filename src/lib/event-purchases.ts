@@ -20,9 +20,9 @@ export async function activateEventFromPaidCheckoutSession(
 	if (expected?.hostId && expected.hostId !== hostId) return false
 
 	// Defense in depth: assert Stripe actually charged one of this tier's
-	// configured prices (each tier has a da/dkk + en/eur pair). `tier` comes
-	// from session metadata we set at checkout; verifying the amount stops a
-	// future promo / zero-amount path from silently granting a paid tier.
+	// configured prices. `tier` comes from session metadata we set at checkout;
+	// verifying the amount stops a future promo / zero-amount path from silently
+	// granting a paid tier.
 	const priceOk = Object.values(TIERS[tier].prices).some(
 		(p) => session.amount_total === p.priceCents && session.currency === p.currency
 	)

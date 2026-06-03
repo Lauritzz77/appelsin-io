@@ -38,8 +38,15 @@ const props = withDefaults(
 		connectWebsocket?: boolean
 		// When false, video tiles render as static thumbnails (no playback).
 		isLive?: boolean
+		// Localised UI strings; defaults to English for the editor preview.
+		messages?: { videoLabel: string; qrAlt: string }
 	}>(),
-	{ connectWebsocket: true, streamDomain: 'videodelivery.net', isLive: true }
+	{
+		connectWebsocket: true,
+		streamDomain: 'videodelivery.net',
+		isLive: true,
+		messages: () => ({ videoLabel: 'Video', qrAlt: 'Scan to upload a photo' }),
+	}
 )
 
 const font = computed(() => FONTS[props.branding.font])
@@ -256,7 +263,7 @@ const visibleTileCount = computed(() => Math.min(tileCount.value, Math.max(1, po
 							allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
 							allowfullscreen
 						></iframe>
-						<span v-if="tilePhotos[i - 1]!.mediaType === 'video'" class="video-pill">Video</span>
+						<span v-if="tilePhotos[i - 1]!.mediaType === 'video'" class="video-pill">{{ messages.videoLabel }}</span>
 						<span v-if="tilePhotos[i - 1]!.uploaderName" class="uploader-name">{{ tilePhotos[i - 1]!.uploaderName }}</span>
 					</div>
 				</Transition>
@@ -264,7 +271,7 @@ const visibleTileCount = computed(() => Math.min(tileCount.value, Math.max(1, po
 		</div>
 
 		<div class="qr">
-			<img :src="qrDataUrl" alt="Scan to upload a photo" class="qr-img" />
+			<img :src="qrDataUrl" :alt="messages.qrAlt" class="qr-img" />
 			<div class="qr-logo">
 				<img src="/logo.svg" alt="" />
 			</div>

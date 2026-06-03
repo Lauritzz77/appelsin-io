@@ -1,0 +1,20 @@
+{
+	"meta": { "title": "Log ind — appelsin" },
+	"back": "Forside",
+	"heading": "Log ind",
+	"subhead": "Skriv din email — vi sender dig et sikkert login-link.",
+	"emailPlaceholder": "dig@example.com",
+	"submit": "Send login-link",
+	"lockNote": "Intet kodeord. Linket gælder i 15 minutter.",
+	"success": {
+		"heading": "Tjek din indbakke",
+		"sentPrefix": "Der er sendt en mail til ",
+		"sentSuffix": ". Tjek din indbakke.",
+		"retry": "Brug en anden email"
+	},
+	"script": {
+		"sending": "Sender...",
+		"errorPrefix": "Fejl:",
+		"networkErrorPrefix": "Netværksfejl:"
+	}
+}

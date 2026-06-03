@@ -1,0 +1,23 @@
+{
+	"meta": { "title": "Billing — appelsin" },
+	"back": "Dashboard",
+	"heading": "Billing",
+	"subhead": "Manage your subscription and invoices.",
+	"subscribedBanner": "Subscription active. Welcome to Pro.",
+	"noCustomerBanner": "You have no billing history yet — buy an event pass or start a subscription first.",
+	"currentPlan": "Current plan",
+	"statusPrefix": "Status: ",
+	"cancels": " · cancels ",
+	"renews": " · renews ",
+	"manageStripe": "Manage in Stripe",
+	"upgradeTitle": "Upgrade to Pro",
+	"upgradeDesc": "Unlimited events, no per-event payment. Best for planners and venues running several events a month.",
+	"payMonthly": "Pay monthly, cancel anytime",
+	"payYearly": "Pay yearly, cancel anytime",
+	"eventPasses": "Event passes",
+	"noneYet": "(none yet)",
+	"passSuffix": " pass",
+	"viewEvent": "View event →",
+	"perMonth": "mo",
+	"perYear": "yr"
+}

@@ -1,0 +1,58 @@
+---
+import type { Locale } from '../../lib/i18n'
+import { localisePath, numberLocale } from '../../lib/i18n'
+import { getContent, fill } from '../../lib/content'
+import Layout from '../../layouts/Layout.astro'
+import Icon from '../brand/Icon.astro'
+import Button from '../brand/Button.astro'
+import Card from '../brand/Card.astro'
+import { TIERS, isTier, formatPrice } from '../../lib/tiers'
+import * as schema from '../../db/schema'
+
+type EventRow = typeof schema.events.$inferSelect
+
+interface Props {
+	locale: Locale
+	event: EventRow
+}
+const { locale, event } = Astro.props
+const t = getContent(locale, 'event-detail')
+const numLocale = numberLocale(locale)
+
+const tier = isTier(event.tier) ? event.tier : 'free'
+const tierConfig = TIERS[tier]
+const price = formatPrice(tier, locale)
+---
+
+<Layout title={fill(t.pageTitle, { name: event.name })} locale={locale}>
+	<div class="app screen-root">
+		<div class="fu mx-auto max-w-220 px-7 pt-7 pb-20">
+			<a href={localisePath('/app', locale)} class="inline-flex items-center gap-2 text-[15.5px] font-semibold text-tx-3">
+				<Icon name="arrow-left" size={18} />{t.back}
+			</a>
+
+			<div class="mx-auto mt-10 max-w-140">
+				<Card pad={36} class="text-center">
+					<span class="mx-auto mb-5 flex size-14 items-center justify-center rounded-full bg-orange-soft text-accent">
+						<Icon name="card" size={26} />
+					</span>
+					<h1 class="m-0 text-[clamp(26px,4cqw,34px)] font-extrabold tracking-[-0.02em]">{t.paywall.heading}</h1>
+					<p class="mx-auto mt-2.5 max-w-105 text-[15.5px] leading-[1.5] text-tx-3">{t.paywall.lead}</p>
+
+					<div class="mt-7 rounded-xl border border-line-2 bg-s2 px-6 py-5 text-left">
+						<div class="break-words text-[19px] font-bold leading-tight text-tx">{event.name}</div>
+						<div class="mt-1.5 text-[14.5px] text-tx-3">
+							<strong class="text-accent">{tierConfig.label}</strong>{fill(t.tierLineSuffix, { cap: tierConfig.photoCap.toLocaleString(numLocale), days: tierConfig.retentionDays })}
+						</div>
+						<div class="mt-4 text-[30px] font-extrabold tracking-[-0.02em] text-tx">{price}</div>
+					</div>
+
+					<form method="post" action={`/api/events/${event.id}/checkout`} class="mt-6">
+						<Button type="submit" size="lg" full icon="card">{fill(t.tiles.payTitle, { price })}</Button>
+					</form>
+					<p class="mt-3 text-[13px] text-tx-4">{t.paywall.secure}</p>
+				</Card>
+			</div>
+		</div>
+	</div>
+</Layout>

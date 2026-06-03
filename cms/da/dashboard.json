@@ -1,0 +1,26 @@
+{
+	"meta": { "title": "Dashboard — appelsin" },
+	"heading": "Dine events",
+	"subhead": "Vælg et event for at se kode, fotovæg og billeder.",
+	"newEvent": "Nyt event",
+	"empty": "Ingen events endnu. Opret dit første.",
+	"planLabel": "plan",
+	"signedInPrefix": "Logget ind som ",
+	"billing": "Fakturering",
+	"signOut": "Log ud",
+	"js": {
+		"renameTitle": "Omdøb event",
+		"renameConfirm": "Gem navn",
+		"renameInputLabel": "Eventnavn",
+		"renameAria": "Omdøb {name}",
+		"renameFailed": "Omdøbning mislykkedes ({status})",
+		"renameErrorTitle": "Kunne ikke omdøbe event",
+		"deleteAction": "Slet event",
+		"deleteAria": "Slet {name}",
+		"deleteConfirmTitle": "Slet \"{name}\"?",
+		"deleteMessage": "Dette sletter eventet og alle uploadede billeder. Dette kan ikke fortrydes.",
+		"deleteFallbackName": "dette event",
+		"deleteFailed": "Sletning mislykkedes ({status})",
+		"deleteErrorTitle": "Kunne ikke slette event"
+	}
+}

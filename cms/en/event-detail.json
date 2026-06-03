@@ -1,0 +1,119 @@
+{
+	"pageTitle": "{name} — appelsin",
+	"back": "All events",
+	"tierLineSuffix": " plan · up to {cap} photos · {days} days of storage",
+	"banners": {
+		"paidLive": "Payment confirmed. Your event is live.",
+		"paidDraftPre": "Payment received — finalising. Refresh in a moment if the status does not change to ",
+		"paidDraftEm": "live",
+		"paidDraftPost": ".",
+		"freeLimit": "You already have an active free event. End it first, or upgrade this one to Basic or Gold."
+	},
+	"paywall": {
+		"heading": "Activate your event",
+		"lead": "Complete payment to open the event. As soon as it goes through, you'll get access to the QR pack, photo wall and uploads.",
+		"secure": "Secure one-time payment via Stripe"
+	},
+	"runGuide": {
+		"heading": "How to run your event",
+		"payTitle": "Pay for the event",
+		"payDesc": "The Stripe payment makes the event live and opens uploads.",
+		"qrTitle": "Download the QR pack",
+		"qrDesc": "Print the A4 sign + 8 table cards with code {code}.",
+		"screenTitle": "Open the photo wall",
+		"screenDesc": "Show photos on the big screen — {url}.",
+		"scanTitle": "Guests scan the QR",
+		"scanDescScreen": "Photos appear instantly on the screen.",
+		"scanDescCollection": "Photos appear instantly in the collection.",
+		"afterTitle": "After the event",
+		"afterDesc": "Download all photos as a zip — you and guests who provided an email get a link."
+	},
+	"nameLabel": "Event name",
+	"saveName": "Save name",
+	"dateLabel": "Event date",
+	"saveDate": "Save date",
+	"dateLocked": "The date cannot be changed while the event is live.",
+	"codeLabel": "Short code — guests type it at appelsin.io/e",
+	"guestLinkLabel": "Direct guest link",
+	"bigScreen": {
+		"title": "Big screen at the event",
+		"desc": "Turn off if photos should not be shown on a screen at the event. This changes the text in the QR pack."
+	},
+	"moderation": {
+		"title": "Approve photos before they appear",
+		"desc": "When this is on, you approve each photo before it shows on the photo wall and in the collection."
+	},
+	"toolsLabel": "Tools",
+	"tiles": {
+		"qrTitle": "Download QR pack",
+		"qrSub": "A4 sign + 8 table cards (PDF)",
+		"galleryTitle": "Open photo collection",
+		"gallerySub": "{count} uploads · share or save on iPhone",
+		"downloadZip": "Download ZIP",
+		"styleTitle": "Customise photo wall",
+		"styleSub": "Theme, tile layout and title overlay",
+		"wallTitle": "Open photo wall",
+		"payTitle": "Pay {price} & activate",
+		"paySub": "{label} — opens Stripe checkout"
+	},
+	"timeline": {
+		"heading": "Timeline",
+		"uploadsOpenLabel": "Uploads open",
+		"uploadsOpenDesc": "24 hours before the event",
+		"closesLabel": "Event closes",
+		"closesDesc": "2 days after the event",
+		"deletedLabel": "Photos deleted",
+		"deletedValue": "after {days} days",
+		"deletedDesc": "then everything is deleted automatically",
+		"uploadsCounter": "Uploads",
+		"capWarn": "This event has reached its upload limit. New uploads are blocked until you upgrade the plan or rejected photos free up slots.",
+		"capNear": "Approaching the upload limit — consider upgrading before the limit is reached."
+	},
+	"pending": {
+		"heading": "Awaiting approval",
+		"approve": "Approve",
+		"reject": "Reject photo"
+	},
+	"recent": {
+		"heading": "Recent uploads",
+		"liveUpdates": "updating live",
+		"viewAria": "Show uploads",
+		"viewGrid": "Show as grid",
+		"viewColumn": "Show in column"
+	},
+	"danger": {
+		"title": "Delete event",
+		"desc": "This deletes the event and all uploaded photos. This cannot be undone.",
+		"button": "Delete event"
+	},
+	"js": {
+		"saving": "Saving...",
+		"saved": "Saved",
+		"saveFailed": "Could not save ({status})",
+		"missingId": "Missing event ID",
+		"renameFailed": "Renaming failed ({status})",
+		"documentTitle": "{name} — appelsin",
+		"dateChangeFailed": "Date change failed ({status})",
+		"deleteEventFallbackName": "this event",
+		"deleteEventConfirmTitle": "Delete \"{name}\"?",
+		"deleteEventConfirmMessage": "This deletes the event and all uploaded photos. This cannot be undone.",
+		"deleteEventConfirm": "Delete event",
+		"deleteEventDeleting": "Deleting event...",
+		"deleteEventFailed": "Deletion failed ({status})",
+		"deleteEventErrorTitle": "Could not delete event",
+		"copied": "Copied",
+		"none": "(none yet)",
+		"videoLabel": "Video",
+		"noImage": "no image",
+		"deletePhotoAria": "Delete photo",
+		"deletePhotoConfirmTitle": "Delete photo?",
+		"deletePhotoConfirmMessage": "This removes the photo from the event. This cannot be undone.",
+		"deletePhotoConfirm": "Delete photo",
+		"deletePhotoFailed": "Deletion failed ({status})",
+		"deletePhotoErrorTitle": "Could not delete photo",
+		"moderationOn": "Approval turned on",
+		"moderationOff": "Approval turned off",
+		"moderationActionFailed": "Action failed ({status})",
+		"moderationErrorTitle": "Could not update photo"
+	}
+}

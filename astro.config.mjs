@@ -1,4 +1,5 @@
 // @ts-check
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 
 import cloudflare from '@astrojs/cloudflare';
@@ -21,6 +22,12 @@ export default defineConfig({
   },
 
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    resolve: {
+      alias: {
+        '@cms': fileURLToPath(new URL('./cms', import.meta.url)),
+        '@lib': fileURLToPath(new URL('./src/lib', import.meta.url))
+      }
+    }
   }
 });

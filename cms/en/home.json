@@ -1,0 +1,58 @@
+{
+	"meta": {
+		"title": "appelsin — live event photos",
+		"description": "Guests scan a QR code, upload photos from their phone, and the photos appear live on the big screen."
+	},
+	"hero": {
+		"kicker": "For weddings · birthdays · company parties",
+		"headingLines": ["Party photos,", "gathered in one place."],
+		"subhead": "Guests scan a QR code and upload photos straight from their phone — no app. All photos are gathered in one place, and you download the whole party afterwards.",
+		"cta": "See plans",
+		"tags": ["Free to try", "No app", "Ready in 2 minutes"],
+		"polaroids": ["Anna & Jonas ♥", "The crew", "Last dance"]
+	},
+	"steps": [
+		{ "icon": "qr", "num": "01", "title": "Scan the code", "desc": "Guests scan the QR code with their phone camera. No app, no login." },
+		{ "icon": "camera", "num": "02", "title": "Upload a photo", "desc": "They pick a photo straight from the phone." },
+		{ "icon": "monitor", "num": "03", "title": "Live on the screen", "desc": "The photo appears on the photo wall instantly, so everyone can follow along." }
+	],
+	"pricing": {
+		"heading": "One price per event",
+		"subhead": "Pick a plan for the day. No subscriptions, no surprises.",
+		"popularLabel": "Most popular",
+		"footnote": "All plans include the QR pack, live photo wall, moderation and EU hosting.",
+		"cards": {
+			"free": {
+				"priceNote": "1 active event",
+				"tagline": "Try Appelsin.io for a smaller event — no card required.",
+				"features": ["20 photos per event", "7 days of storage", "Download all photos after the party"],
+				"cta": "Start free"
+			},
+			"basic": {
+				"priceNote": "per event",
+				"tagline": "Perfect for weddings, birthdays and smaller parties.",
+				"features": ["300 photos per event", "15 days of storage", "Customise event title and text colour", "Download all photos after the party"],
+				"cta": "Choose Basic"
+			},
+			"gold": {
+				"priceNote": "per event",
+				"tagline": "For big parties, long nights and lots of guests.",
+				"features": ["1,000 photos per event", "1 month of storage", "Customise event title and text colour", "Download all photos after the party"],
+				"cta": "Choose Gold"
+			}
+		}
+	},
+	"faq": {
+		"kicker": "good to know",
+		"heading": "Questions before the party?",
+		"items": [
+			{ "q": "Do my guests need to download an app?", "a": "No. Guests scan the QR code with their phone's camera and upload directly in the browser. No app, no account." },
+			{ "q": "What happens if we hit the photo limit?", "a": "New uploads are blocked once the limit is reached. You can delete rejected photos to free up slots, or upgrade the event to a bigger plan. Free is meant for testing — choose Basic or Gold for the party itself." },
+			{ "q": "What happens to the photos after the event?", "a": "The event is automatically marked as ended 2 days after the event date. You and your guests (who provided an email) receive a link to the photo collection by email. Photos are then stored for 7-30 days depending on the plan, after which everything is deleted automatically." },
+			{ "q": "Can I show the photo wall on an iPad or computer?", "a": "Yes. The photo wall is just a URL — open it in a browser on a big screen, iPad, laptop, or projector. Photos update live as guests upload." },
+			{ "q": "Can I delete a photo that shouldn't be shown?", "a": "Yes. You can delete individual photos from the event dashboard — they disappear from the photo wall instantly and aren't included in the final photo collection." },
+			{ "q": "When can guests start uploading?", "a": "The upload window opens 24 hours before the event date, so anyone scanning the QR the night before can get going. The event stays live until 2 days after the event date, so the latest photos from the night and the day after are included too." },
+			{ "q": "Where are the photos stored?", "a": "All photos are hosted on Cloudflare's EU infrastructure. We don't sell your data or use it for anything other than showing and delivering the photos during the agreed storage period." }
+		]
+	}
+}

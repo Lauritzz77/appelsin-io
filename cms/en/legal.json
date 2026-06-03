@@ -1,0 +1,29 @@
+{
+	"terms": {
+		"meta": { "title": "Terms — appelsin" },
+		"badge": "Last updated 1 June 2026",
+		"title": "Terms",
+		"backLabel": "Home",
+		"paras": [
+			"appelsin.io is used for live photo sharing at events. By creating or using an event, you agree to use the service responsibly and only upload content you have the right to share.",
+			"The event host is responsible for telling guests how photos are used at the event. Photos may be shown live on the event screen and are kept for the retention window that applies to the chosen plan.",
+			"We may remove content or block access if the service is misused, or if illegal, infringing, or harmful content is uploaded.",
+			"Paid event passes and subscriptions are processed via Stripe. Event passes apply to a single event; subscriptions follow the terms shown at purchase."
+		],
+		"contactPrefix": "Contact us at ",
+		"contactSuffix": " if you have questions about the terms."
+	},
+	"privacy": {
+		"meta": { "title": "Privacy — appelsin" },
+		"badge": "How we look after your data",
+		"title": "Privacy",
+		"backLabel": "Home",
+		"paras": [
+			"appelsin.io processes the data needed to create events, let guests upload photos, and send access or download links.",
+			"For guests we may store a display name, email and the photos uploaded to the event. Email is used to send photos or links after the event and is not shared for any other purpose.",
+			"Photos are deleted after the event’s retention period, unless the host deletes the event earlier. Payment and accounting records are retained as required by law."
+		],
+		"contactPrefix": "Contact us at ",
+		"contactSuffix": " for data questions or deletion requests."
+	}
+}

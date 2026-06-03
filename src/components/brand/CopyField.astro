@@ -1,5 +1,6 @@
 ---
 import Icon from './Icon.astro'
+import { getContent } from '../../lib/content'
 
 interface Props {
 	value: string
@@ -10,7 +11,7 @@ interface Props {
 }
 const { value, label, big = false, mono = true, locale = 'da' } = Astro.props
 // Icon is decorative, so spell out the button's purpose + value for screen readers.
-const copyAria = `${locale === 'en' ? 'Copy' : 'Kopiér'} ${value}`
+const copyAria = `${getContent(locale, 'common').copy.action} ${value}`
 const btnCls = `copy-btn flex w-full cursor-pointer items-center gap-3 rounded-md border border-line bg-black/[0.26] text-left ${big ? 'px-4.5 py-3.5' : 'px-3.75 py-2.75'}`
 const valueCls = [
 	'min-w-0 flex-1 break-all font-bold',

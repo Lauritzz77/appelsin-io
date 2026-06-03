@@ -1,0 +1,27 @@
+{
+	"nav": {
+		"events": "Dine events",
+		"login": "Login",
+		"logout": "Log ud",
+		"terms": "Vilkår",
+		"privacy": "Privatliv"
+	},
+	"status": {
+		"live": "live",
+		"ended": "afsluttet",
+		"draft": "kladde"
+	},
+	"copy": {
+		"action": "Kopiér"
+	},
+	"language": {
+		"name": "Dansk",
+		"switchAria": "Skift sprog til {language}"
+	},
+	"errors": {
+		"notFound": "Event ikke fundet",
+		"notLiveYet": "Eventet er ikke live endnu",
+		"linkInvalid": "Linket virker ikke",
+		"missingId": "Manglende event-id"
+	}
+}

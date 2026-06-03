@@ -44,8 +44,14 @@ const props = withDefaults(
 		// iframe player. Used for ended events so we don't burn Stream-delivery
 		// minutes on a wall that no one is updating.
 		isLive?: boolean
+		// Localised UI strings; defaults to English when not provided.
+		messages?: { videoLabel: string; qrAlt: string }
 	}>(),
-	{ streamDomain: 'videodelivery.net', isLive: true }
+	{
+		streamDomain: 'videodelivery.net',
+		isLive: true,
+		messages: () => ({ videoLabel: 'Video', qrAlt: 'Scan to upload a photo' }),
+	}
 )
 
 // Static masonry-ish grid. 9 tile positions: one 2×2 hero + eight 1×1, fits
@@ -235,7 +241,7 @@ const visibleTileCount = computed(() => Math.min(TILE_COUNT, Math.max(1, pool.va
 							allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
 							allowfullscreen
 						></iframe>
-						<span v-if="tilePhotos[i - 1]!.mediaType === 'video'" class="video-pill">Video</span>
+						<span v-if="tilePhotos[i - 1]!.mediaType === 'video'" class="video-pill">{{ messages.videoLabel }}</span>
 						<span v-if="tilePhotos[i - 1]!.uploaderName" class="uploader-name">{{ tilePhotos[i - 1]!.uploaderName }}</span>
 					</div>
 				</Transition>
@@ -243,7 +249,7 @@ const visibleTileCount = computed(() => Math.min(TILE_COUNT, Math.max(1, pool.va
 		</div>
 
 		<div class="qr">
-			<img :src="qrDataUrl" alt="Scan to upload a photo" class="qr-img" />
+			<img :src="qrDataUrl" :alt="messages.qrAlt" class="qr-img" />
 			<div class="qr-logo">
 				<img src="/logo.svg" alt="" />
 			</div>

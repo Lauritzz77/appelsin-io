@@ -1,0 +1,23 @@
+{
+	"meta": { "title": "Fakturering — appelsin" },
+	"back": "Dashboard",
+	"heading": "Fakturering",
+	"subhead": "Administrer dit abonnement og dine fakturaer.",
+	"subscribedBanner": "Abonnement aktivt. Velkommen til Pro.",
+	"noCustomerBanner": "Du har ingen faktureringshistorik endnu — køb et eventpas eller start et abonnement først.",
+	"currentPlan": "Nuværende plan",
+	"statusPrefix": "Status: ",
+	"cancels": " · annulleres ",
+	"renews": " · fornyes ",
+	"manageStripe": "Administrer i Stripe",
+	"upgradeTitle": "Opgrader til Pro",
+	"upgradeDesc": "Ubegrænsede events, ingen betaling pr. event. Bedst til planlæggere og spillesteder med flere events om måneden.",
+	"payMonthly": "Betal månedligt, opsig når som helst",
+	"payYearly": "Betal årligt, opsig når som helst",
+	"eventPasses": "Eventpas",
+	"noneYet": "(ingen endnu)",
+	"passSuffix": "-pas",
+	"viewEvent": "Se event →",
+	"perMonth": "md",
+	"perYear": "år"
+}

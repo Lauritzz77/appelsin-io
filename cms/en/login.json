@@ -1,0 +1,20 @@
+{
+	"meta": { "title": "Sign in — appelsin" },
+	"back": "Home",
+	"heading": "Sign in",
+	"subhead": "Enter your email — we’ll send you a secure sign-in link.",
+	"emailPlaceholder": "you@example.com",
+	"submit": "Send sign-in link",
+	"lockNote": "No password. The link is valid for 15 minutes.",
+	"success": {
+		"heading": "Check your inbox",
+		"sentPrefix": "An email has been sent to ",
+		"sentSuffix": ". Check your inbox.",
+		"retry": "Use a different email"
+	},
+	"script": {
+		"sending": "Sending...",
+		"errorPrefix": "Error:",
+		"networkErrorPrefix": "Network error:"
+	}
+}

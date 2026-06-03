@@ -3,15 +3,55 @@ import { ref, computed, onMounted } from 'vue'
 import imageCompression from 'browser-image-compression'
 import { streamThumbnailUrl } from '../lib/media'
 
+type Messages = {
+	nameLabel: string
+	namePlaceholder: string
+	emailPlaceholder: string
+	emailLabel: string
+	emailHelp: string
+	continue: string
+	saving: string
+	identityNote: string
+	sharingAs: string
+	differentName: string
+	addPhotoPhoto: string
+	addPhotoVideo: string
+	cameraPhoto: string
+	cameraVideo: string
+	preparing: string
+	uploading: string
+	sent: string
+	eventFull: string
+	notOpen: string
+	tryAgain: string
+	photos: string
+	empty: string
+	videoLabel: string
+	newBadge: string
+	footer: string
+	deletePhotoTitle: string
+	deletePhotoMessage: string
+	deletePhoto: string
+	nameRequired: string
+	emailRequired: string
+	nameTaken: string
+	joinFailed: string
+	unexpected: string
+	sessionExpired: string
+	eventLimit: string
+	uploadsOpen: string
+	videoTooLong: string
+	videoUnavailable: string
+}
+
 const props = withDefaults(
 	defineProps<{
 		code: string
 		cfImagesHash: string
-		locale?: 'en' | 'da'
-		allowVideo?: boolean
+		messages: Messages
 		streamDomain?: string
 	}>(),
-	{ locale: 'en', allowVideo: false, streamDomain: 'videodelivery.net' }
+	{ streamDomain: 'videodelivery.net' }
 )
 
 type Status = 'idle' | 'compressing' | 'uploading' | 'success' | 'error' | 'full' | 'not_open'
@@ -25,76 +65,9 @@ type Photo = {
 }
 type Identity = { userId: string; token: string; name: string }
 
-const text = computed(() => ({
-	en: {
-		nameLabel: 'Your name',
-		namePlaceholder: 'e.g. Lau',
-		emailLabel: 'Your email',
-		emailHelp: "We'll email you a link to download all the photos after the event.",
-		continue: 'Continue',
-		saving: 'Saving...',
-		identityNote: 'Your name appears next to your photos. Your email is only used to send you the photos after the event.',
-		sharingAs: 'Sharing as',
-		differentName: 'Use a different name',
-		addPhoto: props.allowVideo ? 'Tap to add a photo or video' : 'Tap to add a photo',
-		camera: props.allowVideo ? 'Camera, photo library, or 15s video clip' : 'Camera or photo library',
-		preparing: 'Preparing...',
-		uploading: 'Uploading...',
-		sent: 'Sent!',
-		eventFull: 'Event is full',
-		notOpen: 'Not open yet',
-		tryAgain: 'Tap to try again',
-		photos: 'Your photos',
-		empty: 'Nothing yet - your uploads will appear here.',
-		deletePhotoTitle: 'Delete photo?',
-		deletePhotoMessage: 'This removes the photo from your uploads and the event screen.',
-		deletePhoto: 'Delete photo',
-		nameRequired: 'Type a name first.',
-		emailRequired: 'We need your email to send you the photos after the event.',
-		nameTaken: 'That name is taken on this event.',
-		joinFailed: 'Could not save that name. Try again.',
-		unexpected: 'Unexpected response from server.',
-		sessionExpired: 'Your session expired - please rejoin.',
-		eventLimit: 'This event has reached its upload limit.',
-		uploadsOpen: 'Uploads open 24 hours before the event.',
-		videoTooLong: 'Video clips can be max 15 seconds.',
-		videoUnavailable: 'Video clips are only available on Gold events.',
-	},
-	da: {
-		nameLabel: 'Dit navn',
-		namePlaceholder: 'fx Lau',
-		emailLabel: 'Din email',
-		emailHelp: 'Vi sender dig et link til at downloade alle billederne efter eventet.',
-		continue: 'Fortsæt',
-		saving: 'Gemmer...',
-		identityNote: 'Dit navn vises ved dine billeder. Din email bruges kun til at sende billederne efter eventet.',
-		sharingAs: 'Deler som',
-		differentName: 'Brug et andet navn',
-		addPhoto: props.allowVideo ? 'Tryk for at tilføje billede eller video' : 'Tryk for at tilføje et billede',
-		camera: props.allowVideo ? 'Kamera, fotobibliotek eller 15 sek. videoklip' : 'Kamera eller fotobibliotek',
-		preparing: 'Forbereder...',
-		uploading: 'Uploader...',
-		sent: 'Sendt!',
-		eventFull: 'Eventet er fyldt',
-		notOpen: 'Ikke åbent endnu',
-		tryAgain: 'Tryk for at prøve igen',
-		photos: 'Dine billeder',
-		empty: 'Ingen endnu - dine uploads vises her.',
-		deletePhotoTitle: 'Slet billede?',
-		deletePhotoMessage: 'Dette fjerner billedet fra dine uploads og eventets skærm.',
-		deletePhoto: 'Slet billede',
-		nameRequired: 'Skriv et navn først.',
-		emailRequired: 'Vi skal bruge din email for at sende dig billederne efter eventet.',
-		nameTaken: 'Det navn er allerede taget til dette event.',
-		joinFailed: 'Kunne ikke gemme navnet. Prøv igen.',
-		unexpected: 'Uventet svar fra serveren.',
-		sessionExpired: 'Din session er udløbet - tilmeld dig igen.',
-		eventLimit: 'Eventet har nået uploadgrænsen.',
-		uploadsOpen: 'Uploads åbner 24 timer før eventet.',
-		videoTooLong: 'Videoklip må højst være 15 sekunder.',
-		videoUnavailable: 'Videoklip er kun tilgængelige på Gold-events.',
-	},
-})[props.locale])
+const text = computed(() => props.messages)
+const addPhotoLabel = computed(() => props.messages.addPhotoPhoto)
+const cameraLabel = computed(() => props.messages.cameraPhoto)
 
 // localStorage key — scoped by event short code so the same browser can hold
 // separate identities for separate events without collision.
@@ -268,7 +241,8 @@ async function handleFile(file: File) {
 	if (!identity.value) return
 	if (resetTimer) clearTimeout(resetTimer)
 	if (file.type.startsWith('video/')) {
-		await handleVideoFile(file)
+		status.value = 'error'
+		errorMsg.value = text.value.videoUnavailable
 		return
 	}
 
@@ -360,116 +334,6 @@ async function handleFile(file: File) {
 	}
 }
 
-function readVideoDuration(file: File): Promise<number> {
-	return new Promise((resolve, reject) => {
-		const video = document.createElement('video')
-		const url = URL.createObjectURL(file)
-		video.preload = 'metadata'
-		video.onloadedmetadata = () => {
-			URL.revokeObjectURL(url)
-			resolve(video.duration)
-		}
-		video.onerror = () => {
-			URL.revokeObjectURL(url)
-			reject(new Error('Could not read video duration.'))
-		}
-		video.src = url
-	})
-}
-
-async function handleVideoFile(file: File) {
-	if (!identity.value) return
-	if (!props.allowVideo) {
-		status.value = 'error'
-		errorMsg.value = text.value.videoUnavailable
-		return
-	}
-
-	status.value = 'compressing'
-	errorMsg.value = ''
-
-	try {
-		const durationSeconds = await readVideoDuration(file)
-		if (durationSeconds > 15.5) {
-			status.value = 'error'
-			errorMsg.value = text.value.videoTooLong
-			return
-		}
-
-		status.value = 'uploading'
-		const urlRes = await fetch('/api/video-upload-url', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				code: props.code,
-				userId: identity.value.userId,
-				token: identity.value.token,
-			}),
-		})
-		if (urlRes.status === 401) {
-			clearIdentity()
-			throw new Error(text.value.sessionExpired)
-		}
-		if (urlRes.status === 429) {
-			const payload = (await urlRes.json().catch(() => null)) as { message?: string } | null
-			status.value = 'full'
-			errorMsg.value = payload?.message || text.value.eventLimit
-			return
-		}
-		if (urlRes.status === 403) {
-			const payload = (await urlRes.json().catch(() => null)) as
-				| { error?: string; message?: string }
-				| null
-			if (payload?.error === 'not_open_yet') {
-				status.value = 'not_open'
-				errorMsg.value = payload?.message || text.value.uploadsOpen
-				return
-			}
-			throw new Error(payload?.message || text.value.videoUnavailable)
-		}
-		if (!urlRes.ok) throw new Error(`Couldn't start video upload (${urlRes.status})`)
-		const { uid, uploadURL } = (await urlRes.json()) as { uid: string; uploadURL: string }
-
-		const form = new FormData()
-		form.append('file', file, file.name || 'clip.mp4')
-		const uploadRes = await fetch(uploadURL, { method: 'POST', body: form })
-		if (!uploadRes.ok) throw new Error(`Video upload failed (${uploadRes.status})`)
-
-		const confirmRes = await fetch('/api/video-uploaded', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				code: props.code,
-				cfStreamUid: uid,
-				durationSeconds,
-				userId: identity.value.userId,
-				token: identity.value.token,
-			}),
-		})
-		if (!confirmRes.ok) throw new Error(`Couldn't confirm video (${confirmRes.status})`)
-		const confirmPayload = (await confirmRes.json()) as { photoId: string }
-
-		myPhotos.value = [
-			{
-				id: confirmPayload.photoId,
-				mediaType: 'video',
-				cfImagesId: null,
-				cfStreamUid: uid,
-				durationSeconds: Math.ceil(durationSeconds),
-				createdAt: Date.now(),
-			},
-			...myPhotos.value,
-		]
-		status.value = 'success'
-		resetTimer = setTimeout(() => {
-			if (status.value === 'success') status.value = 'idle'
-		}, 1800)
-	} catch (e) {
-		status.value = 'error'
-		errorMsg.value = (e as Error).message
-	}
-}
-
 async function onFileChange(e: Event) {
 	const input = e.target as HTMLInputElement
 	const files = Array.from(input.files ?? [])
@@ -482,7 +346,7 @@ async function onFileChange(e: Event) {
 
 const labelText = (s: Status) =>
 	s === 'idle'
-		? text.value.addPhoto
+		? addPhotoLabel.value
 		: s === 'compressing'
 			? text.value.preparing
 			: s === 'uploading'
@@ -575,7 +439,7 @@ onMounted(() => {
 					name="email"
 					inputmode="email"
 					maxlength="254"
-					placeholder="you@example.com"
+					:placeholder="text.emailPlaceholder"
 					autocomplete="email"
 					autocapitalize="off"
 					autocorrect="off"
@@ -607,7 +471,7 @@ onMounted(() => {
 		<label :style="captureStyle">
 			<input
 				type="file"
-				:accept="props.allowVideo ? 'image/*,video/*' : 'image/*'"
+				accept="image/*"
 				multiple
 				style="display: none"
 				@change="onFileChange"
@@ -620,7 +484,7 @@ onMounted(() => {
 			</span>
 			<span class="text-[21px] font-extrabold">{{ labelText(status) }}</span>
 			<span v-if="status === 'idle'" class="text-[13.5px] font-semibold opacity-[.72]">
-				{{ text.camera }}
+				{{ cameraLabel }}
 			</span>
 			<span v-if="status === 'error'" class="mt-0.5 text-[13px]">{{ errorMsg }}</span>
 			<span v-if="status === 'full' || status === 'not_open'" class="mt-0.5 text-[13px]">{{ errorMsg }}</span>
@@ -671,14 +535,14 @@ onMounted(() => {
 							v-if="photo.mediaType === 'video'"
 							class="absolute bottom-1.5 left-1.5 rounded-md bg-black/60 px-1.5 py-0.5 text-[10.5px] font-bold text-white"
 						>
-							{{ photo.durationSeconds ? `${photo.durationSeconds}s` : 'Video' }}
+							{{ photo.durationSeconds ? `${photo.durationSeconds}s` : text.videoLabel }}
 						</span>
 					</a>
 					<span
 						v-if="idx === 0"
 						class="absolute left-1.5 top-1.5 rounded-md bg-accent px-1.75 py-0.5 text-[10.5px] font-extrabold text-[#2C1700]"
 					>
-						{{ props.locale === 'da' ? 'ny' : 'new' }}
+						{{ text.newBadge }}
 					</span>
 					<button
 						type="button"
@@ -700,9 +564,7 @@ onMounted(() => {
 			</div>
 			<p v-if="deleteError" class="mt-3.5 text-sm text-danger">{{ deleteError }}</p>
 			<p class="mt-5.5 text-center text-[12.5px] leading-[1.5] text-tx-4">
-				{{ props.locale === 'da'
-					? 'Billederne gemmes hos værten og slettes efter eventet.'
-					: 'Photos are stored by the host and deleted after the event.' }}
+				{{ text.footer }}
 			</p>
 		</section>
 	</div>

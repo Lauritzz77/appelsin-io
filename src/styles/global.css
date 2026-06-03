@@ -654,7 +654,9 @@ body.ready .fu {
 	overflow: hidden;
 	transition:
 		box-shadow 0.2s,
-		border-color 0.2s;
+		border-color 0.2s,
+		background-color 0.2s,
+		transform 0.2s;
 }
 .accordion details[open] {
 	border-color: var(--peach-line);
@@ -687,6 +689,21 @@ body.ready .fu {
 	color: var(--ink-2);
 	transition: all 0.25s;
 }
+@media (hover: hover) {
+	.accordion details:hover {
+		border-color: color-mix(in srgb, var(--accent) 42%, var(--cream-line));
+		background: color-mix(in srgb, #fff 92%, var(--peach) 8%);
+		box-shadow: var(--sh-cream-sm);
+		transform: translateY(-1px);
+	}
+	.accordion details:hover summary {
+		color: var(--navy);
+	}
+	.accordion details:hover summary .chev {
+		background: var(--peach);
+		color: var(--orange-deep);
+	}
+}
 .accordion details[open] summary .chev {
 	background: var(--accent);
 	color: var(--color-on-accent);
@@ -705,6 +722,20 @@ body.ready .fu {
 	background: var(--s1);
 	border-color: var(--line-2);
 }
+@media (hover: hover) {
+	.accordion--dark details:hover {
+		border-color: var(--line);
+		background: var(--s2);
+		box-shadow: var(--sh-app);
+	}
+	.accordion--dark details:hover summary {
+		color: var(--tx);
+	}
+	.accordion--dark details:hover summary .chev {
+		background: rgba(255, 162, 41, 0.18);
+		color: var(--accent);
+	}
+}
 .accordion--dark details[open] {
 	border-color: var(--line);
 	box-shadow: var(--sh-app);
@@ -718,6 +749,14 @@ body.ready .fu {
 }
 .accordion--dark .answer {
 	color: var(--tx-2);
+}
+@media (prefers-reduced-motion: reduce) {
+	.accordion details {
+		transition: none;
+	}
+	.accordion details:hover {
+		transform: none;
+	}
 }
 
 /* ════════════════════════════════════════════════════════════════════════

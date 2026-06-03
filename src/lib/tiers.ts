@@ -6,7 +6,7 @@ export const TIERS = {
 	free: {
 		label: 'Free',
 		priceCents: 0,
-		currency: 'eur',
+		currency: 'dkk',
 		prices: {
 			da: { priceCents: 0, currency: 'dkk' },
 			en: { priceCents: 0, currency: 'eur' },
@@ -17,26 +17,26 @@ export const TIERS = {
 	},
 	basic: {
 		label: 'Basic',
-		priceCents: 4900,
-		currency: 'eur',
+		priceCents: 24900,
+		currency: 'dkk',
 		prices: {
 			da: { priceCents: 24900, currency: 'dkk' },
-			en: { priceCents: 4900, currency: 'eur' },
+			en: { priceCents: 3300, currency: 'eur' },
 		},
 		retentionDays: 15,
-		photoCap: 500,
+		photoCap: 300,
 		watermark: false,
 	},
 	gold: {
 		label: 'Gold',
-		priceCents: 9900,
-		currency: 'eur',
+		priceCents: 49900,
+		currency: 'dkk',
 		prices: {
 			da: { priceCents: 49900, currency: 'dkk' },
-			en: { priceCents: 9900, currency: 'eur' },
+			en: { priceCents: 6700, currency: 'eur' },
 		},
 		retentionDays: 30,
-		photoCap: 2000,
+		photoCap: 1000,
 		watermark: false,
 	},
 } as const

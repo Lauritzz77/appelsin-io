@@ -1,40 +1,26 @@
 ---
 // Tilted Polaroid cluster for the navy hero. Placeholder party photos live in
-// /public/marketing (swap for real ones any time). Captions use Caveat.
+// /public/marketing (swap for real ones any time). Captions use Caveat and come
+// from the page's content namespace, one per card in order.
 interface Props {
-	locale?: 'da' | 'en'
+	captions: string[]
 }
-const { locale = 'da' } = Astro.props
+const { captions } = Astro.props
 const cards = [
-	{
-		src: '/marketing/hero-2.png',
-		cap: 'Anna & Jonas ♥',
-		ar: '4 / 5',
-		style: 'width:47%;left:1%;top:0;--r:-5deg;z-index:2',
-	},
-	{
-		src: '/marketing/hero-1.png',
-		cap: locale === 'en' ? 'The crew' : 'Hele banden',
-		ar: '5 / 4',
-		style: 'width:45%;right:0;top:10%;--r:6deg;z-index:1',
-	},
-	{
-		src: '/marketing/hero-3.png',
-		cap: locale === 'en' ? 'Last dance' : 'Sidste dans',
-		ar: '4 / 5',
-		style: 'width:46%;left:22%;bottom:0;--r:-2deg;z-index:3',
-	},
+	{ src: '/marketing/hero-2.png', ar: '4 / 5', style: 'width:47%;left:1%;top:0;--r:-5deg;z-index:2' },
+	{ src: '/marketing/hero-1.png', ar: '5 / 4', style: 'width:45%;right:0;top:10%;--r:6deg;z-index:1' },
+	{ src: '/marketing/hero-3.png', ar: '4 / 5', style: 'width:46%;left:22%;bottom:0;--r:-2deg;z-index:3' },
 ]
 ---
 
 <div class="pol-cluster" aria-hidden="true">
 	{
-		cards.map((c) => (
+		cards.map((c, i) => (
 			<div class="pol" style={c.style}>
 				<div class="pol-photo" style={`aspect-ratio:${c.ar}`}>
 					<img src={c.src} alt="" />
 				</div>
-				<div class="pol-cap">{c.cap}</div>
+				<div class="pol-cap">{captions[i]}</div>
 			</div>
 		))
 	}

@@ -1,0 +1,139 @@
+---
+import type { Locale } from '../../lib/i18n'
+import { localisePath } from '../../lib/i18n'
+import { getContent, fill } from '../../lib/content'
+import Layout from '../../layouts/Layout.astro'
+import Icon from '../brand/Icon.astro'
+import Button from '../brand/Button.astro'
+import EventStyleEditor from '../EventStyleEditor.vue'
+import { env } from 'cloudflare:workers'
+import { drizzle } from 'drizzle-orm/d1'
+import { eq, and, desc } from 'drizzle-orm'
+import QRCode from 'qrcode'
+import * as schema from '../../db/schema'
+import { TIERS, isTier, formatPrice } from '../../lib/tiers'
+import { parseBranding } from '../../lib/branding'
+
+type EventRow = typeof schema.events.$inferSelect
+
+interface Props {
+	locale: Locale
+	event: EventRow
+}
+const { locale, event } = Astro.props
+const t = getContent(locale, 'style-editor')
+
+const tier = isTier(event.tier) ? event.tier : 'free'
+const isFreeTier = TIERS[tier].priceCents <= 0
+const branding = parseBranding(event.brandingJson)
+
+const db = drizzle(env.DB, { schema })
+// Pull up to 24 real photos for the preview. If none exist yet we generate
+// placeholder colored tiles so the layout still demos meaningfully.
+const photosRaw = await db
+	.select({
+		id: schema.photos.id,
+		cfImagesId: schema.photos.cfImagesId,
+		cfStreamUid: schema.photos.cfStreamUid,
+		mediaType: schema.photos.mediaType,
+		durationSeconds: schema.photos.durationSeconds,
+		createdAt: schema.photos.createdAt,
+		mediaWidth: schema.photos.mediaWidth,
+		mediaHeight: schema.photos.mediaHeight,
+		uploaderName: schema.eventUsers.name,
+	})
+	.from(schema.photos)
+	.leftJoin(schema.eventUsers, eq(schema.photos.eventUserId, schema.eventUsers.id))
+	.where(and(eq(schema.photos.eventId, event.id), eq(schema.photos.status, 'approved')))
+	.orderBy(desc(schema.photos.createdAt))
+	.limit(24)
+
+const realPhotos = photosRaw.map((p) => ({
+	id: p.id,
+	cfImagesId: p.cfImagesId,
+	cfStreamUid: p.cfStreamUid,
+	mediaType: p.mediaType,
+	durationSeconds: p.durationSeconds,
+	createdAt: p.createdAt?.getTime() ?? 0,
+	mediaWidth: p.mediaWidth ?? null,
+	mediaHeight: p.mediaHeight ?? null,
+	uploaderName: p.uploaderName ?? null,
+}))
+
+const previewPhotos =
+	realPhotos.length > 0
+		? realPhotos
+		: Array.from({ length: 24 }, (_, i) => ({
+				id: `placeholder-${i}`,
+				mediaType: 'photo' as const,
+				cfImagesId: null,
+				cfStreamUid: null,
+				durationSeconds: null,
+				createdAt: Date.now() - i * 1000,
+				mediaWidth: null,
+				mediaHeight: null,
+				uploaderName: null,
+			}))
+
+// Generate the same QR the live wall shows so the preview is a faithful
+// mirror. Black-on-white, high error-correction, SVG output (canvas-free
+// for the Workers runtime).
+const guestUrl = `${env.PUBLIC_APP_URL}/e/${event.shortCode}`
+const qrSvg = await QRCode.toString(guestUrl, {
+	type: 'svg',
+	errorCorrectionLevel: 'H',
+	margin: 0,
+	color: { dark: '#000000', light: '#ffffff' },
+})
+const qrDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(qrSvg)}`
+---
+
+<Layout title={fill(t.pageTitle, { name: event.name })} locale={locale} brandFonts>
+	<div class="app screen-root">
+		<div class="fu mx-auto max-w-270 px-7 pt-7 pb-20">
+			<a
+				href={localisePath(`/app/events/${event.id}`, locale)}
+				class="inline-flex items-center gap-2 text-[15.5px] font-semibold text-tx-3"
+			>
+				<Icon name="arrow-left" size={18} />{event.name}
+			</a>
+
+			<div class="mt-5.5 mb-6.5">
+				<h1 class="m-0 text-[clamp(28px,5cqw,38px)] font-extrabold tracking-[-0.02em]">{t.heading}</h1>
+				<p class="mt-2 text-base text-tx-3">{t.subhead}</p>
+			</div>
+
+			{
+				isFreeTier ? (
+					<div class="rounded-xl border border-line-2 bg-s1 p-10 text-center shadow-app">
+						<h2 class="text-[22px] font-bold text-tx">{t.upsell.heading}</h2>
+						<p class="mx-auto mt-3 max-w-135 text-[15px] leading-[1.6] text-tx-2">
+							{fill(t.upsell.body, {
+								basic: TIERS.basic.label,
+								basicPrice: formatPrice('basic', locale),
+								gold: TIERS.gold.label,
+								goldPrice: formatPrice('gold', locale),
+							})}
+						</p>
+						<div class="mt-6">
+							<Button href={localisePath('/app/events/new', locale)} iconRight="arrow-right">
+								{t.upsell.cta}
+							</Button>
+						</div>
+					</div>
+				) : (
+					<EventStyleEditor
+						client:only="vue"
+						eventId={event.id}
+						eventCode={event.shortCode}
+						initial={branding}
+						previewPhotos={previewPhotos}
+						cfImagesHash={env.CF_IMAGES_HASH}
+						qrDataUrl={qrDataUrl}
+						messages={t.editor}
+					/>
+				)
+			}
+		</div>
+	</div>
+</Layout>

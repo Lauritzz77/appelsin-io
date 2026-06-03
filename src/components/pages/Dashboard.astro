@@ -1,0 +1,212 @@
+---
+import type { Locale } from '../../lib/i18n'
+import { localisePath, dateLocale } from '../../lib/i18n'
+import { getContent, fill } from '../../lib/content'
+import Layout from '../../layouts/Layout.astro'
+import Logo from '../brand/Logo.astro'
+import Icon from '../brand/Icon.astro'
+import Button from '../brand/Button.astro'
+import StatusPill from '../brand/StatusPill.astro'
+import { TIERS, isTier } from '../../lib/tiers'
+import { events as eventsTable } from '../../db/schema'
+
+type EventRow = typeof eventsTable.$inferSelect
+
+interface Props {
+	locale: Locale
+	events: EventRow[]
+	hostEmail: string
+}
+const { locale, events, hostEmail } = Astro.props
+const t = getContent(locale, 'dashboard')
+const dLocale = dateLocale(locale)
+const createNewPath = localisePath('/app/events/new', locale)
+
+const tierLabel = (tier: unknown) => TIERS[isTier(tier) ? tier : 'free'].label
+---
+
+<Layout title={t.meta.title} locale={locale}>
+	<div class="app screen-root">
+		<div class="app-top"><Logo href={localisePath('/', locale)} surface="dark" class="w-20 h-20 block" /></div>
+		<div class="app-wrap fu">
+			<div class="mt-3 mb-7 flex flex-wrap items-center justify-between gap-4">
+				<div>
+					<h1 class="m-0 text-[clamp(32px,5cqw,44px)] font-extrabold tracking-[-0.02em]">{t.heading}</h1>
+					<p class="mt-2 text-base text-tx-3">{t.subhead}</p>
+				</div>
+				<Button href={createNewPath} size="md" icon="plus">{t.newEvent}</Button>
+			</div>
+
+			{
+				events.length === 0 ? (
+					<p class="text-tx-3">{t.empty}</p>
+				) : (
+					<div class="flex flex-col gap-5">
+						{events.map((e) => (
+							<div class="event-row relative flex flex-col gap-4 rounded-xl border border-line-2 bg-s1 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-line hover:bg-s2 hover:shadow-app sm:flex-row sm:items-center sm:gap-4.5 sm:px-6 sm:py-5.5">
+								<span class="absolute -top-2 -right-2 z-10">
+									<StatusPill status={e.status} locale={locale} />
+								</span>
+								<a href={localisePath(`/app/events/${e.id}`, locale)} class="flex min-w-0 flex-1 items-start gap-4 sm:items-center sm:gap-4.5">
+									<span class="relative hidden h-14.5 w-14.5 shrink-0 -rotate-[5deg] items-center justify-center rounded-md border border-line bg-[linear-gradient(135deg,var(--s3),var(--s2))] text-tx-3 sm:flex">
+										<Icon name="image" size={24} />
+									</span>
+									<span class="min-w-0 flex-1">
+										<span class="flex min-w-0 flex-col items-start gap-2 pr-16 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 sm:pr-20">
+											<span class="event-name max-w-full break-words text-[20px] font-bold leading-tight text-tx">{e.name}</span>
+										</span>
+										<span class="mt-3 flex flex-wrap items-center gap-2 text-sm text-tx-3 sm:mt-1.75 sm:gap-3.5">
+											<span class="inline-flex items-center rounded-full border border-line-2 bg-white/[0.04] px-2.5 py-1 font-mono text-[13px] font-bold tracking-[0.08em] text-tx-2 sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm">{e.shortCode}</span>
+											<span class="hidden opacity-50 sm:inline">·</span>
+											<span class="inline-flex items-center gap-1 rounded-full border border-line-2 bg-white/[0.04] px-2.5 py-1 sm:border-0 sm:bg-transparent sm:p-0">
+												{t.planLabel} <strong class="text-accent">{tierLabel(e.tier)}</strong>
+											</span>
+											<span class="hidden opacity-50 sm:inline">·</span>
+											<span class="inline-flex items-center rounded-full border border-line-2 bg-white/[0.04] px-2.5 py-1 sm:border-0 sm:bg-transparent sm:p-0">{new Date(e.eventDate).toLocaleDateString(dLocale)}</span>
+										</span>
+									</span>
+								</a>
+								<div class="flex items-center justify-end gap-1 border-t border-line-2 pt-3 sm:border-t-0 sm:pt-0">
+									<button
+										type="button"
+										class="event-rename flex h-10 w-10 items-center justify-center rounded-sm text-tx-3 transition hover:bg-white/8 hover:text-tx sm:h-9.5 sm:w-9.5"
+										data-event-id={e.id}
+										data-event-name={e.name}
+										aria-label={fill(t.js.renameAria, { name: e.name })}
+										title={t.js.renameTitle}
+									>
+										<Icon name="pencil" size={18} />
+									</button>
+									<button
+										type="button"
+										class="event-delete flex h-10 w-10 items-center justify-center rounded-sm text-tx-3 transition hover:bg-[rgba(244,63,94,.14)] hover:text-danger sm:h-9.5 sm:w-9.5"
+										data-event-id={e.id}
+										data-event-name={e.name}
+										aria-label={fill(t.js.deleteAria, { name: e.name })}
+										title={t.js.deleteAction}
+									>
+										<Icon name="trash" size={18} />
+									</button>
+								</div>
+							</div>
+						))}
+					</div>
+				)
+			}
+
+			<div class="mt-10 flex flex-wrap items-center gap-4.5 border-t border-line-2 pt-6.5 text-[14.5px] text-tx-3">
+				<span>{t.signedInPrefix}<strong class="text-tx-2">{hostEmail}</strong></span>
+				<span class="ml-auto flex gap-5">
+					<a href={localisePath('/app/billing', locale)} class="inline-flex cursor-pointer items-center gap-1.75 text-tx-2">
+						<Icon name="card" size={16} />{t.billing}
+					</a>
+					<button id="sign-out-btn" type="button" class="inline-flex cursor-pointer items-center gap-1.75 text-tx-2" data-login={localisePath('/login', locale)}>
+						<Icon name="signout" size={16} />{t.signOut}
+					</button>
+				</span>
+			</div>
+		</div>
+	</div>
+</Layout>
+
+<script id="dashboard-i18n" type="application/json" is:inline set:html={JSON.stringify(t.js)}></script>
+
+<script>
+	const T = JSON.parse(document.getElementById('dashboard-i18n')!.textContent!) as Record<string, string>
+	const fill = (s: string, vars: Record<string, string | number>) =>
+		s.replace(/\{(\w+)\}/g, (_, k) => (k in vars ? String(vars[k]) : `{${k}}`))
+
+	document.getElementById('sign-out-btn')?.addEventListener('click', async (event) => {
+		const btn = event.currentTarget as HTMLButtonElement
+		await fetch('/api/auth/sign-out', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: '{}',
+		})
+		window.location.href = btn.dataset.login || '/login'
+	})
+
+	document.querySelectorAll<HTMLButtonElement>('.event-rename').forEach((btn) => {
+		btn.addEventListener('click', async () => {
+			const id = btn.dataset.eventId
+			const currentName = btn.dataset.eventName || ''
+			if (!id) return
+
+			const nextName = (
+				await window.AppDialog.prompt({
+					title: T.renameTitle,
+					confirmText: T.renameConfirm,
+					input: {
+						label: T.renameInputLabel,
+						defaultValue: currentName,
+						maxLength: 80,
+					},
+				})
+			)?.trim()
+			if (!nextName || nextName === currentName) return
+
+			const row = btn.closest<HTMLElement>('.event-row')
+			const nameEl = row?.querySelector<HTMLElement>('.event-name')
+			btn.disabled = true
+
+			try {
+				const res = await fetch(`/api/events/${id}`, {
+					method: 'PATCH',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ name: nextName }),
+				})
+				const payload = (await res.json().catch(() => null)) as { name?: string } | null
+				if (!res.ok) throw new Error(fill(T.renameFailed, { status: res.status }))
+				const savedName = payload?.name || nextName
+				if (nameEl) nameEl.textContent = savedName
+				btn.dataset.eventName = savedName
+				btn.setAttribute('aria-label', fill(T.renameAria, { name: savedName }))
+				const deleteBtn = row?.querySelector<HTMLButtonElement>('.event-delete')
+				if (deleteBtn) {
+					deleteBtn.dataset.eventName = savedName
+					deleteBtn.setAttribute('aria-label', fill(T.deleteAria, { name: savedName }))
+				}
+			} catch (e) {
+				await window.AppDialog.alert({
+					title: T.renameErrorTitle,
+					message: (e as Error).message,
+				})
+			} finally {
+				btn.disabled = false
+			}
+		})
+	})
+
+	document.querySelectorAll<HTMLButtonElement>('.event-delete').forEach((btn) => {
+		btn.addEventListener('click', async () => {
+			const id = btn.dataset.eventId
+			const name = btn.dataset.eventName || T.deleteFallbackName
+			if (!id) return
+			const confirmed = await window.AppDialog.confirm({
+				title: fill(T.deleteConfirmTitle, { name }),
+				message: T.deleteMessage,
+				confirmText: T.deleteAction,
+				danger: true,
+			})
+			if (!confirmed) return
+
+			const row = btn.closest<HTMLElement>('.event-row')
+			btn.disabled = true
+			row?.classList.add('opacity-50', 'pointer-events-none')
+
+			try {
+				const res = await fetch(`/api/events/${id}`, { method: 'DELETE' })
+				if (!res.ok) throw new Error(fill(T.deleteFailed, { status: res.status }))
+				row?.remove()
+				if (document.querySelectorAll('.event-row').length === 0) window.location.reload()
+			} catch (e) {
+				btn.disabled = false
+				row?.classList.remove('opacity-50', 'pointer-events-none')
+				await window.AppDialog.alert({
+					title: T.deleteErrorTitle,
+					message: (e as Error).message,
+				})
+			}
+		})
+	})
+</script>

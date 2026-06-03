@@ -1,0 +1,29 @@
+{
+	"pageTitle": "Style — {name}",
+	"heading": "Photo wall style",
+	"subhead": "Customise the live photo wall shown at the event.",
+	"upsell": {
+		"heading": "Custom styling is a paid feature",
+		"body": "Upgrade this event to {basic} ({basicPrice}) or {gold} ({goldPrice}) to choose a theme, tile layout and add a title overlay. Free events use the appelsin photo collage with a QR code in the corner.",
+		"cta": "Create a paid event"
+	},
+	"editor": {
+		"colors": "Colours",
+		"background": "Background",
+		"textColor": "Text",
+		"font": "Font",
+		"density": "Tile layout",
+		"titleOverlay": "Title overlay",
+		"headline": "Headline",
+		"headlinePlaceholder": "Anna & Jonas",
+		"subline": "Subline",
+		"sublinePlaceholder": "20 May 2026",
+		"saving": "Saving…",
+		"save": "Save changes",
+		"cancel": "Cancel",
+		"saved": "Saved.",
+		"previewLabel": "Preview · live mirror of the photo wall",
+		"openWall": "Open full photo wall ↗",
+		"saveFailed": "Saving failed ({status})"
+	}
+}

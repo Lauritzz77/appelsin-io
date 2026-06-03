@@ -24,7 +24,7 @@ There is no `tailwind.config.js`. Configuration lives in CSS.
 ```
 
 - Plugins: `@plugin "…";`. Custom utilities: `@utility name { … }`. Custom variants: `@custom-variant`.
-- Vite projects use the `@tailwindcss/vite` plugin (this repo); PostCSS setups use `@tailwindcss/postcss`. Only fall back to a JS config via `@config "./tailwind.config.js";` if legacy config genuinely must be preserved.
+- Vite projects use the `@tailwindcss/vite` plugin; PostCSS setups use `@tailwindcss/postcss`. Only fall back to a JS config via `@config "./tailwind.config.js";` if legacy config genuinely must be preserved.
 
 ## 2. Spacing — do the math, don't bracket
 
@@ -44,7 +44,7 @@ Rules:
 
 - Every bare integer is a valid step in v4 (`pl-13`, `gap-17`, `w-29`, `mt-15`) — these did not exist in v3, so the instinct to bracket them is a v3 habit. Use the integer.
 - The `.5` steps are valid utilities too (`pl-2.5`, `mt-3.5`, `gap-1.5`). 10px → `2.5`, not `[10px]`. Never bracket a value that lands on a `.5` step.
-- The conversion is the part models skip: a px value must be divided by 4 *before* it becomes a class. 52 ÷ 4 = 13. Don't transcribe px literally.
+- The conversion is the part models skip: a px value must be divided by 4 _before_ it becomes a class. 52 ÷ 4 = 13. Don't transcribe px literally.
 - Use arbitrary `[..px]` / `[..rem]` only for genuinely off-grid values that don't resolve to an integer or `.5` step (e.g. `top-[37px]`).
 - Bonus: scale-based classes track `--spacing` if it's themed; bracketed values are frozen. Staying on-scale preserves the design tokens.
 
@@ -54,14 +54,14 @@ These were renamed in v4, and the old names often still exist with a different m
 
 **Scale names shifted down one step.** To get the SAME visual result you got in v3, drop one name (`md`/`lg`/`xl`/`2xl` are unchanged):
 
-| Was (v3) | Now (v4) for same look |
-| -------- | ---------------------- |
-| `shadow`    | `shadow-sm` |
-| `shadow-sm` | `shadow-xs` |
-| `rounded`    | `rounded-sm` |
-| `rounded-sm` | `rounded-xs` |
-| `blur`    | `blur-sm` |
-| `blur-sm` | `blur-xs` |
+| Was (v3)     | Now (v4) for same look |
+| ------------ | ---------------------- |
+| `shadow`     | `shadow-sm`            |
+| `shadow-sm`  | `shadow-xs`            |
+| `rounded`    | `rounded-sm`           |
+| `rounded-sm` | `rounded-xs`           |
+| `blur`       | `blur-sm`              |
+| `blur-sm`    | `blur-xs`              |
 
 **Behavioral renames and removals:**
 

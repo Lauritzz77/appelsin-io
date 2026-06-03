@@ -1,0 +1,58 @@
+{
+	"meta": {
+		"title": "appelsin — live eventbilleder",
+		"description": "Gæster scanner en QR-kode, uploader billeder fra deres telefon, og billederne vises live på storskærmen."
+	},
+	"hero": {
+		"kicker": "Til bryllup · fødselsdag · firmafest",
+		"headingLines": ["Festens billeder,", "samlet et sted."],
+		"subhead": "Gæsterne scanner en QR-kode og uploader billeder direkte fra telefonen — ingen app. Alle billeder er samlet et sted, og du downloader hele festen bagefter.",
+		"cta": "Se planer",
+		"tags": ["Gratis at prøve", "Ingen app", "Klar på 2 minutter"],
+		"polaroids": ["Anna & Jonas ♥", "Hele banden", "Sidste dans"]
+	},
+	"steps": [
+		{ "icon": "qr", "num": "01", "title": "Scan koden", "desc": "Gæsterne scanner QR-koden med telefonens kamera. Ingen app, intet login." },
+		{ "icon": "camera", "num": "02", "title": "Upload et billede", "desc": "De vælger et billede direkte fra telefonen." },
+		{ "icon": "monitor", "num": "03", "title": "Live på skærmen", "desc": "Billedet dukker op på fotovæggen med det samme, så alle kan følge med." }
+	],
+	"pricing": {
+		"heading": "Én pris pr. event",
+		"subhead": "Vælg en plan til dagen. Ingen abonnementer, ingen overraskelser.",
+		"popularLabel": "Mest populær",
+		"footnote": "Alle planer inkluderer QR-pakke, live fotovæg, moderation og EU-hosting.",
+		"cards": {
+			"free": {
+				"priceNote": "1 aktivt event",
+				"tagline": "Prøv Appelsin.io til et mindre event uden betalingskort.",
+				"features": ["20 billeder pr. event", "7 dages opbevaring", "Download alle billeder efter festen"],
+				"cta": "Start gratis"
+			},
+			"basic": {
+				"priceNote": "pr. event",
+				"tagline": "Perfekt til bryllupper, fødselsdage og mindre fester.",
+				"features": ["300 billeder pr. event", "15 dages opbevaring", "Tilpas eventtitel og tekstfarve", "Download alle billeder efter festen"],
+				"cta": "Vælg Basic"
+			},
+			"gold": {
+				"priceNote": "pr. event",
+				"tagline": "Til store fester, lange aftener og mange gæster.",
+				"features": ["1.000 billeder pr. event", "1 måneds opbevaring", "Tilpas eventtitel og tekstfarve", "Download alle billeder efter festen"],
+				"cta": "Vælg Gold"
+			}
+		}
+	},
+	"faq": {
+		"kicker": "godt at vide",
+		"heading": "Spørgsmål før festen?",
+		"items": [
+			{ "q": "Skal mine gæster downloade en app?", "a": "Nej. Gæsterne scanner QR-koden med kameraet på deres telefon og uploader direkte i browseren. Ingen app, ingen konto." },
+			{ "q": "Hvad sker der hvis vi når op til billed-grænsen?", "a": "Når grænsen er nået bliver nye uploads blokeret. Du kan slette afviste billeder for at frigøre pladser, eller opgradere eventet til en større plan. Free er beregnet til test — vælg Basic eller Gold til selve festen." },
+			{ "q": "Hvad sker der med billederne efter eventet?", "a": "Eventet markeres automatisk som afsluttet 2 dage efter event-datoen. Du og dine gæster (med email) får et link til billedsamlingen sendt på mail. Billederne gemmes derefter i 7-30 dage afhængigt af plan, hvorefter alt slettes automatisk." },
+			{ "q": "Kan jeg vise fotovæggen på en iPad eller computer?", "a": "Ja. Fotovæggen er bare en URL — åbn den i en browser på storskærm, iPad, laptop, eller projektor. Billederne opdateres live efterhånden som gæsterne uploader." },
+			{ "q": "Kan jeg slette et billede der ikke skal vises?", "a": "Ja. Du kan slette enkeltbilleder fra event-dashboardet — de forsvinder fra fotovæggen øjeblikkeligt og inkluderes ikke i den endelige billedsamling." },
+			{ "q": "Hvornår kan gæster begynde at uploade?", "a": "24 timer før event-datoen åbner upload-vinduet, så folk der scanner QR’en aftenen før kan komme i gang. Eventet er live indtil 2 dage efter event-datoen, så seneste billeder fra natten og dagen efter også kommer med." },
+			{ "q": "Hvor opbevares billederne?", "a": "Alle billeder hostes på Cloudflare’s EU-infrastruktur. Vi sælger ikke jeres data og bruger dem ikke til andet end at vise og levere billederne i den aftalte opbevaringsperiode." }
+		]
+	}
+}

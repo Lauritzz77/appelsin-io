@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
-import { localeFromPath, localisePath, commonText, type Locale } from '../lib/i18n'
+import { localeFromPath, localisePath, type Locale } from '../lib/i18n'
+import { getContent, fill } from '../lib/content'
 
 interface Props {
 	title?: string;
@@ -34,6 +35,8 @@ const {
 } = Astro.props;
 const otherLocale = locale === 'da' ? 'en' : 'da'
 const languageHref = localisePath(path, otherLocale)
+const switchCommon = getContent(locale, 'common')
+const otherLanguageName = getContent(otherLocale, 'common').language.name
 
 const isCream = surface === 'cream'
 const htmlBg = isCream ? '#FBF6EE' : '#040E30'
@@ -91,9 +94,9 @@ const langPillClass = isCream
 				<a
 					href={languageHref}
 					class={langPillClass}
-					aria-label={`Switch language to ${commonText[otherLocale].languageName}`}
+					aria-label={fill(switchCommon.language.switchAria, { language: otherLanguageName })}
 				>
-					{commonText[locale].switchLanguage}
+					{otherLanguageName}
 				</a>
 			)
 		}

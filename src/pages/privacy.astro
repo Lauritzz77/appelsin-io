@@ -1,21 +1,5 @@
 ---
-import Layout from '../layouts/Layout.astro'
-import Legal from '../components/marketing/Legal.astro'
+import LegalPage from '../components/pages/LegalPage.astro'
 ---
 
-<Layout title="Privatliv — appelsin" locale="da" surface="cream">
-	<Legal
-		locale="da"
-		kind="privacy"
-		backLabel="Forside"
-		badge="Sådan passer vi på dine data"
-		title="Privatliv"
-		paras={[
-			'appelsin.io behandler de oplysninger, der er nødvendige for at oprette events, lade gæster uploade billeder og sende adgangs- eller downloadlinks.',
-			'For gæster kan vi gemme navn, email og de billeder, der uploades til eventet. Email bruges til at sende billeder eller links efter eventet og deles ikke med andre formål.',
-			'Billeder slettes efter eventets opbevaringsperiode, medmindre eventværten sletter eventet tidligere. Betalings- og bogføringsoplysninger opbevares efter gældende regler.',
-		]}
-		contactPrefix="Du kan kontakte os på "
-		contactSuffix=" for spørgsmål om dine data eller anmodninger om sletning."
-	/>
-</Layout>
+<LegalPage locale="da" kind="privacy" />

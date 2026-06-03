@@ -1,0 +1,119 @@
+{
+	"pageTitle": "{name} — appelsin",
+	"back": "Alle events",
+	"tierLineSuffix": "-plan · op til {cap} billeder · {days} dages opbevaring",
+	"banners": {
+		"paidLive": "Betaling bekræftet. Dit event er live.",
+		"paidDraftPre": "Betaling modtaget — afslutter. Opdater om et øjeblik hvis status ikke skifter til ",
+		"paidDraftEm": "live",
+		"paidDraftPost": ".",
+		"freeLimit": "Du har allerede et aktivt gratis event. Afslut det først, eller opgrader dette event til Basic eller Gold."
+	},
+	"paywall": {
+		"heading": "Aktivér dit event",
+		"lead": "Gennemfør betalingen for at åbne eventet. Så snart den er gået igennem, får du adgang til QR-pakke, fotovæg og uploads.",
+		"secure": "Sikker engangsbetaling via Stripe"
+	},
+	"runGuide": {
+		"heading": "Sådan kører du dit event",
+		"payTitle": "Betal eventet",
+		"payDesc": "Stripe-betalingen sætter eventet til live og åbner for uploads.",
+		"qrTitle": "Hent QR-pakken",
+		"qrDesc": "Print A4-skiltet + 8 bordkort med koden {code}.",
+		"screenTitle": "Åbn fotovæggen",
+		"screenDesc": "Vis billederne på storskærmen — {url}.",
+		"scanTitle": "Gæster scanner QR'en",
+		"scanDescScreen": "Billederne dukker op øjeblikkeligt på skærmen.",
+		"scanDescCollection": "Billederne dukker op øjeblikkeligt i samlingen.",
+		"afterTitle": "Efter eventet",
+		"afterDesc": "Download alle billeder som zip — du og gæster med email får et link."
+	},
+	"nameLabel": "Eventnavn",
+	"saveName": "Gem navn",
+	"dateLabel": "Eventdato",
+	"saveDate": "Gem dato",
+	"dateLocked": "Datoen kan ikke ændres, mens eventet er live.",
+	"codeLabel": "Kort kode — gæster skriver den på appelsin.io/e",
+	"guestLinkLabel": "Direkte gæste-link",
+	"bigScreen": {
+		"title": "Storskærm til eventet",
+		"desc": "Slå fra, hvis billederne ikke skal vises på en skærm til eventet. Det ændrer teksten i QR-pakken."
+	},
+	"moderation": {
+		"title": "Godkend billeder før visning",
+		"desc": "Når den er slået til, skal du godkende hvert billede, før det vises på fotovæggen og i samlingen."
+	},
+	"toolsLabel": "Værktøjer",
+	"tiles": {
+		"qrTitle": "Hent QR-pakke",
+		"qrSub": "A4-skilt + 8 bordkort (PDF)",
+		"galleryTitle": "Åbn billedsamling",
+		"gallerySub": "{count} uploads · del eller gem på iPhone",
+		"downloadZip": "Download ZIP",
+		"styleTitle": "Tilpas fotovæg",
+		"styleSub": "Tema, tæthed og titel-overlay",
+		"wallTitle": "Åbn fotovæg",
+		"payTitle": "Betal {price} & aktivér",
+		"paySub": "{label} — åbner Stripe-betaling"
+	},
+	"timeline": {
+		"heading": "Tidslinje",
+		"uploadsOpenLabel": "Uploads åbner",
+		"uploadsOpenDesc": "24 timer før eventet",
+		"closesLabel": "Eventet lukker",
+		"closesDesc": "2 dage efter eventet",
+		"deletedLabel": "Billeder slettes",
+		"deletedValue": "efter {days} dage",
+		"deletedDesc": "derefter slettes alt automatisk",
+		"uploadsCounter": "Uploads",
+		"capWarn": "Eventet har nået sin upload-grænse. Nye uploads er blokeret, indtil du opgraderer planen eller afviste billeder frigør pladser.",
+		"capNear": "Nærmer sig upload-grænsen — overvej at opgradere, før grænsen er nået."
+	},
+	"pending": {
+		"heading": "Afventer godkendelse",
+		"approve": "Godkend",
+		"reject": "Afvis billede"
+	},
+	"recent": {
+		"heading": "Seneste uploads",
+		"liveUpdates": "opdateres live",
+		"viewAria": "Vis uploads",
+		"viewGrid": "Vis som grid",
+		"viewColumn": "Vis i kolonne"
+	},
+	"danger": {
+		"title": "Slet event",
+		"desc": "Sletter dette event og alle uploadede billeder. Dette kan ikke fortrydes.",
+		"button": "Slet event"
+	},
+	"js": {
+		"saving": "Gemmer...",
+		"saved": "Gemt",
+		"saveFailed": "Kunne ikke gemme ({status})",
+		"missingId": "Manglende event-id",
+		"renameFailed": "Omdøbning mislykkedes ({status})",
+		"documentTitle": "{name} — appelsin",
+		"dateChangeFailed": "Datoændring mislykkedes ({status})",
+		"deleteEventFallbackName": "dette event",
+		"deleteEventConfirmTitle": "Slet \"{name}\"?",
+		"deleteEventConfirmMessage": "Dette sletter eventet og alle uploadede billeder. Dette kan ikke fortrydes.",
+		"deleteEventConfirm": "Slet event",
+		"deleteEventDeleting": "Sletter event...",
+		"deleteEventFailed": "Sletning mislykkedes ({status})",
+		"deleteEventErrorTitle": "Kunne ikke slette event",
+		"copied": "Kopieret",
+		"none": "(ingen endnu)",
+		"videoLabel": "Video",
+		"noImage": "intet billede",
+		"deletePhotoAria": "Slet billede",
+		"deletePhotoConfirmTitle": "Slet billede?",
+		"deletePhotoConfirmMessage": "Dette fjerner billedet fra eventet. Dette kan ikke fortrydes.",
+		"deletePhotoConfirm": "Slet billede",
+		"deletePhotoFailed": "Sletning mislykkedes ({status})",
+		"deletePhotoErrorTitle": "Kunne ikke slette billede",
+		"moderationOn": "Godkendelse slået til",
+		"moderationOff": "Godkendelse slået fra",
+		"moderationActionFailed": "Handling mislykkedes ({status})",
+		"moderationErrorTitle": "Kunne ikke opdatere billede"
+	}
+}

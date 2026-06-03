@@ -1,17 +1,12 @@
 ---
+export const prerender = false
+
 import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/d1'
-import { eq, and, desc } from 'drizzle-orm'
-import QRCode from 'qrcode'
+import { eq, and } from 'drizzle-orm'
 import * as schema from '../../../../db/schema'
-import Layout from '../../../../layouts/Layout.astro'
-import Icon from '../../../../components/brand/Icon.astro'
-import Button from '../../../../components/brand/Button.astro'
-import EventStyleEditor from '../../../../components/EventStyleEditor.vue'
-import { TIERS, isTier, formatPrice } from '../../../../lib/tiers'
-import { parseBranding } from '../../../../lib/branding'
-
-export const prerender = false
+import { getContent } from '../../../../lib/content'
+import StylePage from '../../../../components/pages/StylePage.astro'
 
 const host = Astro.locals.host!
 const id = Astro.params.id!
@@ -23,112 +18,7 @@ const [event] = await db
 	.where(and(eq(schema.events.id, id), eq(schema.events.hostId, host.id)))
 	.limit(1)
 
-if (!event) return new Response('Event not found', { status: 404 })
-
-const tier = isTier(event.tier) ? event.tier : 'free'
-const isFreeTier = TIERS[tier].priceCents <= 0
-const branding = parseBranding(event.brandingJson)
-
-// Pull up to 12 real photos for the preview. If none exist yet we generate
-// placeholder colored tiles so the layout still demos meaningfully.
-const photosRaw = await db
-	.select({
-		id: schema.photos.id,
-		cfImagesId: schema.photos.cfImagesId,
-		cfStreamUid: schema.photos.cfStreamUid,
-		mediaType: schema.photos.mediaType,
-		durationSeconds: schema.photos.durationSeconds,
-		createdAt: schema.photos.createdAt,
-		mediaWidth: schema.photos.mediaWidth,
-		mediaHeight: schema.photos.mediaHeight,
-		uploaderName: schema.eventUsers.name,
-	})
-	.from(schema.photos)
-	.leftJoin(schema.eventUsers, eq(schema.photos.eventUserId, schema.eventUsers.id))
-	.where(and(eq(schema.photos.eventId, event.id), eq(schema.photos.status, 'approved')))
-	.orderBy(desc(schema.photos.createdAt))
-	.limit(24)
-
-const realPhotos = photosRaw.map((p) => ({
-	id: p.id,
-	cfImagesId: p.cfImagesId,
-	cfStreamUid: p.cfStreamUid,
-	mediaType: p.mediaType,
-	durationSeconds: p.durationSeconds,
-	createdAt: p.createdAt?.getTime() ?? 0,
-	mediaWidth: p.mediaWidth ?? null,
-	mediaHeight: p.mediaHeight ?? null,
-	uploaderName: p.uploaderName ?? null,
-}))
-
-const previewPhotos =
-	realPhotos.length > 0
-		? realPhotos
-		: Array.from({ length: 24 }, (_, i) => ({
-				id: `placeholder-${i}`,
-				mediaType: 'photo' as const,
-				cfImagesId: null,
-				cfStreamUid: null,
-				durationSeconds: null,
-				createdAt: Date.now() - i * 1000,
-				mediaWidth: null,
-				mediaHeight: null,
-				uploaderName: null,
-			}))
-
-// Generate the same QR the live wall shows so the preview is a faithful
-// mirror. Black-on-white, high error-correction, SVG output (canvas-free
-// for the Workers runtime).
-const guestUrl = `${env.PUBLIC_APP_URL}/e/${event.shortCode}`
-const qrSvg = await QRCode.toString(guestUrl, {
-	type: 'svg',
-	errorCorrectionLevel: 'H',
-	margin: 0,
-	color: { dark: '#000000', light: '#ffffff' },
-})
-const qrDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(qrSvg)}`
+if (!event) return new Response(getContent('da', 'common').errors.notFound, { status: 404 })
 ---
 
-<Layout title={`Stil — ${event.name}`} brandFonts>
-	<div class="app screen-root">
-		<div class="fu mx-auto max-w-270 px-7 pt-7 pb-20">
-			<a
-				href={`/app/events/${event.id}`}
-				class="inline-flex items-center gap-2 text-[15.5px] font-semibold text-tx-3"
-			>
-				<Icon name="arrow-left" size={18} />{event.name}
-			</a>
-
-			<div class="mt-5.5 mb-6.5">
-				<h1 class="m-0 text-[clamp(28px,5cqw,38px)] font-extrabold tracking-[-0.02em]">Fotovæg-stil</h1>
-				<p class="mt-2 text-base text-tx-3">Tilpas den live fotovæg, der vises på stedet.</p>
-			</div>
-
-			{
-				isFreeTier ? (
-					<div class="rounded-xl border border-line-2 bg-s1 p-10 text-center shadow-app">
-						<h2 class="text-[22px] font-bold text-tx">Tilpasset stil er en betalt funktion</h2>
-						<p class="mx-auto mt-3 max-w-135 text-[15px] leading-[1.6] text-tx-2">
-							Opgrader dette event til {TIERS.basic.label} ({formatPrice('basic', 'da')}) eller {TIERS.gold.label} (
-							{formatPrice('gold', 'da')}) for at vælge tema, fliseopdeling og tilføje en titel-overlay. Gratis events
-							bruger appelsin-fotokollagen med QR i hjørnet.
-						</p>
-						<div class="mt-6">
-							<Button href="/app/events/new" iconRight="arrow-right">Opret et betalt event</Button>
-						</div>
-					</div>
-				) : (
-					<EventStyleEditor
-						client:only="vue"
-						eventId={event.id}
-						eventCode={event.shortCode}
-						initial={branding}
-						previewPhotos={previewPhotos}
-						cfImagesHash={env.CF_IMAGES_HASH}
-						qrDataUrl={qrDataUrl}
-					/>
-				)
-			}
-		</div>
-	</div>
-</Layout>
+<StylePage locale="da" event={event} />

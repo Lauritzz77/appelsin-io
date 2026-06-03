@@ -1,0 +1,9 @@
+{
+	"meta": { "title": "Join event — appelsin" },
+	"heading": "Enter event code",
+	"subhead": "Type the code from the event screen or invitation to share photos.",
+	"codeLabel": "Event code",
+	"codePlaceholder": "EC4KJL",
+	"submit": "Join event",
+	"error": "Enter an event code."
+}

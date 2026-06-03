@@ -9,6 +9,11 @@
     "dist"
   ],
   "compilerOptions": {
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@cms/*": ["cms/*"],
+      "@lib/*": ["src/lib/*"]
+    }
   }
 }

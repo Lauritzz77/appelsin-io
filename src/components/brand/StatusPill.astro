@@ -1,15 +1,13 @@
 ---
+import { getContent } from '../../lib/content'
+
 interface Props {
 	status: string
 	locale?: 'da' | 'en'
 }
 const { status, locale = 'da' } = Astro.props
 const key = status === 'live' ? 'live' : status === 'ended' ? 'ended' : 'draft'
-const labels = {
-	da: { live: 'live', ended: 'afsluttet', draft: 'kladde' },
-	en: { live: 'live', ended: 'ended', draft: 'draft' },
-}
-const label = labels[locale][key]
+const label = getContent(locale, 'common').status[key]
 ---
 
 <span class={`status-pill status-pill--${key}`}><span class="dot"></span>{label}</span>

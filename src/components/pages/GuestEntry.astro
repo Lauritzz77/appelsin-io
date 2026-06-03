@@ -1,0 +1,75 @@
+---
+import type { Locale } from '../../lib/i18n'
+import { localisePath } from '../../lib/i18n'
+import { getContent } from '../../lib/content'
+import Layout from '../../layouts/Layout.astro'
+import Logo from '../brand/Logo.astro'
+
+interface Props {
+	locale: Locale
+}
+const { locale } = Astro.props
+const t = getContent(locale, 'guest-entry')
+const targetBase = localisePath('/e', locale)
+---
+
+<Layout title={t.meta.title} locale={locale}>
+	<div class="app screen-root flex min-h-screen items-center justify-center px-6 py-10">
+		<div class="fu w-full max-w-110">
+			<div class="mb-6 flex justify-center"><Logo href={localisePath('/', locale)} surface="dark" class="w-20 h-20 block" /></div>
+			<div class="rounded-xl border border-line-2 bg-s1 px-7 py-8 shadow-app">
+				<h1 class="m-0 text-center text-[26px] font-extrabold tracking-[-0.02em]">{t.heading}</h1>
+				<p class="mt-2.5 mb-6 text-center text-[15px] leading-[1.5] text-tx-3">
+					{t.subhead}
+				</p>
+
+				<form id="event-code-form" data-target-base={targetBase} data-error={t.error}>
+					<label class="block">
+						<span class="field-label">{t.codeLabel}</span>
+						<input
+							id="event-code-input"
+							name="code"
+							type="text"
+							inputmode="text"
+							autocomplete="off"
+							autocapitalize="characters"
+							spellcheck="false"
+							required
+							class="field-input field-input--mono field-input--big text-center uppercase"
+							placeholder={t.codePlaceholder}
+						/>
+					</label>
+					<p id="event-code-error" class="mt-2.5 min-h-[1.25rem] text-sm text-danger" aria-live="polite"></p>
+					<div class="mt-1.5">
+						<button type="submit" class="btn btn--primary btn--full btn--lg">{t.submit}</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</Layout>
+
+<script>
+	const form = document.getElementById('event-code-form') as HTMLFormElement | null
+	const input = document.getElementById('event-code-input') as HTMLInputElement | null
+	const error = document.getElementById('event-code-error')
+
+	input?.addEventListener('input', () => {
+		input.value = input.value.toUpperCase()
+		if (error) error.textContent = ''
+	})
+
+	form?.addEventListener('submit', (event) => {
+		event.preventDefault()
+		const code = input?.value.trim().replace(/\s+/g, '').toUpperCase()
+
+		if (!code) {
+			if (error) error.textContent = form?.dataset.error || ''
+			input?.focus()
+			return
+		}
+
+		const base = form?.dataset.targetBase || '/e'
+		window.location.href = `${base}/${encodeURIComponent(code)}`
+	})
+</script>

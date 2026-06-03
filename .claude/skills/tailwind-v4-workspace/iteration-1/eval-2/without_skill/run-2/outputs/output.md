@@ -1,0 +1,1 @@
+class="flex px-[52px] py-6 mt-[60px] gap-2.5"

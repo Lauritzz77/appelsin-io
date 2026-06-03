@@ -136,17 +136,17 @@ const pageTitle = `${event.name} — ${text.title}`
 
 <Layout title={pageTitle} locale={locale} showLanguageSwitch={false}>
 	<main class="after-gallery app screen-root" data-gallery-flow="desktop">
-		<div class="fu mx-auto max-w-[1120px] px-5 py-6 sm:px-7 sm:py-8">
+		<div class="fu mx-auto max-w-280 px-5 py-6 sm:px-7 sm:py-8">
 			<header class="after-gallery-hero">
 				<div class="min-w-0">
 					<a href={locale === 'da' ? '/' : '/en'} class="inline-flex items-center">
 						<img src="/logo.svg" alt="appelsin.io" class="h-20 w-20" />
 					</a>
 					<p class="mt-8 font-hand text-[28px] font-bold leading-none text-accent sm:text-[34px]">{text.kicker}</p>
-					<h1 class="mt-2 max-w-[760px] break-words text-[clamp(34px,6cqw,62px)] font-extrabold leading-[1.02] tracking-[-0.02em] text-tx">
+					<h1 class="mt-2 max-w-190 break-words text-[clamp(34px,6cqw,62px)] font-extrabold leading-[1.02] tracking-[-0.02em] text-tx">
 						{event.name}
 					</h1>
-					<p class="mt-4 max-w-[620px] text-[16px] leading-[1.65] text-tx-2 sm:text-[17px]">{text.lead}</p>
+					<p class="mt-4 max-w-155 text-[16px] leading-[1.65] text-tx-2 sm:text-[17px]">{text.lead}</p>
 					<p class="mt-3 text-sm text-tx-3">{text.expiry(expiresText)}</p>
 				</div>
 

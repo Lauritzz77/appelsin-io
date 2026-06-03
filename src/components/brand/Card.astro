@@ -10,8 +10,10 @@ const { tone = 'dark', raised = false, pad = 28, class: className = '', id } = A
 const cls = ['card', tone === 'dark' ? 'card--dark' : 'card--cream', raised ? 'card--raised' : '', className]
 	.filter(Boolean)
 	.join(' ')
+// .card already pads 28px; only emit an inline override when a caller asks for a different value.
+const padStyle = pad === 28 ? undefined : `padding:${pad}px`
 ---
 
-<div id={id} class={cls} style={`padding:${pad}px`}>
+<div id={id} class={cls} style={padStyle}>
 	<slot />
 </div>

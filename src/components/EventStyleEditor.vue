@@ -116,7 +116,7 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
     <aside class="flex flex-col gap-4">
       <section class="card card--dark">
         <h2 class="m-0 mb-4 text-[15px] font-bold">Farver</h2>
-        <div class="flex flex-col gap-[14px]">
+        <div class="flex flex-col gap-3.5">
           <label class="flex items-center justify-between gap-3">
             <span class="text-[13.5px] text-tx-3">Baggrund</span>
             <span class="flex items-center gap-2.5">
@@ -135,13 +135,13 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
       </section>
 
       <section class="card card--dark">
-        <h2 class="m-0 mb-[14px] text-[15px] font-bold">Skrifttype</h2>
-        <div class="grid grid-cols-3 gap-[9px]">
+        <h2 class="m-0 mb-3.5 text-[15px] font-bold">Skrifttype</h2>
+        <div class="grid grid-cols-3 gap-2.25">
           <button
             v-for="id in FONT_IDS"
             :key="id"
             type="button"
-            class="opt px-1.5 py-[14px] text-center"
+            class="opt px-1.5 py-3.5 text-center"
             :class="{ 'opt--sel': branding.font === id }"
             @click="branding.font = id"
           >
@@ -162,8 +162,8 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
       </section>
 
       <section class="card card--dark">
-        <h2 class="m-0 mb-[14px] text-[15px] font-bold">Fliseopdeling</h2>
-        <div class="grid grid-cols-3 gap-[9px]">
+        <h2 class="m-0 mb-3.5 text-[15px] font-bold">Fliseopdeling</h2>
+        <div class="grid grid-cols-3 gap-2.25">
           <button
             v-for="id in DENSITY_IDS"
             :key="id"
@@ -185,7 +185,7 @@ function beforeUnloadHandler(e: BeforeUnloadEvent) {
             <span class="knob"></span>
           </label>
         </div>
-        <div v-if="branding.titleOverlay.enabled" class="mt-4 flex flex-col gap-[14px]">
+        <div v-if="branding.titleOverlay.enabled" class="mt-4 flex flex-col gap-3.5">
           <label class="block">
             <span class="field-label">Overskrift</span>
             <input v-model="branding.titleOverlay.line1" type="text" maxlength="80" placeholder="Anna & Jonas" class="field-input" />

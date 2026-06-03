@@ -552,7 +552,7 @@ onMounted(() => {
 <template>
 	<!-- Name + email gate. Shown until the guest claims a per-event display name. -->
 	<div v-if="!hasIdentity" class="card card--dark">
-		<form class="flex flex-col gap-[18px]" @submit.prevent="join">
+		<form class="flex flex-col gap-4.5" @submit.prevent="join">
 			<label class="block">
 				<span class="field-label">{{ text.nameLabel }}</span>
 				<input
@@ -612,7 +612,7 @@ onMounted(() => {
 				style="display: none"
 				@change="onFileChange"
 			/>
-			<span class="flex h-[78px] w-[78px] items-center justify-center rounded-full" :style="{ background: iconBg }">
+			<span class="flex h-19.5 w-19.5 items-center justify-center rounded-full" :style="{ background: iconBg }">
 				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 					<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
 					<circle cx="12" cy="13" r="4" />
@@ -627,7 +627,7 @@ onMounted(() => {
 		</label>
 
 		<!-- Sharing as -->
-		<div class="flex flex-wrap items-center justify-center gap-2 pt-[18px] text-[14.5px]">
+		<div class="flex flex-wrap items-center justify-center gap-2 pt-4.5 text-[14.5px]">
 			<span class="text-tx-3">{{ text.sharingAs }}</span>
 			<span class="font-hand text-[22px] font-bold text-accent">{{ identity!.name }}</span>
 			<button
@@ -640,14 +640,14 @@ onMounted(() => {
 		</div>
 
 		<!-- Your uploads -->
-		<section class="pt-[26px] pb-2">
-			<div class="mb-[14px] text-[13px] font-bold uppercase tracking-[0.06em] text-tx-3">
+		<section class="pt-6.5 pb-2">
+			<div class="mb-3.5 text-[13px] font-bold uppercase tracking-[0.06em] text-tx-3">
 				{{ text.photos }}<span v-if="myPhotos.length > 0"> ({{ myPhotos.length }})</span>
 			</div>
 			<div v-if="myPhotos.length === 0 && !loadingPhotos" class="text-sm text-tx-3">
 				{{ text.empty }}
 			</div>
-			<div v-else class="grid grid-cols-3 gap-[9px]">
+			<div v-else class="grid grid-cols-3 gap-2.25">
 				<div
 					v-for="(photo, idx) in myPhotos"
 					:key="photo.id"
@@ -676,7 +676,7 @@ onMounted(() => {
 					</a>
 					<span
 						v-if="idx === 0"
-						class="absolute left-1.5 top-1.5 rounded-md bg-accent px-[7px] py-0.5 text-[10.5px] font-extrabold text-[#2C1700]"
+						class="absolute left-1.5 top-1.5 rounded-md bg-accent px-1.75 py-0.5 text-[10.5px] font-extrabold text-[#2C1700]"
 					>
 						{{ props.locale === 'da' ? 'ny' : 'new' }}
 					</span>
@@ -698,8 +698,8 @@ onMounted(() => {
 					</button>
 				</div>
 			</div>
-			<p v-if="deleteError" class="mt-[14px] text-sm text-danger">{{ deleteError }}</p>
-			<p class="mt-[22px] text-center text-[12.5px] leading-[1.5] text-tx-4">
+			<p v-if="deleteError" class="mt-3.5 text-sm text-danger">{{ deleteError }}</p>
+			<p class="mt-5.5 text-center text-[12.5px] leading-[1.5] text-tx-4">
 				{{ props.locale === 'da'
 					? 'Billederne gemmes hos værten og slettes efter eventet.'
 					: 'Photos are stored by the host and deleted after the event.' }}

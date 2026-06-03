@@ -6,9 +6,12 @@ interface Props {
 	label?: string
 	big?: boolean
 	mono?: boolean
+	locale?: 'da' | 'en'
 }
-const { value, label, big = false, mono = true } = Astro.props
-const btnCls = `copy-btn flex w-full cursor-pointer items-center gap-3 rounded-md border border-line bg-black/[0.26] text-left ${big ? 'px-[18px] py-[14px]' : 'px-[15px] py-[11px]'}`
+const { value, label, big = false, mono = true, locale = 'da' } = Astro.props
+// Icon is decorative, so spell out the button's purpose + value for screen readers.
+const copyAria = `${locale === 'en' ? 'Copy' : 'Kopiér'} ${value}`
+const btnCls = `copy-btn flex w-full cursor-pointer items-center gap-3 rounded-md border border-line bg-black/[0.26] text-left ${big ? 'px-4.5 py-3.5' : 'px-3.75 py-2.75'}`
 const valueCls = [
 	'min-w-0 flex-1 break-all font-bold',
 	mono ? 'font-mono' : 'font-sans',
@@ -20,7 +23,7 @@ const valueCls = [
 
 <div>
 	{label && <div class="mb-2 text-[13px] font-semibold text-tx-3">{label}</div>}
-	<button type="button" class={btnCls} data-copy={value}>
+	<button type="button" class={btnCls} data-copy={value} aria-label={copyAria}>
 		<span class={valueCls}>{value}</span>
 		<span class="copy-ind flex shrink-0 items-center gap-1.5 text-[13px] font-semibold text-tx-3">
 			<Icon name="copy" size={17} stroke={2.2} />

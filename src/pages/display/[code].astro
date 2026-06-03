@@ -108,8 +108,8 @@ const qrSvg = await QRCode.toString(guestUrl, {
 const qrDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(qrSvg)}`
 ---
 
-<Layout title={`${event.name} — live`} locale="da">
-	<main class="min-h-screen bg-[#071952]">
+<Layout title={`${event.name} — live`} locale="da" brandFonts>
+	<main class="min-h-screen bg-navy">
 		{
 			isFreeTier ? (
 				<PhotoCollage

@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "The 60% black backdrop uses slash opacity (bg-black/60), not the removed bg-opacity-* utility",
+      "passed": true,
+      "evidence": "bg-black/60=True, bg-opacity=False"
+    },
+    {
+      "text": "The 32x32 close button uses the size-8 shorthand rather than w-8 h-8",
+      "passed": true,
+      "evidence": "size-8=True (w-8=False, h-8=False)"
+    },
+    {
+      "text": "The focus outline is removed with outline-hidden, not outline-none",
+      "passed": true,
+      "evidence": "outline-hidden=True, outline-none=False"
+    },
+    {
+      "text": "Non-shrinking uses shrink-0, not flex-shrink-0",
+      "passed": true,
+      "evidence": "shrink-0=True, flex-shrink=False"
+    },
+    {
+      "text": "The gradient uses bg-linear-to-r (v4), not bg-gradient-to-r (v3)",
+      "passed": true,
+      "evidence": "bg-linear-to=True, bg-gradient-to=False"
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

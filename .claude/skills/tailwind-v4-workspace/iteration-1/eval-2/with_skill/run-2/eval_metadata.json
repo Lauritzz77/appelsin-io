@@ -1,0 +1,12 @@
+{
+  "eval_id": 2,
+  "eval_name": "px-to-scale-conversion",
+  "prompt": "Convert this CSS to Tailwind utility classes on a single flex <div>. Just give me the final class=\"...\" attribute.\n\npadding-left: 52px;\npadding-right: 52px;\npadding-top: 24px;\npadding-bottom: 24px;\nmargin-top: 60px;\ngap: 10px;",
+  "assertions": [
+    "52px horizontal padding maps to step 13 (px-13 or pl-13 pr-13), not [52px]",
+    "24px vertical padding maps to py-6 (or pt-6 pb-6), not [24px]",
+    "60px margin-top maps to mt-15, not mt-[60px]",
+    "10px gap maps to the .5 step gap-2.5, not gap-[10px]",
+    "No arbitrary [..px] bracket values appear anywhere — every value is on-scale"
+  ]
+}

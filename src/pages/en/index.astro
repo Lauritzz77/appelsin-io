@@ -114,22 +114,22 @@ const faq = [
 			<div class="mkt-wrap">
 				<MarketingNav locale="en" isSignedIn={isSignedIn} onDark />
 
-				<section class="hero fu pt-20">
+				<section class="hero fu py-20">
 					<div>
-						<div class="mb-[18px] text-sm font-bold uppercase tracking-[0.14em] text-accent">
+						<div class="font-hand mb-4 text-2xl font-bold tracking-[0.14em] text-accent">
 							For weddings · birthdays · parties
 						</div>
 						<h1 class="hero-h1 uppercase">
 							Party photos,<br />live on the big screen.
 						</h1>
-						<p class="mt-[22px] mb-8 max-w-[480px] text-[19.5px] leading-[1.6] text-tx-2">
+						<p class="mt-5.5 mb-8 max-w-120 text-[19.5px] leading-[1.6] text-tx-2">
 							Guests scan a QR code and upload photos straight from their phone — no app. Everything shows live on the
 							big screen, and you download the whole party afterwards.
 						</p>
-						<div class="hero-cta flex flex-wrap gap-[14px]">
+						<div class="hero-cta flex flex-wrap gap-3.5">
 							<Button href="#pricing" size="lg">See plans</Button>
 						</div>
-						<div class="mt-[30px] flex flex-wrap items-center gap-[10px] text-[14.5px] font-semibold text-tx-3">
+						<div class="mt-7.5 flex flex-wrap items-center gap-1 @min-[920px]:gap-2.5 text-[14.5px] text-tx-3">
 							{
 								['Free to try', 'No app', 'Ready in 2 min'].map((t, i) => (
 									<>
@@ -147,16 +147,16 @@ const faq = [
 
 		{/* CREAM: how it works + pricing */}
 		<div class="mkt-wrap">
-			<section class="pt-[56px] pb-16">
+			<section class="pt-15 @min-[920px]:pt-24 pb-12 @min-[920px]:pb-16">
 				<div class="steps">
 					{
 						steps.map((s) => (
 							<div class="rounded-xl border border-cream-line bg-white p-7 shadow-cream-sm">
-								<div class="mb-4 flex items-center gap-[14px]">
-									<span class="flex h-[52px] w-[52px] items-center justify-center rounded-md bg-peach text-orange-deep">
+								<div class="mb-4 flex items-center gap-3.5">
+									<span class="flex h-13 w-13 items-center justify-center rounded-md bg-peach">
 										<Icon name={s.ic} size={26} stroke={2} />
 									</span>
-									<span class="font-mono text-[15px] font-bold text-warm-muted">{s.n}</span>
+									<span class="font-mono text-3xl font-bold">{s.n}</span>
 								</div>
 								<div class="mb-2 text-[21px] font-bold text-ink">{s.t}</div>
 								<div class="text-base leading-[1.6] text-warm-body">{s.d}</div>
@@ -166,7 +166,7 @@ const faq = [
 				</div>
 			</section>
 
-			<section id="pricing" class="scroll-mt-6 pt-[28px] pb-16">
+			<section id="pricing" class="scroll-mt-6 pt-7 pb-15 @min-[920px]:pb-24">
 				<div class="mb-10 text-center">
 					<h2 class="m-0 text-[clamp(32px,4cqw,46px)] font-extrabold tracking-[-0.02em] text-ink">One price per event</h2>
 					<p class="mt-3 text-[18px] text-warm-body">Pick a plan for the day. No subscriptions, no surprises.</p>
@@ -196,10 +196,10 @@ const faq = [
 
 		{/* NAVY FAQ BAND */}
 		<div class="faq-band band-navy">
-			<div class="mx-auto max-w-[860px] px-5 lg:px-10">
-				<section class="pt-[60px] pb-16">
+			<div class="mx-auto max-w-215 px-5 @min-[920px]:px-10">
+				<section class="pt-15 pb-16">
 					<div class="mb-9 text-center">
-						<div class="font-hand 2xl font-semibold text-accent">good to know</div>
+						<div class="font-hand text-2xl font-semibold text-accent">good to know</div>
 						<h2 class="mt-0.5 text-[clamp(30px,4cqw,42px)] font-extrabold tracking-[-0.02em] text-white">
 							Questions before the party?
 						</h2>

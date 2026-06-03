@@ -24,12 +24,12 @@ const tierDescription = (tier: Tier) => {
 
 <Layout title="New event — appelsin" locale="en">
 	<div class="app screen-root">
-		<div class="fu mx-auto max-w-[640px] px-7 pt-[30px] pb-20">
+		<div class="fu mx-auto max-w-160 px-7 pt-7.5 pb-20">
 			<a href="/en/app" class="inline-flex items-center gap-2 text-[15.5px] font-semibold text-tx-3">
 				<Icon name="arrow-left" size={18} />Back
 			</a>
 			<h1 class="mt-6 mb-3 text-[clamp(30px,5cqw,40px)] font-extrabold tracking-[-0.02em]">New event</h1>
-			<div class="m-0 flex max-w-[520px] flex-col gap-3 text-[17px] leading-[1.6] text-tx-2">
+			<div class="m-0 flex max-w-130 flex-col gap-3 text-[17px] leading-[1.6] text-tx-2">
 				<p class="m-0">
 					Gather all the memories from your occasion in one place. When you create an event you get a unique code and QR
 					that your guests can scan to upload photos straight from the party.
@@ -45,13 +45,13 @@ const tierDescription = (tier: Tier) => {
 
 			{
 				createError === 'free_exists' && (
-					<div class="mt-6 rounded-md border border-[rgba(244,63,94,.3)] bg-[rgba(244,63,94,.1)] px-[18px] py-[14px] text-sm text-danger">
+					<div class="mt-6 rounded-md border border-[rgba(244,63,94,.3)] bg-[rgba(244,63,94,.1)] px-4.5 py-3.5 text-sm text-danger">
 						You already have a free event. Delete the existing one first, or pick Basic or Gold for this event.
 					</div>
 				)
 			}
 
-			<form method="post" action="/api/events/new" class="mt-[34px] flex flex-col gap-[26px]">
+			<form method="post" action="/api/events/new" class="mt-8.5 flex flex-col gap-6.5">
 				<input type="hidden" name="returnToPrefix" value="/en/app/events" />
 
 				<label class="block">
@@ -72,11 +72,11 @@ const tierDescription = (tier: Tier) => {
 						<span class="field-label">Event date</span>
 						<input id="eventDate" name="eventDate" type="date" required class="field-input field-input--big" />
 					</label>
-					<div class="mt-4 rounded-lg border border-[rgba(255,162,41,.28)] bg-orange-soft px-[22px] py-5">
-						<div class="mb-[14px] flex items-center gap-[9px] text-[13.5px] font-bold uppercase tracking-[0.04em] text-accent">
+					<div class="mt-4 rounded-lg border border-[rgba(255,162,41,.28)] bg-orange-soft px-5.5 py-5">
+						<div class="mb-3.5 flex items-center gap-2.25 text-[13.5px] font-bold uppercase tracking-[0.04em] text-accent">
 							<Icon name="clock" size={16} />The date drives the timeline
 						</div>
-						<div class="flex flex-col gap-[11px] text-[15px] leading-[1.5] text-tx-2">
+						<div class="flex flex-col gap-2.75 text-[15px] leading-[1.5] text-tx-2">
 							<div class="flex gap-3">
 								<span class="font-extrabold text-accent">·</span>
 								<span>Guests can upload from <strong>24 hours before</strong> — so anyone scanning the QR the night before can get going.</span>
@@ -122,7 +122,7 @@ const tierDescription = (tier: Tier) => {
 
 				<div>
 					<Button type="submit" full size="lg" iconRight="arrow-right">Create event</Button>
-					<p class="mt-[14px] text-center text-[13.5px] leading-[1.5] text-tx-3">
+					<p class="mt-3.5 text-center text-[13.5px] leading-[1.5] text-tx-3">
 						Created as {host.email}. Status starts as <span class="font-mono">draft</span>; paid plans go
 						<span class="font-mono">live</span> after payment.
 					</p>

@@ -121,17 +121,17 @@ const timelineRows: [string, string, string][] = [
 
 <Layout title={`${event.name} — appelsin`}>
 	<div class="app screen-root">
-		<div class="fu mx-auto max-w-[880px] px-7 pt-7 pb-20">
+		<div class="fu mx-auto max-w-220 px-7 pt-7 pb-20">
 			<a href="/app" class="inline-flex items-center gap-2 text-[15.5px] font-semibold text-tx-3">
 				<Icon name="arrow-left" size={18} />Alle events
 			</a>
 
 			{/* header */}
-			<div class="detail-head mt-[22px] mb-1.5">
+			<div class="detail-head mt-5.5 mb-1.5">
 				<div class="min-w-0">
 					<h1 class="m-0 break-words text-[clamp(30px,5cqw,42px)] font-extrabold tracking-[-0.02em]">{event.name}</h1>
 					<div class="mt-3 flex min-w-0 flex-wrap items-center gap-3 text-[15.5px] text-tx-3">
-						<span class="inline-flex min-w-0 items-center gap-[7px]">
+						<span class="inline-flex min-w-0 items-center gap-1.75">
 							<Icon name="calendar" size={16} />
 							{new Date(event.eventDate).toLocaleDateString('da-DK', { dateStyle: 'long' })}
 						</span>
@@ -146,21 +146,21 @@ const timelineRows: [string, string, string][] = [
 
 			{
 				justPaid && event.status === 'live' && (
-					<div class="mt-4 rounded-md border border-[rgba(52,211,153,.3)] bg-live-bg px-[18px] py-[13px] text-sm text-live">
+					<div class="mt-4 rounded-md border border-[rgba(52,211,153,.3)] bg-live-bg px-4.5 py-3.25 text-sm text-live">
 						Betaling bekræftet. Dit event er live.
 					</div>
 				)
 			}
 			{
 				justPaid && event.status === 'draft' && (
-					<div class="mt-4 rounded-md border border-[rgba(255,162,41,.3)] bg-orange-soft px-[18px] py-[13px] text-sm text-accent">
+					<div class="mt-4 rounded-md border border-[rgba(255,162,41,.3)] bg-orange-soft px-4.5 py-3.25 text-sm text-accent">
 						Betaling modtaget — afslutter. Opdater om et øjeblik hvis status ikke skifter til <em>live</em>.
 					</div>
 				)
 			}
 			{
 				activateError === 'free_limit' && (
-					<div class="mt-4 rounded-md border border-[rgba(244,63,94,.3)] bg-[rgba(244,63,94,.1)] px-[18px] py-[13px] text-sm text-danger">
+					<div class="mt-4 rounded-md border border-[rgba(244,63,94,.3)] bg-[rgba(244,63,94,.1)] px-4.5 py-3.25 text-sm text-danger">
 						Du har allerede et aktivt gratis event. Afslut det først, eller opgrader dette event til Basic eller Gold.
 					</div>
 				)
@@ -168,14 +168,14 @@ const timelineRows: [string, string, string][] = [
 
 			{
 				(event.status === 'draft' || event.status === 'live') && (
-					<div class="mt-[22px] rounded-xl border border-[rgba(255,162,41,.26)] bg-orange-soft px-5 py-5 sm:mt-[26px] sm:px-7 sm:py-[26px]">
-						<div class="mb-4 flex items-center gap-2 text-[16px] font-bold text-accent sm:mb-5 sm:gap-[9px] sm:text-[17px]">
+					<div class="mt-5.5 rounded-xl border border-[rgba(255,162,41,.26)] bg-orange-soft px-5 py-5 sm:mt-6.5 sm:px-7 sm:py-6.5">
+						<div class="mb-4 flex items-center gap-2 text-[16px] font-bold text-accent sm:mb-5 sm:gap-2.25 sm:text-[17px]">
 							<Icon name="sparkle" size={19} fill="currentColor" stroke={0} />Sådan kører du dit event
 						</div>
 						<div class="grid gap-3 sm:gap-4">
 							{runSteps.map((s, i) => (
-								<div class="flex items-start gap-3 sm:gap-[15px]">
-									<span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-[12px] font-extrabold text-[#2C1700] sm:h-8 sm:w-8 sm:text-sm">
+								<div class="flex items-start gap-3 sm:gap-3.75">
+									<span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-[12px] font-extrabold text-on-accent sm:h-8 sm:w-8 sm:text-sm">
 										{i + 1}
 									</span>
 									<div>
@@ -205,9 +205,9 @@ const timelineRows: [string, string, string][] = [
 								required
 							/>
 						</label>
-						<div class="mt-[14px] flex items-center gap-[14px]">
+						<div class="mt-3.5 flex items-center gap-3.5">
 							<Button id="rename-event-btn" type="submit" size="sm">Gem navn</Button>
-							<p id="rename-event-status" class="text-sm text-zinc-500" aria-live="polite"></p>
+							<p id="rename-event-status" class="text-sm text-tx-3" aria-live="polite"></p>
 						</div>
 					</form>
 					<form id="event-date-form" data-event-id={event.id} class="mt-5 border-t border-line-2 pt-5">
@@ -223,7 +223,7 @@ const timelineRows: [string, string, string][] = [
 								disabled={!canEditEventDate}
 							/>
 						</label>
-						<div class="mt-[14px] flex flex-wrap items-center gap-[14px]">
+						<div class="mt-3.5 flex flex-wrap items-center gap-3.5">
 							{
 								canEditEventDate ? (
 									<Button id="event-date-btn" type="submit" size="sm">Gem dato</Button>
@@ -231,7 +231,7 @@ const timelineRows: [string, string, string][] = [
 									<p class="m-0 text-sm text-tx-3">Datoen kan ikke ændres, mens eventet er live.</p>
 								)
 							}
-							<p id="event-date-status" class="text-sm text-zinc-500" aria-live="polite"></p>
+							<p id="event-date-status" class="text-sm text-tx-3" aria-live="polite"></p>
 						</div>
 					</form>
 				</Card>
@@ -244,8 +244,8 @@ const timelineRows: [string, string, string][] = [
 			</div>
 
 			{/* big screen toggle */}
-			<Card pad={20} class="mt-4 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 sm:gap-x-[18px]">
-				<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-white/[.06] text-accent sm:h-[46px] sm:w-[46px]">
+			<Card pad={20} class="mt-4 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 sm:gap-x-4.5">
+				<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-white/[.06] text-accent sm:h-11.5 sm:w-11.5">
 					<Icon name="monitor" size={22} />
 				</span>
 				<div class="min-w-0 text-[16px] font-bold leading-tight sm:text-[16.5px]">Storskærm til eventet</div>
@@ -256,12 +256,12 @@ const timelineRows: [string, string, string][] = [
 				<div class="col-span-3 mt-1 text-sm leading-[1.45] text-tx-3 sm:col-span-2 sm:col-start-2 sm:mt-0 sm:leading-normal">
 					Slå fra, hvis billederne ikke skal vises på en skærm til eventet. Det ændrer teksten i QR-pakken.
 				</div>
-				<p id="has-big-screen-status" class="col-span-3 min-h-[1rem] text-xs text-zinc-500 sm:col-span-2 sm:col-start-2" aria-live="polite"></p>
+				<p id="has-big-screen-status" class="col-span-3 min-h-[1rem] text-xs text-tx-3 sm:col-span-2 sm:col-start-2" aria-live="polite"></p>
 			</Card>
 
 			{/* moderation toggle */}
-			<Card pad={20} class="mt-4 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 sm:gap-x-[18px]">
-				<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-white/[.06] text-accent sm:h-[46px] sm:w-[46px]">
+			<Card pad={20} class="mt-4 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 sm:gap-x-4.5">
+				<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-white/[.06] text-accent sm:h-11.5 sm:w-11.5">
 					<Icon name="check" size={22} />
 				</span>
 				<div class="min-w-0 text-[16px] font-bold leading-tight sm:text-[16.5px]">Godkend billeder før visning</div>
@@ -272,7 +272,7 @@ const timelineRows: [string, string, string][] = [
 				<div class="col-span-3 mt-1 text-sm leading-[1.45] text-tx-3 sm:col-span-2 sm:col-start-2 sm:mt-0 sm:leading-normal">
 					Når den er slået til, skal du godkende hvert billede, før det vises på fotovæggen og i samlingen.
 				</div>
-				<p id="moderation-status" class="col-span-3 min-h-[1rem] text-xs text-zinc-500 sm:col-span-2 sm:col-start-2" aria-live="polite"></p>
+				<p id="moderation-status" class="col-span-3 min-h-[1rem] text-xs text-tx-3 sm:col-span-2 sm:col-start-2" aria-live="polite"></p>
 			</Card>
 
 			{/* action grid */}
@@ -339,14 +339,14 @@ const timelineRows: [string, string, string][] = [
 
 			{/* timeline + counter */}
 			<Card pad={26} class="mt-7">
-				<div class="mb-[18px] flex items-center gap-[9px] text-[17px] font-bold">
+				<div class="mb-4.5 flex items-center gap-2.25 text-[17px] font-bold">
 					<Icon name="clock" size={19} class="text-accent" />Tidslinje
 				</div>
 				{
 					timelineRows.map((r, i) => (
-						<div class={`flex items-baseline gap-[14px] py-3 ${i ? 'border-t border-line-2' : ''}`}>
+						<div class={`flex items-baseline gap-3.5 py-3 ${i ? 'border-t border-line-2' : ''}`}>
 							<span
-								class="mt-[5px] h-[11px] w-[11px] shrink-0 rounded-full"
+								class="mt-1.25 h-2.75 w-2.75 shrink-0 rounded-full"
 								style={`background:${i === 0 ? 'var(--live)' : i === 1 ? 'var(--accent)' : 'var(--tx-4)'}`}
 							/>
 							<div class="min-w-0 flex-1">
@@ -396,19 +396,19 @@ const timelineRows: [string, string, string][] = [
 						</div>
 						<div id="pending-grid" class="up-grid">
 							{pendingPhotos.map((p) => (
-								<div class="photo-tile group relative aspect-square overflow-hidden rounded bg-zinc-900 ring-2 ring-accent" data-photo-id={p.id}>
+								<div class="photo-tile group relative aspect-square overflow-hidden rounded bg-s1 ring-2 ring-accent" data-photo-id={p.id}>
 									{p.mediaType === 'video' && p.cfStreamUid ? (
 										<img src={streamThumbnailUrl(p.cfStreamUid, env.CF_STREAM_CUSTOMER_DOMAIN)} alt="" class="h-full w-full object-cover" />
 									) : p.cfImagesId ? (
 										<img src={`https://imagedelivery.net/${env.CF_IMAGES_HASH}/${p.cfImagesId}/public`} alt="" class="h-full w-full object-cover" />
 									) : (
-										<div class="flex h-full w-full items-center justify-center text-xs text-zinc-600">intet billede</div>
+										<div class="flex h-full w-full items-center justify-center text-xs text-tx-4">intet billede</div>
 									)}
 									<div class="absolute inset-x-1 bottom-1 flex gap-1">
-										<button type="button" class="photo-approve flex h-8 flex-1 items-center justify-center gap-1 rounded bg-live text-[12px] font-bold text-[#04220f] transition hover:brightness-110" data-photo-id={p.id}>
+										<button type="button" class="photo-approve flex h-8 flex-1 items-center justify-center gap-1 rounded bg-live text-[12px] font-bold text-on-live transition hover:brightness-110" data-photo-id={p.id}>
 											<Icon name="check" size={14} stroke={3} />Godkend
 										</button>
-										<button type="button" class="photo-reject flex h-8 w-8 shrink-0 items-center justify-center rounded bg-zinc-950/70 text-zinc-100 transition hover:bg-red-600" data-photo-id={p.id} aria-label="Afvis billede" title="Afvis billede">
+										<button type="button" class="photo-reject flex h-8 w-8 shrink-0 items-center justify-center rounded bg-black/70 text-white transition hover:bg-danger-solid" data-photo-id={p.id} aria-label="Afvis billede" title="Afvis billede">
 											<Icon name="trash" size={15} stroke={2.2} />
 										</button>
 									</div>
@@ -420,15 +420,15 @@ const timelineRows: [string, string, string][] = [
 			}
 
 			{/* recent uploads — markup preserved for the WS/buildTile script */}
-			<div class="mt-8 mb-[14px] flex flex-wrap items-center justify-between gap-3">
+			<div class="mt-8 mb-3.5 flex flex-wrap items-center justify-between gap-3">
 				<div class="app-sec-label" style="margin:0">
 					Seneste uploads <span id="recent-uploads-count">{recentPhotos.length === 0 ? '(ingen endnu)' : `(${recentPhotos.length})`}</span>
 				</div>
 				<div class="upload-tools">
 					{
 						event.status === 'live' && (
-							<span class="inline-flex items-center gap-[7px] text-[13px] font-semibold text-live">
-								<span class="h-[7px] w-[7px] rounded-full bg-live [animation:pulseDot_2s_infinite]" />opdateres live
+							<span class="inline-flex items-center gap-1.75 text-[13px] font-semibold text-live">
+								<span class="h-1.75 w-1.75 rounded-full bg-live [animation:pulseDot_2s_infinite]" />opdateres live
 							</span>
 						)
 					}
@@ -453,7 +453,7 @@ const timelineRows: [string, string, string][] = [
 					{
 						recentPhotos.map((p) => (
 							<div
-								class="photo-tile group relative aspect-square overflow-hidden rounded bg-zinc-900"
+								class="photo-tile group relative aspect-square overflow-hidden rounded bg-s1"
 								data-photo-id={p.id}
 							>
 								{p.mediaType === 'video' && p.cfStreamUid ? (
@@ -463,7 +463,7 @@ const timelineRows: [string, string, string][] = [
 											alt=""
 											class="h-full w-full object-cover"
 										/>
-										<span class="absolute bottom-1 left-1 rounded bg-zinc-950/80 px-1.5 py-0.5 text-[10px] font-medium text-white">
+										<span class="absolute bottom-1 left-1 rounded bg-black/80 px-1.5 py-0.5 text-[10px] font-medium text-white">
 											{p.durationSeconds ? `${p.durationSeconds}s` : 'Video'}
 										</span>
 									</>
@@ -474,11 +474,11 @@ const timelineRows: [string, string, string][] = [
 										class="h-full w-full object-cover"
 									/>
 								) : (
-									<div class="flex h-full w-full items-center justify-center text-xs text-zinc-600">intet billede</div>
+									<div class="flex h-full w-full items-center justify-center text-xs text-tx-4">intet billede</div>
 								)}
 								<button
 									type="button"
-									class="photo-delete absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950/70 text-zinc-100 opacity-100 transition hover:bg-red-600 hover:text-white sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
+									class="photo-delete absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white opacity-100 transition hover:bg-danger-solid hover:text-white sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
 									data-photo-id={p.id}
 									aria-label="Slet billede"
 									title="Slet billede"
@@ -504,10 +504,10 @@ const timelineRows: [string, string, string][] = [
 			</section>
 
 			{/* danger zone */}
-			<div class="mt-10 flex flex-wrap items-center gap-[18px] rounded-xl border border-[rgba(244,63,94,.22)] bg-[rgba(244,63,94,.05)] px-6 py-[22px]">
-				<div class="min-w-[200px] flex-1">
+			<div class="mt-10 flex flex-wrap items-center gap-4.5 rounded-xl border border-[rgba(244,63,94,.22)] bg-[rgba(244,63,94,.05)] px-6 py-5.5">
+				<div class="min-w-50 flex-1">
 					<div class="text-base font-bold text-danger">Slet event</div>
-					<div class="mt-[3px] text-sm text-tx-3">
+					<div class="mt-0.75 text-sm text-tx-3">
 						Sletter dette event og alle uploadede billeder. Dette kan ikke fortrydes.
 					</div>
 				</div>
@@ -536,7 +536,7 @@ const timelineRows: [string, string, string][] = [
 		input.disabled = true
 		if (status) {
 			status.textContent = 'Gemmer...'
-			status.className = 'mt-2 text-xs text-zinc-500'
+			status.className = 'mt-2 text-xs text-tx-3'
 		}
 
 		try {
@@ -548,13 +548,13 @@ const timelineRows: [string, string, string][] = [
 			if (!res.ok) throw new Error(`Kunne ikke gemme (${res.status})`)
 			if (status) {
 				status.textContent = 'Gemt'
-				status.className = 'mt-2 text-xs text-green-400'
+				status.className = 'mt-2 text-xs text-live'
 			}
 		} catch (e) {
 			input.checked = !desired
 			if (status) {
 				status.textContent = (e as Error).message
-				status.className = 'mt-2 text-xs text-red-400'
+				status.className = 'mt-2 text-xs text-danger'
 			}
 		} finally {
 			input.disabled = false
@@ -573,7 +573,7 @@ const timelineRows: [string, string, string][] = [
 		button.disabled = true
 		if (status) {
 			status.textContent = 'Gemmer...'
-			status.className = 'text-sm text-zinc-500'
+			status.className = 'text-sm text-tx-3'
 		}
 
 		try {
@@ -591,12 +591,12 @@ const timelineRows: [string, string, string][] = [
 			if (heading) heading.textContent = payload?.name || name
 			if (status) {
 				status.textContent = 'Gemt'
-				status.className = 'text-sm text-green-400'
+				status.className = 'text-sm text-live'
 			}
 		} catch (e) {
 			if (status) {
 				status.textContent = (e as Error).message
-				status.className = 'text-sm text-red-400'
+				status.className = 'text-sm text-danger'
 			}
 		} finally {
 			button.disabled = false
@@ -615,7 +615,7 @@ const timelineRows: [string, string, string][] = [
 		button.disabled = true
 		if (status) {
 			status.textContent = 'Gemmer...'
-			status.className = 'text-sm text-zinc-500'
+			status.className = 'text-sm text-tx-3'
 		}
 
 		try {
@@ -629,13 +629,13 @@ const timelineRows: [string, string, string][] = [
 			if (!res.ok) throw new Error(`Datoændring mislykkedes (${res.status})`)
 			if (status) {
 				status.textContent = 'Gemt'
-				status.className = 'text-sm text-green-400'
+				status.className = 'text-sm text-live'
 			}
 			window.setTimeout(() => window.location.reload(), 350)
 		} catch (e) {
 			if (status) {
 				status.textContent = (e as Error).message
-				status.className = 'text-sm text-red-400'
+				status.className = 'text-sm text-danger'
 			}
 		} finally {
 			button.disabled = false
@@ -739,23 +739,23 @@ const timelineRows: [string, string, string][] = [
 
 	function buildTile(p: IncomingPhoto): HTMLDivElement {
 		const tile = document.createElement('div')
-		tile.className = 'photo-tile group relative aspect-square overflow-hidden rounded bg-zinc-900'
+		tile.className = 'photo-tile group relative aspect-square overflow-hidden rounded bg-s1'
 		tile.dataset.photoId = p.photoId
 
 		let inner = ''
 		if (p.mediaType === 'video' && p.cfStreamUid) {
 			inner += `<img src="${streamThumbUrl(p.cfStreamUid)}" alt="" class="h-full w-full object-cover" />`
-			inner += `<span class="absolute bottom-1 left-1 rounded bg-zinc-950/80 px-1.5 py-0.5 text-[10px] font-medium text-white">${
+			inner += `<span class="absolute bottom-1 left-1 rounded bg-black/80 px-1.5 py-0.5 text-[10px] font-medium text-white">${
 				p.durationSeconds ? `${p.durationSeconds}s` : 'Video'
 			}</span>`
 		} else if (p.cfImagesId) {
 			inner += `<img src="https://imagedelivery.net/${cfImagesHash}/${p.cfImagesId}/public" alt="" class="h-full w-full object-cover" />`
 		} else {
-			inner += `<div class="flex h-full w-full items-center justify-center text-xs text-zinc-600">intet billede</div>`
+			inner += `<div class="flex h-full w-full items-center justify-center text-xs text-tx-4">intet billede</div>`
 		}
 		inner += `<button
 			type="button"
-			class="photo-delete absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950/70 text-zinc-100 opacity-100 transition hover:bg-red-600 hover:text-white sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
+			class="photo-delete absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white opacity-100 transition hover:bg-danger-solid hover:text-white sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
 			data-photo-id="${p.photoId}"
 			aria-label="Slet billede"
 			title="Slet billede"
@@ -866,7 +866,7 @@ const timelineRows: [string, string, string][] = [
 		input.disabled = true
 		if (status) {
 			status.textContent = 'Gemmer...'
-			status.className = `${statusBase} text-zinc-500`
+			status.className = `${statusBase} text-tx-3`
 		}
 		try {
 			const res = await fetch(`/api/events/${id}`, {
@@ -877,13 +877,13 @@ const timelineRows: [string, string, string][] = [
 			if (!res.ok) throw new Error(`Kunne ikke gemme (${res.status})`)
 			if (status) {
 				status.textContent = desired ? 'Godkendelse slået til' : 'Godkendelse slået fra'
-				status.className = `${statusBase} text-green-400`
+				status.className = `${statusBase} text-live`
 			}
 		} catch (e) {
 			input.checked = !desired
 			if (status) {
 				status.textContent = (e as Error).message
-				status.className = `${statusBase} text-red-400`
+				status.className = `${statusBase} text-danger`
 			}
 		} finally {
 			input.disabled = false

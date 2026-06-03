@@ -1,0 +1,43 @@
+{
+  "skill_name": "tailwind-v4",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "I'm building a compact 'member row' for the dark app surface of our event app — a 40×40 circular avatar on the left, then the member's name and role stacked beside it. Spec: 16px padding all around, a 12px gap between the avatar and the text, and the row sits on a card with a subtle shadow and rounded corners. Just give me the markup with Tailwind classes — plain HTML is fine, code only.",
+      "expected_output": "An HTML snippet using on-scale spacing (p-4 for 16px, gap-3 for 12px), the size-10 shorthand for the 40×40 avatar (rounded-full), and an explicit shadow step (shadow-sm) rather than the bare v3 `shadow`. No arbitrary [px] brackets for on-scale values.",
+      "files": [],
+      "expectations": [
+        "16px padding is on the spacing scale (p-4 or px-4/py-4), not an arbitrary [16px] value",
+        "12px gap uses gap-3, not gap-[12px]",
+        "The 40x40 avatar uses the size-10 shorthand rather than w-10 h-10",
+        "The shadow is an explicit step (shadow-sm / shadow-xs / a shadow token), not the bare `shadow` which silently renders as v3's medium shadow"
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Add a modal overlay and close button for our app. (1) The overlay is a full-screen black backdrop at 60% opacity. (2) The close button is a 32×32 icon button pinned to the top-right; on keyboard focus it must not show the browser's default outline (we draw our own focus ring), and it must never shrink inside its flex row. (3) The modal's primary action button has a left-to-right orange gradient background. Give me the Tailwind classes for these three elements — code only.",
+      "expected_output": "Tailwind classes using bg-black/60 (slash opacity, not bg-opacity-*), size-8 for the 32×32 button, focus:outline-hidden (not outline-none), shrink-0 (not flex-shrink-0), and bg-linear-to-r (not bg-gradient-to-r).",
+      "files": [],
+      "expectations": [
+        "The 60% black backdrop uses slash opacity (bg-black/60), not the removed bg-opacity-* utility",
+        "The 32x32 close button uses the size-8 shorthand rather than w-8 h-8",
+        "The focus outline is removed with outline-hidden, not outline-none",
+        "Non-shrinking uses shrink-0, not flex-shrink-0",
+        "The gradient uses bg-linear-to-r (v4), not bg-gradient-to-r (v3)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Convert this CSS to Tailwind utility classes on a single flex <div>. Just give me the final class=\"...\" attribute.\n\npadding-left: 52px;\npadding-right: 52px;\npadding-top: 24px;\npadding-bottom: 24px;\nmargin-top: 60px;\ngap: 10px;",
+      "expected_output": "A class list using px-13 (52/4), py-6 (24/4), mt-15 (60/4), and gap-2.5 (10/4) — every px value divided by 4 onto the scale, with zero arbitrary [px] bracket values.",
+      "files": [],
+      "expectations": [
+        "52px horizontal padding maps to step 13 (px-13 or pl-13 pr-13), not [52px]",
+        "24px vertical padding maps to py-6 (or pt-6 pb-6), not [24px]",
+        "60px margin-top maps to mt-15, not mt-[60px]",
+        "10px gap maps to the .5 step gap-2.5, not gap-[10px]",
+        "No arbitrary [..px] bracket values appear anywhere — every value is on-scale"
+      ]
+    }
+  ]
+}

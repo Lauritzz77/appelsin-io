@@ -18,14 +18,14 @@ const next =
 
 <Layout title="Sign in — appelsin" locale="en">
 	<div class="app screen-root flex min-h-screen flex-col">
-		<div class="mx-auto w-full max-w-[1180px] px-10 pt-[26px]">
+		<div class="mx-auto w-full max-w-295 px-10 pt-6.5">
 			<a href="/en" class="inline-flex items-center gap-2 text-[15.5px] font-semibold text-tx-2">
 				<Icon name="arrow-left" size={18} />Home
 			</a>
 		</div>
-		<div class="flex flex-1 items-center justify-center px-6 pt-12 pb-[100px]">
-			<div class="fu w-full max-w-[440px]">
-				<div class="mb-[30px] flex justify-center">
+		<div class="flex flex-1 items-center justify-center px-6 pt-12 pb-25">
+			<div class="fu w-full max-w-110">
+				<div class="mb-7.5 flex justify-center">
 					<Logo surface="dark" class="w-20 h-20 block" />
 				</div>
 
@@ -39,7 +39,7 @@ const next =
 					</p>
 
 					<form id="magic-link-form" data-next={next}>
-						<div class="field-input field-input--big flex items-center gap-[10px]">
+						<div class="field-input field-input--big flex items-center gap-2.5">
 							<Icon name="mail" size={18} class="text-tx-3" />
 							<input
 								type="email"
@@ -55,10 +55,10 @@ const next =
 						</div>
 					</form>
 
-					<div class="mt-[22px] flex items-center justify-center gap-2 text-sm text-tx-3">
+					<div class="mt-5.5 flex items-center justify-center gap-2 text-sm text-tx-3">
 						<Icon name="lock" size={15} />No password. The link is valid for 15 minutes.
 					</div>
-					<p id="status" class="mt-[14px] min-h-[1.25rem] text-center text-sm text-tx-2"></p>
+					<p id="status" class="mt-3.5 min-h-[1.25rem] text-center text-sm text-tx-2"></p>
 				</div>
 
 				<div
@@ -66,12 +66,12 @@ const next =
 					class="hidden rounded-2xl border border-line-2 bg-s1 p-[44px_34px] text-center shadow-app-lg [animation:popIn_.3s_both]"
 				>
 					<div
-						class="mx-auto mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-full bg-peach text-orange-deep"
+						class="mx-auto mb-5 flex h-18 w-18 items-center justify-center rounded-full bg-peach text-orange-deep"
 					>
 						<Icon name="mail" size={34} stroke={1.8} />
 					</div>
 					<h1 class="m-0 text-[27px] font-extrabold text-tx">Check your inbox</h1>
-					<p class="mt-3 mb-[26px] text-[16.5px] leading-[1.6] text-tx-3">
+					<p class="mt-3 mb-6.5 text-[16.5px] leading-[1.6] text-tx-3">
 						An email has been sent to <strong id="login-email" class="text-tx">you@example.com</strong>. Check your inbox.
 					</p>
 					<a id="login-retry" href="#" class="cursor-pointer text-[14.5px] font-semibold text-accent">Use a different email</a>

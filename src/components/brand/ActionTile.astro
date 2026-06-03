@@ -11,8 +11,8 @@ interface Props {
 	target?: string
 }
 const { href = null, icon, title, sub, arrow = 'chevron-right', accent = false, target } = Astro.props
-const wrapCls = `action-tile flex min-w-0 w-full cursor-pointer items-center gap-4 rounded-lg border px-[22px] py-5 text-left ${accent ? 'border-[rgba(255,162,41,.32)] bg-orange-soft' : 'border-line-2 bg-s1'}`
-const iconCls = `flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-md ${accent ? 'bg-accent text-[#2C1700]' : 'bg-white/[.06] text-accent'}`
+const wrapCls = `action-tile flex min-w-0 w-full cursor-pointer items-center gap-4 rounded-lg border px-5.5 py-5 text-left ${accent ? 'border-[rgba(255,162,41,.32)] bg-orange-soft' : 'border-line-2 bg-s1'}`
+const iconCls = `flex h-11.5 w-11.5 shrink-0 items-center justify-center rounded-md ${accent ? 'bg-accent text-[#2C1700]' : 'bg-white/[.06] text-accent'}`
 const titleCls = `block text-[16.5px] font-bold ${accent ? 'text-accent' : 'text-tx'}`
 ---
 
@@ -24,7 +24,7 @@ const titleCls = `block text-[16.5px] font-bold ${accent ? 'text-accent' : 'text
 			</span>
 			<span class="min-w-0 flex-1">
 				<span class={titleCls}>{title}</span>
-				<span class="mt-[3px] block break-words text-[13.5px] text-tx-3 [overflow-wrap:anywhere]">{sub}</span>
+				<span class="mt-0.75 block break-words text-[13.5px] text-tx-3 [overflow-wrap:anywhere]">{sub}</span>
 			</span>
 			<Icon name={arrow} size={18} class="text-tx-3" />
 		</a>
@@ -35,7 +35,7 @@ const titleCls = `block text-[16.5px] font-bold ${accent ? 'text-accent' : 'text
 			</span>
 			<span class="min-w-0 flex-1">
 				<span class={titleCls}>{title}</span>
-				<span class="mt-[3px] block break-words text-[13.5px] text-tx-3 [overflow-wrap:anywhere]">{sub}</span>
+				<span class="mt-0.75 block break-words text-[13.5px] text-tx-3 [overflow-wrap:anywhere]">{sub}</span>
 			</span>
 			<Icon name={arrow} size={18} class="text-tx-3" />
 		</button>

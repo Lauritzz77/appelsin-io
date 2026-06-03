@@ -13,6 +13,9 @@
 	--color-orange-deep: #e07d08;
 	--color-navy: #071952;
 	--color-navy-ink: #0a1b45;
+	/* ink text that sits on bright fills (orange/green) — keeps contrast on accent buttons, badges, pills */
+	--color-on-accent: #2c1700;
+	--color-on-live: #04220f;
 
 	/* warm marketing surfaces */
 	--color-cream: #fbf6ee;
@@ -43,6 +46,7 @@
 	--color-draft: #ffc368;
 	--color-ended: #8c97c2;
 	--color-danger: #ff8499;
+	--color-danger-solid: #f43f5e; /* saturated rose for destructive hover fills (reject/delete) */
 	--color-line: rgba(255, 255, 255, 0.09);
 	--color-line-2: rgba(255, 255, 255, 0.06);
 	--color-orange-soft: color-mix(in srgb, var(--color-accent) 14%, transparent);
@@ -121,7 +125,6 @@
 	--line-2: var(--color-line-2);
 	--live-bg: var(--color-live-bg);
 	--glow: var(--shadow-glow);
-	--d: 1;
 }
 
 /* ── base ── */
@@ -225,6 +228,9 @@ body.ready .fu {
 	
 }
 @media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
 	.fu {
 		opacity: 1;
 		transform: none;
@@ -270,7 +276,8 @@ body.ready .fu {
 	transform: translateY(1px) scale(0.99);
 }
 .btn[disabled],
-.btn:disabled {
+.btn:disabled,
+.btn[aria-disabled='true'] {
 	opacity: 0.5;
 	pointer-events: none;
 }
@@ -295,7 +302,7 @@ body.ready .fu {
 }
 .btn--primary {
 	background: var(--accent);
-	color: #2c1700;
+	color: var(--color-on-accent);
 	box-shadow: var(--glow);
 }
 .btn--primary:hover {
@@ -425,7 +432,7 @@ body.ready .fu {
 	font-weight: 700;
 	letter-spacing: 0.01em;
 	background: var(--accent);
-	color: #2c1700;
+	color: var(--color-on-accent);
 }
 .badge--soft {
 	background: var(--orange-soft);
@@ -448,22 +455,22 @@ body.ready .fu {
 .mkt-wrap {
 	max-width: 1440px;
 	margin: 0 auto;
-	padding: 0 calc(20px * var(--d));
+	padding: 0 20px;
 }
-@media (min-width: 960px) {
+@container (min-width: 920px) {
 	.mkt-wrap {
-		padding: 0 calc(40px * var(--d));
+		padding: 0 40px;
 	}
 }
 .mkt-nav {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: calc(8px * var(--d)) 0;
+	padding: 8px 0;
 }
-@media (min-width: 960px) {
+@container (min-width: 920px) {
 	.mkt-nav {
-		padding: calc(24px * var(--d)) 0;
+		padding: 24px 0;
 	}
 }
 .mkt-nav-links {
@@ -477,15 +484,20 @@ body.ready .fu {
 	cursor: pointer;
 }
 
+/* mobile-first: single column on narrow containers, two columns once the
+   marketing container clears 920px (matches every other reflow point). */
 .hero {
 	display: grid;
-	grid-template-columns: 1.02fr 0.98fr;
+	grid-template-columns: 1fr;
 	gap: 100px;
 	align-items: center;
+	padding-top: 16px;
 }
-@media (min-width: 960px) {
+@container (min-width: 920px) {
 	.hero {
+		grid-template-columns: 1.02fr 0.98fr;
 		gap: 20px;
+		padding-top: 0;
 	}
 }
 .hero-h1 {
@@ -513,11 +525,6 @@ body.ready .fu {
 	height: clamp(360px, 42cqw, 500px);
 }
 @container (max-width: 920px) {
-	.hero {
-		grid-template-columns: 1fr;
-		gap: 100px;
-		padding-top: 16px;
-	}
 	.collage {
 		height: 380px;
 		margin-top: 8px;
@@ -682,7 +689,7 @@ body.ready .fu {
 }
 .accordion details[open] summary .chev {
 	background: var(--accent);
-	color: #2c1700;
+	color: var(--color-on-accent);
 	transform: rotate(180deg);
 }
 .accordion .answer {
@@ -725,13 +732,13 @@ body.ready .fu {
 .app-wrap {
 	max-width: 880px;
 	margin: 0 auto;
-	padding: 0 calc(28px * var(--d)) calc(80px * var(--d));
+	padding: 0 28px 80px;
 }
 .app-top {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: calc(28px * var(--d)) 0;
+	padding: 28px 0;
 }
 .app-sec-label {
 	font-size: 13px;
@@ -776,7 +783,7 @@ body.ready .fu {
 }
 .view-toggle-btn.is-active {
 	background: var(--accent);
-	color: #2c1700;
+	color: var(--color-on-accent);
 }
 .evt-actions {
 	display: grid;
@@ -1117,7 +1124,7 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
 
 .app-dialog-button-primary {
 	background: var(--accent);
-	color: #2c1700;
+	color: var(--color-on-accent);
 	box-shadow: var(--glow);
 }
 

@@ -39,7 +39,7 @@ const cls = [
 
 {
 	href ? (
-		<a href={href} id={id} class={cls}>
+		<a href={disabled ? undefined : href} id={id} class={cls} aria-disabled={disabled ? 'true' : undefined}>
 			{icon && <Icon name={icon} size={sizeIcon} stroke={2.2} />}
 			<slot />
 			{iconRight && <Icon name={iconRight} size={sizeIcon} stroke={2.2} />}

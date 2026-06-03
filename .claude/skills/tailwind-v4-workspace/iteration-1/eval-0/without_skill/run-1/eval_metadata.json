@@ -1,0 +1,11 @@
+{
+  "eval_id": 0,
+  "eval_name": "spacing-size-shadow",
+  "prompt": "I'm building a compact 'member row' for the dark app surface of our event app — a 40×40 circular avatar on the left, then the member's name and role stacked beside it. Spec: 16px padding all around, a 12px gap between the avatar and the text, and the row sits on a card with a subtle shadow and rounded corners. Just give me the markup with Tailwind classes — plain HTML is fine, code only.",
+  "assertions": [
+    "16px padding is on the spacing scale (p-4 or px-4/py-4), not an arbitrary [16px] value",
+    "12px gap uses gap-3, not gap-[12px]",
+    "The 40x40 avatar uses the size-10 shorthand rather than w-10 h-10",
+    "The shadow is an explicit step (shadow-sm / shadow-xs / a shadow token), not the bare `shadow` which silently renders as v3's medium shadow"
+  ]
+}

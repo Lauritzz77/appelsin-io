@@ -84,9 +84,9 @@ const qrSvg = await QRCode.toString(guestUrl, {
 const qrDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(qrSvg)}`
 ---
 
-<Layout title={`Style — ${event.name}`} locale="en">
+<Layout title={`Style — ${event.name}`} locale="en" brandFonts>
 	<div class="app screen-root">
-		<div class="fu mx-auto max-w-[1080px] px-7 pt-7 pb-20">
+		<div class="fu mx-auto max-w-270 px-7 pt-7 pb-20">
 			<a
 				href={`/en/app/events/${event.id}`}
 				class="inline-flex items-center gap-2 text-[15.5px] font-semibold text-tx-3"
@@ -94,7 +94,7 @@ const qrDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(qrSvg)}`
 				<Icon name="arrow-left" size={18} />{event.name}
 			</a>
 
-			<div class="mt-[22px] mb-[26px]">
+			<div class="mt-5.5 mb-6.5">
 				<h1 class="m-0 text-[clamp(28px,5cqw,38px)] font-extrabold tracking-[-0.02em]">Photo wall style</h1>
 				<p class="mt-2 text-base text-tx-3">Customise the live photo wall shown at your venue.</p>
 			</div>
@@ -103,7 +103,7 @@ const qrDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(qrSvg)}`
 				isFreeTier ? (
 					<div class="rounded-xl border border-line-2 bg-s1 p-10 text-center shadow-app">
 						<h2 class="text-[22px] font-bold text-tx">Custom styling is a paid feature</h2>
-						<p class="mx-auto mt-3 max-w-[540px] text-[15px] leading-[1.6] text-tx-2">
+						<p class="mx-auto mt-3 max-w-135 text-[15px] leading-[1.6] text-tx-2">
 							Upgrade this event to {TIERS.basic.label} ({formatPrice('basic', 'en')}) or {TIERS.gold.label} (
 							{formatPrice('gold', 'en')}) to choose a theme, tile density and add a title overlay. Free events use the
 							appelsin photo collage with a corner QR.

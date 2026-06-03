@@ -410,7 +410,8 @@ body.ready .fu {
 .status-pill--live .dot {
 	animation: pulseDot 2s infinite;
 }
-.status-pill--draft {
+.status-pill--draft,
+.status-pill--upcoming {
 	color: var(--draft);
 	background: rgba(255, 195, 104, 0.14);
 	border-color: rgba(255, 195, 104, 0.3);

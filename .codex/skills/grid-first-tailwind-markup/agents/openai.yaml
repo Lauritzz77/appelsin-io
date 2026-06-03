@@ -1,0 +1,4 @@
+interface:
+  display_name: "Grid First Tailwind"
+  short_description: "Use grid-first layout decisions in markup"
+  default_prompt: "Use $grid-first-tailwind-markup to structure responsive Tailwind markup with grid-first layout rules."

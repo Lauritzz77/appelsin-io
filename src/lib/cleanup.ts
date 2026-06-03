@@ -16,6 +16,7 @@ export type CleanupResult = {
 // invocation under the Workers CPU/time budget. If there's a backlog the next
 // tick picks up the rest.
 const MAX_EVENTS_PER_TICK = 10
+const ASSET_DELETE_CONCURRENCY = 8
 
 // Seconds an event stays `live` past its `eventDate` before we end it. Gives
 // guests the night-of + morning-after window for late uploads.
@@ -147,11 +148,8 @@ export async function runRetentionCleanup(env: Cloudflare.Env): Promise<CleanupR
 				.from(schema.photos)
 				.where(eq(schema.photos.eventId, ev.id))
 
-			for (const photo of photos) {
-				const errs = await deletePhotoAssets(env, photo)
-				result.errors += errs
-				result.photosDeleted++
-			}
+			result.errors += await deletePhotoAssetsBatch(env, photos)
+			result.photosDeleted += photos.length
 
 			// Cascades to photo rows. event_purchases FKs are `set null` so
 			// bookkeeping survives (see schema comment).
@@ -172,7 +170,7 @@ export type PhotoAssetRef = {
 	r2OriginalKey: string | null
 }
 
-// Deletes a single photo's external assets (Cloudflare Images + R2). Does NOT
+// Deletes a single photo's external assets (Cloudflare Images + R2 + Stream). Does NOT
 // remove the D1 row — the caller decides whether to delete it or just orphan
 // it (the cron-deletion path cascades from the event row instead).
 // Returns the number of asset-deletion errors so the caller can accumulate.
@@ -208,6 +206,19 @@ export async function deletePhotoAssets(
 	return errors
 }
 
+export async function deletePhotoAssetsBatch(
+	env: Cloudflare.Env,
+	photos: PhotoAssetRef[]
+): Promise<number> {
+	let errors = 0
+	for (let i = 0; i < photos.length; i += ASSET_DELETE_CONCURRENCY) {
+		const batch = photos.slice(i, i + ASSET_DELETE_CONCURRENCY)
+		const results = await Promise.all(batch.map((photo) => deletePhotoAssets(env, photo)))
+		errors += results.reduce((sum, count) => sum + count, 0)
+	}
+	return errors
+}
+
 function eventEndedEmailHtml(eventName: string, url: string): string {
 	const safeName = eventName.replace(/[<>&"]/g, (c) =>
 		c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '&' ? '&amp;' : '&quot;'
@@ -219,6 +230,7 @@ function eventEndedEmailHtml(eventName: string, url: string): string {
 }
 
 async function deleteFromCloudflareImages(env: Cloudflare.Env, imageId: string): Promise<void> {
+	if (!env.CF_IMAGES_ACCOUNT_ID || !env.CF_IMAGES_API_TOKEN) return
 	const r = await fetch(
 		`https://api.cloudflare.com/client/v4/accounts/${env.CF_IMAGES_ACCOUNT_ID}/images/v1/${imageId}`,
 		{

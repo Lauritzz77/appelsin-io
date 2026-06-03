@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CSS Grid‑First Tailwind Layout Guide</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --line: #334155;
+      --accent: #38bdf8;
+      --good: #86efac;
+      --warn: #facc15;
+      --bad: #fca5a5;
+      --code: #020617;
+      --radius: 18px;
+      --space: clamp(1rem, 2vw, 2rem);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, .2), transparent 35rem),
+        linear-gradient(135deg, #020617, var(--bg));
+    }
+
+    a { color: var(--accent); }
+
+    .page {
+      width: min(1180px, 100% - 2rem);
+      margin-inline: auto;
+      padding-block: clamp(2rem, 5vw, 5rem);
+      display: grid;
+      gap: var(--space);
+    }
+
+    header.hero {
+      display: grid;
+      gap: 1.25rem;
+      padding: clamp(1.5rem, 4vw, 4rem);
+      border: 1px solid var(--line);
+      border-radius: calc(var(--radius) * 1.3);
+      background: linear-gradient(135deg, rgba(17,24,39,.9), rgba(15,23,42,.75));
+      box-shadow: 0 30px 80px rgba(0,0,0,.3);
+    }
+
+    h1, h2, h3 { line-height: 1.15; margin: 0; }
+    h1 { font-size: clamp(2.5rem, 8vw, 5.5rem); letter-spacing: -0.06em; }
+    h2 { font-size: clamp(1.6rem, 4vw, 3rem); letter-spacing: -0.04em; }
+    h3 { font-size: 1.2rem; }
+
+    p { margin: 0; color: var(--muted); }
+
+    .lead { font-size: clamp(1.05rem, 2vw, 1.35rem); max-width: 72ch; }
+
+    .pill-row { display: flex; flex-wrap: wrap; gap: .6rem; }
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: .4rem .75rem;
+      background: rgba(15,23,42,.8);
+      color: var(--text);
+      font-size: .9rem;
+    }
+
+    section {
+      display: grid;
+      gap: 1rem;
+      padding: clamp(1rem, 3vw, 2rem);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(17, 24, 39, .75);
+      backdrop-filter: blur(12px);
+    }
+
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      display: grid;
+      gap: .8rem;
+      padding: 1rem;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(31, 41, 55, .75);
+    }
+
+    .decision {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+      gap: 1rem;
+    }
+
+    .do { border-color: rgba(134,239,172,.45); }
+    .maybe { border-color: rgba(250,204,21,.45); }
+    .avoid { border-color: rgba(252,165,165,.45); }
+
+    .label {
+      width: fit-content;
+      padding: .2rem .55rem;
+      border-radius: .5rem;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: #020617;
+    }
+    .label.good { background: var(--good); }
+    .label.warn { background: var(--warn); }
+    .label.bad { background: var(--bad); }
+
+    pre {
+      margin: 0;
+      overflow-x: auto;
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--code);
+      color: #dbeafe;
+      font-size: .9rem;
+      line-height: 1.55;
+    }
+
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
+      gap: 1rem;
+    }
+
+    .demo-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+      gap: .75rem;
+    }
+
+    .demo-card-grid > div {
+      min-height: 5rem;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: rgba(56,189,248,.12);
+      border: 1px dashed rgba(56,189,248,.5);
+    }
+
+    .stack-demo {
+      display: grid;
+      min-height: 16rem;
+      overflow: hidden;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, #1e3a8a, #0f172a);
+    }
+
+    .stack-demo > * { grid-area: 1 / 1; }
+    .stack-demo .visual { opacity: .8; background: radial-gradient(circle at 65% 40%, rgba(56,189,248,.9), transparent 10rem); }
+    .stack-demo .overlay {
+      place-self: center;
+      text-align: center;
+      padding: 1rem;
+      max-width: 22rem;
+      z-index: 2;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+      gap: 1rem;
+    }
+
+    ul, ol { margin: 0; padding-inline-start: 1.2rem; color: var(--muted); }
+    li + li { margin-block-start: .35rem; }
+
+    .toc {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+      gap: .75rem;
+    }
+
+    .toc a {
+      padding: .8rem;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(15, 23, 42, .8);
+      text-decoration: none;
+    }
+
+    .callout {
+      border-inline-start: 4px solid var(--accent);
+      padding: 1rem;
+      background: rgba(56,189,248,.08);
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div class="pill-row">
+        <span class="pill">CSS Grid first</span>
+        <span class="pill">Tailwind implementation</span>
+        <span class="pill">Intrinsic responsiveness</span>
+        <span class="pill">Less absolute positioning</span>
+      </div>
+      <h1>Grid‑First Tailwind Layout Guide</h1>
+      <p class="lead">A practical rulebook for building large websites with CSS Grid as the main layout philosophy, Tailwind as the implementation layer, and Flexbox/absolute positioning used only where they are genuinely the better tool.</p>
+    </header>
+
+    <section>
+      <h2>Core idea</h2>
+      <div class="callout">
+        <p><strong>Tailwind is not the design philosophy. Tailwind is how we express the Grid‑first CSS philosophy.</strong></p>
+      </div>
+      <div class="grid-cards">
+        <article class="card"><span class="label good">1</span><h3>Normal flow</h3><p>Start with semantic HTML and natural document flow.</p></article>
+        <article class="card"><span class="label good">2</span><h3>Grid</h3><p>Use Grid for page structure, sections, responsive collections, and overlapping layout.</p></article>
+        <article class="card"><span class="label warn">3</span><h3>Flexbox</h3><p>Use Flexbox for small one‑dimensional internal alignment.</p></article>
+        <article class="card"><span class="label bad">4</span><h3>Absolute</h3><p>Use absolute positioning only for detached UI or special effects.</p></article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Contents</h2>
+      <nav class="toc">
+        <a href="#decision">Decision rules</a>
+        <a href="#grid">Grid patterns</a>
+        <a href="#tailwind">Tailwind examples</a>
+        <a href="#absolute">Replacing absolute</a>
+        <a href="#flexbox">When Flexbox is right</a>
+        <a href="#checklist">Review checklist</a>
+      </nav>
+    </section>
+
+    <section id="decision">
+      <h2>When to use what</h2>
+      <div class="decision">
+        <article class="card do">
+          <span class="label good">Use Grid</span>
+          <ul>
+            <li>Page shells</li>
+            <li>Dashboards</li>
+            <li>Cards and galleries</li>
+            <li>Forms with aligned labels/fields</li>
+            <li>Hero sections</li>
+            <li>Layered compositions</li>
+            <li>Responsive content regions</li>
+          </ul>
+        </article>
+        <article class="card maybe">
+          <span class="label warn">Use Flexbox</span>
+          <ul>
+            <li>Button content</li>
+            <li>Icon + text rows</li>
+            <li>Nav links in a single row</li>
+            <li>Toolbars</li>
+            <li>Chips/tags</li>
+            <li>Small component internals</li>
+          </ul>
+        </article>
+        <article class="card avoid">
+          <span class="label bad">Use absolute only for</span>
+          <ul>
+            <li>Tooltips</li>
+            <li>Popovers/dropdowns</li>
+            <li>Context menus</li>
+            <li>Drag previews</li>
+            <li>Floating badges</li>
+            <li>Decorative effects detached from layout</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="grid">
+      <h2>Grid‑first patterns</h2>
+      <div class="two-col">
+        <article class="card">
+          <h3>Responsive card grid</h3>
+          <p>Use this before breakpoint-heavy column chains.</p>
+<pre><code>.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 1rem;
+}</code></pre>
+        </article>
+        <article class="card">
+          <h3>Live example</h3>
+          <div class="demo-card-grid">
+            <div>Card</div><div>Card</div><div>Card</div><div>Card</div><div>Card</div><div>Card</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="tailwind">
+      <h2>Tailwind implementation examples</h2>
+      <div class="comparison">
+        <article class="card do">
+          <span class="label good">Prefer</span>
+<pre><code>&lt;div class="grid gap-6 grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))]"&gt;
+  ...
+&lt;/div&gt;</code></pre>
+          <p>Intrinsic, content-driven, fewer breakpoints.</p>
+        </article>
+        <article class="card avoid">
+          <span class="label bad">Avoid by default</span>
+<pre><code>&lt;div class="grid grid-cols-1 @sm:grid-cols-2 @md:grid-cols-3 @lg:grid-cols-4 @xl:grid-cols-5"&gt;
+  ...
+&lt;/div&gt;</code></pre>
+          <p>Allowed when needed, but do not micromanage columns by container width unless the layout meaningfully changes. Container variants like <code>@md:</code> need an ancestor with <code>container-type</code> set.</p>
+        </article>
+      </div>
+
+      <div class="two-col">
+        <article class="card">
+          <h3>Grid centering</h3>
+<pre><code>&lt;div class="grid place-items-center"&gt;
+  ...
+&lt;/div&gt;</code></pre>
+        </article>
+        <article class="card">
+          <h3>Grid areas / custom templates</h3>
+<pre><code>&lt;div class="grid grid-cols-[18rem_1fr] gap-8"&gt;
+  ...
+&lt;/div&gt;</code></pre>
+        </article>
+      </div>
+    </section>
+
+    <section id="absolute">
+      <h2>Grid overlap instead of absolute positioning</h2>
+      <p>Multiple children can occupy the same Grid cell. This replaces many old absolute-positioning patterns.</p>
+      <div class="two-col">
+        <article class="card">
+          <h3>CSS pattern</h3>
+<pre><code>.stack {
+  display: grid;
+}
+
+.stack &gt; * {
+  grid-area: 1 / 1;
+}
+
+.overlay {
+  z-index: 2;
+  place-self: center;
+}</code></pre>
+        </article>
+        <article class="card">
+          <h3>Tailwind pattern</h3>
+<pre><code>&lt;div class="grid"&gt;
+  &lt;img class="col-start-1 row-start-1" /&gt;
+  &lt;div class="col-start-1 row-start-1 z-10 place-self-center"&gt;
+    Overlay
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+        </article>
+      </div>
+      <div class="stack-demo">
+        <div class="visual"></div>
+        <div class="overlay">
+          <h3>Layered with Grid</h3>
+          <p>No <code>position:absolute</code>, no transform centering hack.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="flexbox">
+      <h2>When Flexbox is the right choice</h2>
+      <div class="comparison">
+        <article class="card do">
+          <span class="label good">Good Flexbox</span>
+<pre><code>&lt;button class="inline-flex items-center gap-2"&gt;
+  &lt;svg&gt;...&lt;/svg&gt;
+  Save changes
+&lt;/button&gt;</code></pre>
+          <p>One direction, small internal alignment.</p>
+        </article>
+        <article class="card avoid">
+          <span class="label bad">Avoid</span>
+<pre><code>&lt;main class="flex flex-col @md:flex-row gap-8"&gt;
+  &lt;aside&gt;...&lt;/aside&gt;
+  &lt;section&gt;...&lt;/section&gt;
+&lt;/main&gt;</code></pre>
+          <p>For page structure, Grid is usually clearer.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Modern CSS preferences</h2>
+      <div class="grid-cards">
+        <article class="card"><h3>Use gap</h3><p>Prefer <code>gap-*</code> over margin chains.</p></article>
+        <article class="card"><h3>Use clamp()</h3><p>Fluid spacing, font sizes, and layout dimensions.</p></article>
+        <article class="card"><h3>Use aspect-ratio</h3><p>Avoid old padding hacks for media boxes.</p></article>
+        <article class="card"><h3>Use logical properties</h3><p>Prefer inline/block thinking over left/right assumptions.</p></article>
+        <article class="card"><h3>Use container queries</h3><p>Components should respond to their container.</p></article>
+        <article class="card"><h3>Use subgrid</h3><p>When support allows and nested alignment matters.</p></article>
+      </div>
+    </section>
+
+    <section id="checklist">
+      <h2>Codex review checklist</h2>
+      <div class="card">
+        <ol>
+          <li>Can this layout use Grid instead of Flexbox?</li>
+          <li>Can absolute positioning be replaced by Grid overlap?</li>
+          <li>Can breakpoint chains be replaced by <code>auto-fit</code>, <code>auto-fill</code>, and <code>minmax()</code>?</li>
+          <li>Are <code>gap-*</code> utilities used instead of margin chains?</li>
+          <li>Are arbitrary Tailwind values readable?</li>
+          <li>Is the DOM semantic and shallow?</li>
+          <li>Does visual order match DOM reading order?</li>
+          <li>Does the layout work at narrow, medium, and wide widths?</li>
+          <li>Does it avoid clipping focus outlines and important content?</li>
+          <li>Is the CSS modern, intentional, and free of legacy layout hacks?</li>
+        </ol>
+      </div>
+    </section>
+
+    <section>
+      <h2>Copyable Codex instruction</h2>
+<pre><code>Use a Grid-first Tailwind layout approach.
+Prefer semantic HTML, normal document flow, CSS Grid for structure, intrinsic responsive Grid with auto-fit/auto-fill + minmax(), and Grid overlap instead of absolute positioning.
+Use Flexbox only for small one-dimensional internal alignment.
+Use absolute positioning only for detached UI like tooltips, popovers, dropdowns, drag previews, portals, or decorative effects.
+Prefer gap utilities over margin chains and avoid breakpoint-heavy layout unless the design meaningfully changes.</code></pre>
+    </section>
+  </main>
+</body>
+</html>

@@ -73,7 +73,8 @@ const galleryUrl = await eventGalleryUrl(Astro.url.origin, event.id, env.BETTER_
 const tier = isTier(event.tier) ? event.tier : 'free'
 const tierConfig = TIERS[tier]
 const isPaidTier = tierConfig.priceCents > 0
-const canEditEventDate = event.status !== 'live'
+const eventDateHasArrived = event.eventDate.getTime() <= Date.now()
+const canEditEventDate = event.status !== 'live' || !eventDateHasArrived
 const eventDateInputValue = event.eventDate.toISOString().slice(0, 10)
 
 const capPct = Math.min(100, Math.round((photoCount / tierConfig.photoCap) * 100))
@@ -126,7 +127,7 @@ const timelineRows: [string, string, string][] = [
 						</span>
 					</div>
 				</div>
-				<StatusPill status={event.status} locale={locale} />
+				<StatusPill status={event.status} eventDate={event.eventDate} locale={locale} />
 			</div>
 
 			{

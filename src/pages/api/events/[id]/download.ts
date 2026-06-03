@@ -1,10 +1,14 @@
 import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/d1'
-import { and, eq, ne, asc } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { downloadZip } from 'client-zip'
 import * as schema from '../../../../db/schema'
-import { verifyEventDownload } from '../../../../lib/event-download'
+import {
+	listEventMediaForAccess,
+	parseRequestedMediaIds,
+	resolveEventMediaAccess,
+} from '../../../../lib/event-gallery'
 
 export const prerender = false
 
@@ -33,15 +37,6 @@ function zipPrefix(photo: DownloadablePhoto, index: number): string {
 	const seq = String(index + 1).padStart(4, '0')
 	const ts = photo.createdAt ? new Date(photo.createdAt).toISOString().slice(0, 10) : ''
 	return `${seq}${ts ? '-' + ts : ''}`
-}
-
-function parseRequestedIds(value: string | null): Set<string> | null {
-	if (!value) return null
-	const ids = value
-		.split(',')
-		.map((id) => id.trim())
-		.filter((id) => /^[a-z0-9-]{20,}$/i.test(id))
-	return ids.length > 0 ? new Set(ids) : null
 }
 
 async function fetchZipFile(
@@ -102,32 +97,24 @@ export const GET: APIRoute = async ({ params, locals, url, request }) => {
 	if (!event) return new Response('Event not found', { status: 404 })
 
 	const key = url.searchParams.get('key')
-	const isHost = !!locals.host && locals.host.id === event.hostId
-	const validKey = await verifyEventDownload(event.id, key, env.BETTER_AUTH_SECRET)
-	if (!isHost && !validKey) return new Response('Unauthorized', { status: 401 })
+	const access = await resolveEventMediaAccess({
+		eventId: event.id,
+		eventHostId: event.hostId,
+		hostId: locals.host?.id,
+		key,
+		secret: env.BETTER_AUTH_SECRET,
+	})
+	if (!access.ok) return new Response('Unauthorized', { status: 401 })
 
-	const requestedIds = parseRequestedIds(url.searchParams.get('ids'))
-	const photos = await db
-		.select({
-			id: schema.photos.id,
-			cfImagesId: schema.photos.cfImagesId,
-			cfStreamUid: schema.photos.cfStreamUid,
-			mediaType: schema.photos.mediaType,
-			createdAt: schema.photos.createdAt,
-		})
-		.from(schema.photos)
-		.where(
-			and(
-				eq(schema.photos.eventId, event.id),
-				// Key holders (guests) only download approved media; the host gets
-				// everything not explicitly rejected.
-				isHost ? ne(schema.photos.status, 'rejected') : eq(schema.photos.status, 'approved')
-			)
-		)
-		.orderBy(asc(schema.photos.createdAt))
+	const requestedIds = parseRequestedMediaIds(url.searchParams.get('ids'))
+	const photos = await listEventMediaForAccess(db, {
+		eventId: event.id,
+		access: access.access,
+		order: 'oldest',
+		ids: requestedIds,
+	})
 
-	const selectedPhotos = requestedIds ? photos.filter((p) => requestedIds.has(p.id)) : photos
-	const downloadable = selectedPhotos.filter((p) => p.cfImagesId || p.cfStreamUid)
+	const downloadable = photos.filter((p) => p.cfImagesId || p.cfStreamUid)
 	if (downloadable.length === 0) {
 		return new Response('Nothing to download', { status: 404 })
 	}

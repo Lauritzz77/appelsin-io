@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tailwind v4"
+  short_description: "Write Tailwind CSS v4 classes correctly"
+  default_prompt: "Use $tailwind-v4 to write or review Tailwind CSS v4 markup for this workspace."

@@ -8,6 +8,7 @@
 	},
 	"status": {
 		"live": "live",
+		"upcoming": "upcoming",
 		"ended": "ended",
 		"draft": "draft"
 	},

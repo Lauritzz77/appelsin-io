@@ -4,9 +4,12 @@ import { getContent } from '../../lib/content'
 interface Props {
 	status: string
 	locale?: 'da' | 'en'
+	eventDate?: Date | string
 }
-const { status, locale = 'da' } = Astro.props
-const key = status === 'live' ? 'live' : status === 'ended' ? 'ended' : 'draft'
+const { status, locale = 'da', eventDate } = Astro.props
+const date = eventDate instanceof Date ? eventDate : eventDate ? new Date(eventDate) : null
+const isUpcoming = status === 'live' && date && date.getTime() > Date.now()
+const key = isUpcoming ? 'upcoming' : status === 'live' ? 'live' : status === 'ended' ? 'ended' : 'draft'
 const label = getContent(locale, 'common').status[key]
 ---
 

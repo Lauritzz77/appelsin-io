@@ -32,7 +32,7 @@
 	"saveName": "Save name",
 	"dateLabel": "Event date",
 	"saveDate": "Save date",
-	"dateLocked": "The date cannot be changed while the event is live.",
+	"dateLocked": "The date cannot be changed once the event date has arrived.",
 	"codeLabel": "Short code — guests type it at appelsin.io/e",
 	"guestLinkLabel": "Direct guest link",
 	"bigScreen": {

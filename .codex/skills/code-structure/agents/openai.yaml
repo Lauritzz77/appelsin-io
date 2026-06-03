@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Structure"
+  short_description: "Separate actions from shared service mechanics"
+  default_prompt: "Use $code-structure to refactor repeated operational logic into a composable service layer."

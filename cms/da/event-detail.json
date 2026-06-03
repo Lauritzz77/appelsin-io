@@ -32,7 +32,7 @@
 	"saveName": "Gem navn",
 	"dateLabel": "Eventdato",
 	"saveDate": "Gem dato",
-	"dateLocked": "Datoen kan ikke ændres, mens eventet er live.",
+	"dateLocked": "Datoen kan ikke ændres, når eventdatoen er nået.",
 	"codeLabel": "Kort kode — gæster skriver den på appelsin.io/e",
 	"guestLinkLabel": "Direkte gæste-link",
 	"bigScreen": {

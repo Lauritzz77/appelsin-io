@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/d1'
-import { and, eq, ne } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import * as schema from '../../../../../../db/schema'
-import { verifyEventDownload } from '../../../../../../lib/event-download'
+import { findEventPhotoForAccess, resolveEventMediaAccess } from '../../../../../../lib/event-gallery'
 
 export const prerender = false
 
@@ -33,27 +33,20 @@ export const GET: APIRoute = async ({ params, locals, url }) => {
 	if (!event) return new Response('Event not found', { status: 404 })
 
 	const key = url.searchParams.get('key')
-	const isHost = !!locals.host && locals.host.id === event.hostId
-	const validKey = await verifyEventDownload(event.id, key, env.BETTER_AUTH_SECRET)
-	if (!isHost && !validKey) return new Response('Unauthorized', { status: 401 })
+	const access = await resolveEventMediaAccess({
+		eventId: event.id,
+		eventHostId: event.hostId,
+		hostId: locals.host?.id,
+		key,
+		secret: env.BETTER_AUTH_SECRET,
+	})
+	if (!access.ok) return new Response('Unauthorized', { status: 401 })
 
-	const [photo] = await db
-		.select({
-			id: schema.photos.id,
-			cfImagesId: schema.photos.cfImagesId,
-			mediaType: schema.photos.mediaType,
-			createdAt: schema.photos.createdAt,
-		})
-		.from(schema.photos)
-		.where(
-			and(
-				eq(schema.photos.id, photoId),
-				eq(schema.photos.eventId, event.id),
-				// Key holders (guests) can only fetch approved media.
-				isHost ? ne(schema.photos.status, 'rejected') : eq(schema.photos.status, 'approved')
-			)
-		)
-		.limit(1)
+	const photo = await findEventPhotoForAccess(db, {
+		eventId: event.id,
+		photoId,
+		access: access.access,
+	})
 
 	if (!photo?.cfImagesId || photo.mediaType !== 'photo') {
 		return new Response('Photo not found', { status: 404 })

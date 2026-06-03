@@ -3,7 +3,7 @@ import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/d1'
 import { and, eq } from 'drizzle-orm'
 import * as schema from '../../../db/schema'
-import { deletePhotoAssets } from '../../../lib/cleanup'
+import { deletePhotoAssetsBatch } from '../../../lib/cleanup'
 
 export const prerender = false
 
@@ -66,14 +66,14 @@ export const PATCH: APIRoute = async ({ request, params, locals }) => {
 
 	const db = drizzle(env.DB, { schema })
 	const [event] = await db
-		.select({ id: schema.events.id, status: schema.events.status })
+		.select({ id: schema.events.id, status: schema.events.status, eventDate: schema.events.eventDate })
 		.from(schema.events)
 		.where(and(eq(schema.events.id, id), eq(schema.events.hostId, host.id)))
 		.limit(1)
 
 	if (!event) return new Response('Event not found', { status: 404 })
-	if (updates.eventDate && event.status === 'live') {
-		return new Response('Event date cannot be changed while the event is live', { status: 409 })
+	if (updates.eventDate && event.status === 'live' && event.eventDate.getTime() <= Date.now()) {
+		return new Response('Event date cannot be changed after the event date has arrived', { status: 409 })
 	}
 
 	await db.update(schema.events).set(updates).where(eq(schema.events.id, event.id))
@@ -107,10 +107,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 		.from(schema.photos)
 		.where(eq(schema.photos.eventId, event.id))
 
-	let assetErrors = 0
-	for (const photo of photos) {
-		assetErrors += await deletePhotoAssets(env, photo)
-	}
+	const assetErrors = await deletePhotoAssetsBatch(env, photos)
 
 	// Paid-event bookkeeping survives event deletion; see schema comment.
 	await db
